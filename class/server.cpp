@@ -6,13 +6,17 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/15 14:43:50 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/15 15:18:20 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <cstdlib>
 
-#include "../header/server.hpp"
-
+#include <iostream>
+#include "server.hpp"
+#include <cctype>
+#include <cstring>
+#include <stdexcept>
 
 bool Server::check_port(const char *port)
 {
@@ -28,15 +32,25 @@ bool Server::check_port(const char *port)
 	return true;
 }
 
-
 Server::Server(int port, const char* password)
 {
-    if (!check_port(std::to_string(port).c_str()))
+    if (port < 1 || port > 65535)
     {
         throw std::invalid_argument("Invalid port number");
     }
     this->_port = port;
     this->_password = password;
+    // Constructor implementation
+    
+}
+
+Server::Server(const char* port, const char* password)
+{
+    if (!check_port(std::atoi(port))
+    {
+        throw std::invalid_argument("Invalid port number");
+    }
+    Server(std::atoi(port), password);
     // Constructor implementation
     
 }
