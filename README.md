@@ -1,2 +1,2 @@
 # ft_irc
-Hello world
+Hello
