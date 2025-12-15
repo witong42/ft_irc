@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/15 15:18:20 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/15 15:22:34 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ Server::Server(int port, const char* password)
 
 Server::Server(const char* port, const char* password)
 {
-    if (!check_port(std::atoi(port))
+    if (!check_port(port))
     {
         throw std::invalid_argument("Invalid port number");
     }
