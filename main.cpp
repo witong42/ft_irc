@@ -6,32 +6,20 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/15 14:29:36 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/15 14:45:14 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include "server.hpp"
 
 #define DEFAULT "\033[0m"				// #fefcfcff
 #define GREEN "\033[0;38;2;121;200;88m" // #3da10eff
 #define RED "\033[0;38;2;255;0;0m"		// #ff0000ff
 # define INTROC  "\033[44;38;2;121;200;88m"
 
-bool check_port(const char *port)
-{
-	int len = std::strlen(port);
-	for (int i = 0; i < len; i++)
-	{
-		if (!isdigit(port[i]))
-			return false;
-	}
-	int port_num = std::atoi(port);
-	if (port_num < 1 || port_num > 65535)
-		return false;
-	return true;
-}
 
 int main(int argc, char *argv[]
 )
@@ -42,11 +30,7 @@ int main(int argc, char *argv[]
 		std::cerr << "Usage: /ircserv <port> <password>" << std::endl;
 		return 1;
 	}
-	if (!check_port(argv[1]))
-	{
-		std::cerr << RED << "Error: Invalid port number." << DEFAULT << std::endl;
-		return 1;
-	}
+	Server server(std::atoi(argv[1]), argv[2]);
 	
 	std::cout << INTROC << "Starting IRC Server on port " << argv[1] << " with password " << argv[2] << DEFAULT << std::endl;
 	
