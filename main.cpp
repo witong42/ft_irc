@@ -6,14 +6,14 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/15 15:13:06 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/17 11:58:51 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-#include "server.cpp"
+#include "Server.cpp"
 
 #define DEFAULT "\033[0m"				// #fefcfcff
 #define GREEN "\033[0;38;2;121;200;88m" // #3da10eff

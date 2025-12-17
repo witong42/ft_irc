@@ -1,0 +1,221 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
+/*   Updated: 2025/12/17 12:54:31 by jegirard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <cstdlib>
+
+#include <iostream>
+#include "Server.hpp"
+#include <cctype>
+#include <cstring>
+#include <stdexcept>
+#define MAX_EVENTS 10
+#define BUFFER_SIZE 512
+
+
+Server::Server(int port, const char *password)
+{
+	if (port < 1 || port > 65535)
+	{
+		throw std::invalid_argument("Invalid port number");
+	}
+	_port = port;
+	_password = password;
+	_domaine = AF_INET;
+	_type = SOCK_STREAM;
+	// Constructor implementation
+}
+
+
+bool Server::createSocket()
+{
+	// Socket creation implementation
+	_fd = socket(_domaine, _type, 0);
+	if (_fd < 0)
+		return false;
+
+	int opt = 1;
+	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+		return false;
+	return true;
+}
+
+bool Server::socketUnblock()
+{
+	// Set socket to non-blocking implementation
+	int flags = fcntl(_fd, F_GETFL, 0);
+	if (flags == -1)
+		return false;
+	if (fcntl(_fd, F_SETFL, flags | O_NONBLOCK) == -1)
+		return false;
+	return true;
+}
+
+bool Server::IPv4bind()
+{
+	std::cout << "Serveur en écoute sur le port " << _port << "...\n";
+	// IPv4 bind implementation
+	int epoll_fd = epoll_create1(0);
+	if (epoll_fd == -1)
+	{
+		std::cerr << "Erreur epoll_create1\n";
+		close(_fd);
+		return false;
+	}
+	return true;
+}
+
+bool Server::AddSockette(){
+	
+	// 5. Ajouter le socket serveur à epoll
+	struct epoll_event ev, events[MAX_EVENTS];
+	ev.events = EPOLLIN; // Surveiller les événements de lecture
+	ev.data.fd = _fd;
+
+	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &ev) == -1)
+	{
+		std::cerr << "Erreur epoll_ctl\n";
+		close(_fd);
+		close(_fd_epoll);
+		return false;
+	}
+	return true;
+}
+
+bool Server::Lisen(){
+	
+
+	// 6. Boucle principale
+	while (true)
+	{
+		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
+		if (nfds == -1)
+		{
+			std::cerr << "Erreur epoll_wait\n";
+			break;
+		}
+
+		// Traiter tous les événements
+		for (int i = 0; i < nfds; i++)
+		{
+			// Nouvelle connexion sur le socket serveur
+			if (events[i].data.fd == _fd)
+			{
+				struct sockaddr_in client_addr;
+				socklen_t client_len = sizeof(client_addr);
+
+				int _fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
+				if (_fd_client == -1)
+				{
+					if (errno != EAGAIN && errno != EWOULDBLOCK)
+					{
+						std::cerr << "Erreur accept\n";
+					}
+					continue;
+				}
+
+				// Afficher info client
+				char client_ip[INET_ADDRSTRLEN];
+				inet_ntop(_domaine, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+				std::cout << "Nouvelle connexion de " << client_ip
+						  << ":" << ntohs(client_addr.sin_port) << "\n";
+
+				// Rendre le socket client non-bloquant
+				set_nonblocking(_fd_client);
+
+				// Ajouter le client à epoll
+				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
+				ev.data.fd = _fd_client;
+				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &ev) == -1)
+				{
+					std::cerr << "Erreur ajout client à epoll\n";
+					close(_fd_client);
+				}
+			}
+			// Données disponibles sur un socket client
+			else
+			{
+				int _fd_client = events[i].data.fd;
+				char buffer[BUFFER_SIZE];
+
+				ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
+
+				if (count == -1)
+				{
+					if (errno != EAGAIN)
+					{
+						std::cerr << "Erreur recv\n";
+						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
+						close(_fd_client);
+					}
+				}
+				else if (count == 0)
+				{
+					// Client a fermé la connexion
+					std::cout << "Client déconnecté (fd: " << _fd_client << ")\n";
+					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
+					close(_fd_client);
+				}
+				else
+				{
+					// Afficher les données reçues
+					buffer[count] = '\0';
+					std::cout << "Reçu (" << count << " octets): " << buffer;
+
+					// Echo - renvoyer les données au client
+					send(_fd_client, buffer, count, 0);
+				}
+			}
+		}
+	}
+ return true;
+}
+
+bool server::Cleanup(){
+	// Nettoyage
+	close(_fd);
+	close(_epoll_fd);
+	return 0;
+}
+
+bool Server::check_port(const char *port)
+{
+	int len = std::strlen(port);
+	for (int i = 0; i < len; i++)
+	{
+		if (!isdigit(port[i]))
+			return false;
+	}
+	int port_num = std::atoi(port);
+	if (port_num < 1 || port_num > 65535)
+		return false;
+	return true;
+}
+
+
+
+Server::Server(const char *port, const char *password)
+{
+	if (!check_port(port))
+	{
+		throw std::invalid_argument("Invalid port number");
+	}
+	Server(std::atoi(port), password);
+	// Constructor implementation
+}
+Server::~Server()
+{
+	// Destructor implementation
+}
+void Server::start()
+{
+	// Start server implementation
+}
