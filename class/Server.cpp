@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/17 15:16:10 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/17 15:28:29 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ Server::Server(int port, const char *password)
 	_password = password;
 	_domaine = AF_INET;
 	_type = SOCK_STREAM;
+	
 	// Constructor implementation
 }
 

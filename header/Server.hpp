@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/17 15:16:47 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/17 15:41:04 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,8 @@ private:
 	int _fd_client; // fichier de descripteur du socket client
 	int _fd_epoll; // descripteur epoll
 	const char *_password; // mot de passe du serveur
-	int _domaine = AF_INET; // domaine IPv4
-	int _type = SOCK_STREAM; // type de socket TCP
+	int _domaine ; // domaine IPv4
+	int _type ; // type de socket TCP
 	
 	bool check_port(const char *port); // vérifie la validité du port
 	bool createSocket();	// crée le socket
