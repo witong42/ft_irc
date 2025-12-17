@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/17 12:31:12 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/17 15:16:47 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ private:
 	bool IPv4bind(); // lie le socket à une adresse IPv4
 	bool AddSockette(); // ajoute le socket au epoll
 	bool Lisen(); // boucle principale du serveur
-	bool Cleanup(); // nettoie les ressources utilisées
+	bool CleanUp(); // nettoie les ressources utilisées
 
 public:
 	Server(const char *port, const char *password);

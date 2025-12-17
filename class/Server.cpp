@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/17 12:54:31 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/17 15:16:10 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,10 +179,10 @@ bool Server::Lisen(){
  return true;
 }
 
-bool server::Cleanup(){
+bool Server::CleanUp(){
 	// Nettoyage
 	close(_fd);
-	close(_epoll_fd);
+	close(_fd_epoll);
 	return 0;
 }
 
@@ -211,9 +211,11 @@ Server::Server(const char *port, const char *password)
 	Server(std::atoi(port), password);
 	// Constructor implementation
 }
+
 Server::~Server()
 {
 	// Destructor implementation
+	
 }
 void Server::start()
 {
