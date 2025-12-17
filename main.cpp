@@ -20,7 +20,7 @@
 #define RED "\033[0;38;2;255;0;0m"		// #ff0000ff
 # define INTROC  "\033[44;38;2;121;200;88m"
 
-
+// test home
 int main(int argc, char *argv[])
 {
 	if (argc != 3 || !argv[1] || !argv[2]|| argv[2][0] == '\0')
