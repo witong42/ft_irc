@@ -6,7 +6,7 @@
 #    By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/27 15:19:44 by jegirard          #+#    #+#              #
-#    Updated: 2025/12/18 11:46:34 by jegirard         ###   ########.fr        #
+#    Updated: 2025/12/18 19:17:29 by jegirard         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,7 +68,7 @@ re: fclean all
 
 # Exécution du programme
 run: all
-	./$(BIN_DIR)/$(NAME)
+	./$(BIN_DIR)/$(NAME) 6667 localhost
 
 # Affichage des informations de debug
 debug:

@@ -6,12 +6,13 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 19:01:20 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 20:04:15 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cstdlib>
-
+#include <iostream>
+#include <string>
 #include <iostream>
 #include "Server.hpp"
 #include <cctype>
@@ -23,11 +24,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
-	
+
 #include <arpa/inet.h>
 #include <errno.h>
-
-
+#include <sstream>
 
 Server::Server(int port, const char *password)
 {
@@ -35,15 +35,15 @@ Server::Server(int port, const char *password)
 	{
 		throw std::invalid_argument("Invalid port number");
 	}
-	
+
 	_password = password;
-	
+
 	// Initialisation de l'adresse
 	std::memset(&_address, 0, sizeof(_address));
 	_address.sin_port = htons(port);
 	_address.sin_family = AF_INET;
 	_address.sin_addr.s_addr = INADDR_ANY;
-	
+
 	// Constructor implementation
 }
 
@@ -85,12 +85,13 @@ bool Server::createSocket()
 {
 	// Crée la socket
 	_fd = socket(_address.sin_family, SOCK_STREAM, 0);
-	if (_fd < 0){
+	if (_fd < 0)
+	{
 
 		std::cerr << "Erreur création socket\n";
 		return false;
 	}
-	
+
 	// Configurer SO_REUSEADDR
 	int opt = 1;
 	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -124,7 +125,8 @@ bool Server::IPv4bind()
 	}
 	return true;
 }
-bool Server::listening(){
+bool Server::listening()
+{
 	// Écoute des connexions entrantes
 	if (listen(_fd, 10) < 0)
 	{
@@ -136,8 +138,8 @@ bool Server::listening(){
 	return true;
 }
 
-
-bool Server::createPoll(){	
+bool Server::createPoll()
+{
 	// IPv4 bind implementation
 	_fd_epoll = epoll_create1(0);
 	if (_fd_epoll == -1)
@@ -149,8 +151,9 @@ bool Server::createPoll(){
 	return true;
 }
 
-bool Server::AddSockette(){
-	
+bool Server::AddSockette()
+{
+
 	// 5. Ajouter le socket serveur à epoll
 	_ev.events = EPOLLIN; // Surveiller les événements de lecture
 	_ev.data.fd = _fd;
@@ -165,8 +168,8 @@ bool Server::AddSockette(){
 	return true;
 }
 
-bool Server::wait(){
-	
+bool Server::wait()
+{
 
 	// 6. Boucle principale
 	while (true)
@@ -244,31 +247,33 @@ bool Server::wait(){
 				{
 					// Afficher les données reçues
 					buffer[count] = '\0';
-					std::cout << "Reçu (" << count << " octets): " << buffer;
-
-					// Echo - renvoyer les données au client
-					//send(_fd_client, buffer, count, 0);
-
-					    std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-
-    // On envoie la réponse au client
-    if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0) {
-        std::cerr << "Erreur send()" << std::endl;
-    }
-				
-
-					//close(_fd_client);
-
-
+					 std::istringstream iss( buffer ); 
+					std::string cmd;
+					std::getline(iss, cmd,' ') ;
+					std::cout << "Reçu (" << count << " octets): '" << cmd << "' from fd " << _fd_client << "\n";
 					
+					// Echo - renvoyer les données au client
+					// send(_fd_client, buffer, count, 0);
+
+					std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+
+					// On envoie la réponse au client
+					if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0)
+					{
+						std::cerr << "Erreur send()" << std::endl;
+					}
+					buffer[0] = 0;
+
+					// close(_fd_client);
 				}
 			}
 		}
 	}
- return true;
+	return true;
 }
 
-bool Server::CleanUp(){
+bool Server::CleanUp()
+{
 	// Nettoyage
 	close(_fd);
 	close(_fd_epoll);
@@ -289,8 +294,6 @@ bool Server::check_port(const char *port)
 	return true;
 }
 
-
-
 Server::Server(const char *port, const char *password)
 {
 	if (!check_port(port))
@@ -304,7 +307,6 @@ Server::Server(const char *port, const char *password)
 Server::~Server()
 {
 	// Destructor implementation
-	
 }
 void Server::start()
 {
