@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 11:27:29 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 12:11:20 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,14 +43,40 @@ Server::Server(int port, const char *password)
 	// Constructor implementation
 }
 
+void Server::run()
+{
+	if (!createSocket())
+	{
+		throw std::runtime_error("Socket creation failed");
+	}
+	if (!socketUnblock())
+	{
+		throw std::runtime_error("Setting socket to non-blocking failed");
+	}
+	if (!IPv4bind())
+	{
+		throw std::runtime_error("Binding socket failed");
+	}
+	if (!AddSockette())
+	{
+		throw std::runtime_error("Adding socket to epoll failed");
+	}
+	if (!Lisen())
+	{
+		throw std::runtime_error("Listening failed");
+	}
+	CleanUp();
+}
 
 bool Server::createSocket()
 {
 	// Socket creation implementation
 	_fd = socket(_domaine, _type, 0);
-	if (_fd < 0)
-		return false;
+	if (_fd < 0){
 
+		std::cerr << "Erreur création socket\n";
+		return false;
+	}
 	int opt = 1;
 	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 		return false;
@@ -72,8 +98,8 @@ bool Server::IPv4bind()
 {
 	std::cout << "Serveur en écoute sur le port " << _port << "...\n";
 	// IPv4 bind implementation
-	int epoll_fd = epoll_create1(0);
-	if (epoll_fd == -1)
+	_fd_epoll = epoll_create1(0);
+	if (_fd_epoll == -1)
 	{
 		std::cerr << "Erreur epoll_create1\n";
 		close(_fd);
@@ -87,8 +113,8 @@ bool Server::AddSockette(){
 	// 5. Ajouter le socket serveur à epoll
 	_ev.events = EPOLLIN; // Surveiller les événements de lecture
 	_ev.data.fd = _fd;
-
-	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &_ev) == -1)
+	// Ajouter le socket serveur à epoll
+	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &_ev) < -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
 		close(_fd);
@@ -105,7 +131,7 @@ bool Server::Lisen(){
 	while (true)
 	{
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
-		if (nfds == -1)
+		if (nfds < 0)
 		{
 			std::cerr << "Erreur epoll_wait\n";
 			break;
@@ -123,10 +149,10 @@ bool Server::Lisen(){
 				int _fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
 				if (_fd_client == -1)
 				{
-				//	if (errno != EAGAIN && errno != EWOULDBLOCK)
-				//	{
-				//		std::cerr << "Erreur accept\n";
-				//	}
+					if (errno != EAGAIN && errno != EWOULDBLOCK)
+					{
+						std::cerr << "Erreur accept\n";
+					}
 					continue;
 				}
 

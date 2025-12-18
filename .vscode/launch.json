@@ -5,11 +5,11 @@
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
-      "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
       "cwd": "/home/jegirard/Documents/Rang_05/ft_irc",
-      "program": "/home/jegirard/Documents/Rang_05/ft_irc/build/Debug/outDebug",
+      "program": "/home/jegirard/Documents/Rang_05/ft_irc/bin/ircserv",
+      "args": ["6667", "mypassword"],
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

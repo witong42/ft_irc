@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 11:24:08 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 11:33:43 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ public:
 		}
 	};
 	Server(int port, const char *password);
-	
+	void run();
 
 	void start();
 };

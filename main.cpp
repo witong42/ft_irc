@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 11:05:24 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 11:34:51 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,11 @@ int main(int argc, char *argv[])
 		std::cerr << "Usage: /ircserv <port> <password>" << std::endl;
 		return 1;
 	}
-	Server tmp = Server(22, argv[2]);
+	Server srv = Server(std::atoi(argv[1]), argv[2]);
+	srv.run();
+	
+	
+	
 	
 	std::cout << INTROC << "Starting IRC Server on port " << argv[1] << " with password " << argv[2] << DEFAULT << std::endl;
 	
