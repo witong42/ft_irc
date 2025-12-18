@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 16:38:43 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 19:01:20 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,7 +247,20 @@ bool Server::wait(){
 					std::cout << "Reçu (" << count << " octets): " << buffer;
 
 					// Echo - renvoyer les données au client
-					send(_fd_client, buffer, count, 0);
+					//send(_fd_client, buffer, count, 0);
+
+					    std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+
+    // On envoie la réponse au client
+    if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0) {
+        std::cerr << "Erreur send()" << std::endl;
+    }
+				
+
+					//close(_fd_client);
+
+
+					
 				}
 			}
 		}
