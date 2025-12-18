@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/17 15:28:29 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 11:27:29 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,16 @@
 #include <cctype>
 #include <cstring>
 #include <stdexcept>
-#define MAX_EVENTS 10
-#define BUFFER_SIZE 512
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/epoll.h>
+	
+#include <arpa/inet.h>
+#include <errno.h>
+
 
 
 Server::Server(int port, const char *password)
@@ -77,11 +85,10 @@ bool Server::IPv4bind()
 bool Server::AddSockette(){
 	
 	// 5. Ajouter le socket serveur à epoll
-	struct epoll_event ev, events[MAX_EVENTS];
-	ev.events = EPOLLIN; // Surveiller les événements de lecture
-	ev.data.fd = _fd;
+	_ev.events = EPOLLIN; // Surveiller les événements de lecture
+	_ev.data.fd = _fd;
 
-	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &ev) == -1)
+	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &_ev) == -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
 		close(_fd);
@@ -116,10 +123,10 @@ bool Server::Lisen(){
 				int _fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
 				if (_fd_client == -1)
 				{
-					if (errno != EAGAIN && errno != EWOULDBLOCK)
-					{
-						std::cerr << "Erreur accept\n";
-					}
+				//	if (errno != EAGAIN && errno != EWOULDBLOCK)
+				//	{
+				//		std::cerr << "Erreur accept\n";
+				//	}
 					continue;
 				}
 
@@ -130,12 +137,12 @@ bool Server::Lisen(){
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
 
 				// Rendre le socket client non-bloquant
-				set_nonblocking(_fd_client);
+				socketUnblock();
 
 				// Ajouter le client à epoll
-				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
-				ev.data.fd = _fd_client;
-				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &ev) == -1)
+				_ev.events = EPOLLIN | EPOLLET; // Edge-triggered
+				_ev.data.fd = _fd_client;
+				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &_ev) == -1)
 				{
 					std::cerr << "Erreur ajout client à epoll\n";
 					close(_fd_client);

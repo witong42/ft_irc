@@ -6,14 +6,20 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/17 15:24:54 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 11:05:24 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
+#define MAX_EVENTS 10
+#define BUFFER_SIZE 512
 
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
 #include "Server.cpp"
+
+
 
 #define DEFAULT "\033[0m"				// #fefcfcff
 #define GREEN "\033[0;38;2;121;200;88m" // #3da10eff
