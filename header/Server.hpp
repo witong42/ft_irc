@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 11:33:43 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 13:02:02 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,21 +29,23 @@
 class Server
 {
 private:
-	int _port; //port utilisé par le serveur
+
 	int _fd; // fichier de descripteur du socket
 	//int _fd_client; // fichier de descripteur du socket client
 	int _fd_epoll; // descripteur epoll
 	const char *_password; // mot de passe du serveur
-	int _domaine ; // domaine IPv4
-	int _type ; // type de socket TCP
+
 	struct epoll_event _ev, events[MAX_EVENTS];
+	struct sockaddr_in _address;
 	
 	bool check_port(const char *port); // vérifie la validité du port
 	bool createSocket();	// crée le socket
 	bool socketUnblock(); // met le socket en non-bloquant
 	bool IPv4bind(); // lie le socket à une adresse IPv4
+	bool listening(); // met le socket en écoute
 	bool AddSockette(); // ajoute le socket au epoll
-	bool Lisen(); // boucle principale du serveur
+	bool createPoll(); // crée le descripteur epoll
+	bool wait(); // boucle principale du serveur
 	bool CleanUp(); // nettoie les ressources utilisées
 
 public:

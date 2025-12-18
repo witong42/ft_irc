@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 12:11:20 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/18 13:02:31 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,14 @@ Server::Server(int port, const char *password)
 	{
 		throw std::invalid_argument("Invalid port number");
 	}
-	_port = port;
+	
 	_password = password;
-	_domaine = AF_INET;
-	_type = SOCK_STREAM;
+	
+	// Initialisation de l'adresse
+	std::memset(&_address, 0, sizeof(_address));
+	_address.sin_port = htons(port);
+	_address.sin_family = AF_INET;
+	_address.sin_addr.s_addr = INADDR_ANY;
 	
 	// Constructor implementation
 }
@@ -57,29 +61,44 @@ void Server::run()
 	{
 		throw std::runtime_error("Binding socket failed");
 	}
+	// Listening
+	if (!listening())
+	{
+		throw std::runtime_error("Listening on socket failed");
+	}
+	if (!createPoll())
+	{
+		throw std::runtime_error("Creating epoll instance failed");
+	}
 	if (!AddSockette())
 	{
 		throw std::runtime_error("Adding socket to epoll failed");
 	}
-	if (!Lisen())
+	if (!wait())
 	{
-		throw std::runtime_error("Listening failed");
+		throw std::runtime_error("Server wait loop failed");
 	}
 	CleanUp();
 }
 
 bool Server::createSocket()
 {
-	// Socket creation implementation
-	_fd = socket(_domaine, _type, 0);
+	// Crée la socket
+	_fd = socket(_address.sin_family, SOCK_STREAM, 0);
 	if (_fd < 0){
 
 		std::cerr << "Erreur création socket\n";
 		return false;
 	}
+	
+	// Configurer SO_REUSEADDR
 	int opt = 1;
 	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+	{
+		std::cerr << "Erreur setsockopt\n";
+		close(_fd);
 		return false;
+	}
 	return true;
 }
 
@@ -96,7 +115,29 @@ bool Server::socketUnblock()
 
 bool Server::IPv4bind()
 {
-	std::cout << "Serveur en écoute sur le port " << _port << "...\n";
+	// IPv4 bind implementation
+	if (bind(_fd, (struct sockaddr *)&_address, sizeof(_address)) < 0)
+	{
+		std::cerr << "Erreur bind\n";
+		close(_fd);
+		return false;
+	}
+	return true;
+}
+bool Server::listening(){
+	// Écoute des connexions entrantes
+	if (listen(_fd, 10) < 0)
+	{
+		std::cerr << "Erreur listen\n";
+		close(_fd);
+		return false;
+	}
+	std::cout << "Serveur en écoute sur le port " << ntohs(_address.sin_port) << "...\n";
+	return true;
+}
+
+
+bool Server::createPoll(){	
 	// IPv4 bind implementation
 	_fd_epoll = epoll_create1(0);
 	if (_fd_epoll == -1)
@@ -124,7 +165,7 @@ bool Server::AddSockette(){
 	return true;
 }
 
-bool Server::Lisen(){
+bool Server::wait(){
 	
 
 	// 6. Boucle principale
@@ -158,7 +199,7 @@ bool Server::Lisen(){
 
 				// Afficher info client
 				char client_ip[INET_ADDRSTRLEN];
-				inet_ntop(_domaine, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				std::cout << "Nouvelle connexion de " << client_ip
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
 
