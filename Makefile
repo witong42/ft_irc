@@ -6,12 +6,12 @@
 #    By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/27 15:19:44 by jegirard          #+#    #+#              #
-#    Updated: 2025/12/15 13:11:28 by jegirard         ###   ########.fr        #
+#    Updated: 2025/12/18 19:17:29 by jegirard         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Nom de l'exécutable
-NAME = icserv
+NAME = ircserv
 CXX = c++
 CXXFLAGS = -g -o0 -Wall -Wextra -Werror -std=c++98
 LDFLAGS = 
@@ -68,7 +68,7 @@ re: fclean all
 
 # Exécution du programme
 run: all
-	./$(BIN_DIR)/$(NAME)
+	./$(BIN_DIR)/$(NAME) 6667 localhost
 
 # Affichage des informations de debug
 debug:
