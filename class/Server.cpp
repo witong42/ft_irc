@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/19 10:01:36 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/19 12:07:26 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sstream>
+#include <vector>
+#include <map>
 
 Server::Server(int port, const char *password)
 {
@@ -247,10 +249,47 @@ bool Server::wait()
 				{
 					// Afficher les données reçues
 					buffer[count] = '\0';
-					 std::istringstream iss( buffer );
+					parseCommand(std::string(buffer), _fd_client);
+					
+					buffer[0] = 0;
+
+					// close(_fd_client);
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool Server::parseSwitchCommand(std::string cmd,std::string buffer, int _fd_client)
+{
+	
+
+	std::map<std::string, bool (*)(std::string, int)> commandMap;
+	commandMap["NICK"] = &handleNick;
+	commandMap["USER"] = &handleUser;
+	commandMap["JOIN"] = &handleJoin;
+	commandMap["PART"] = &handlePart;
+	commandMap["PRIVMSG"] = &handlePrivmsg;
+
+	
+	if (commandMap.find(cmd) != commandMap.end()) {
+		return commandMap[cmd](buffer, _fd_client);
+	} else {
+		std::cerr << "Commande non reconnue: " << cmd << std::endl;
+	}
+	return true;
+}
+
+bool Server::parseCommand(std::string buffer, int _fd_client)
+{
+	
+	
+	// Command parsing implementation
+	 std::istringstream iss( buffer );
 					std::string cmd;
 					std::getline(iss, cmd,' ') ;
-					std::cout << "Reçu (" << count << " octets): '" << cmd << "' from fd " << _fd_client << "\n";
+					std::cout << "fd " << _fd_client << " '"<< cmd << "' \n"<< iss.str()  <<" \n ";
 
 					// Echo - renvoyer les données au client
 					// send(_fd_client, buffer, count, 0);
@@ -262,15 +301,9 @@ bool Server::wait()
 					{
 						std::cerr << "Erreur send()" << std::endl;
 					}
-					buffer[0] = 0;
-
-					// close(_fd_client);
-				}
-			}
-		}
-	}
 	return true;
 }
+
 
 bool Server::CleanUp()
 {

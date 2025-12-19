@@ -48,6 +48,9 @@ private:
 	bool wait(); // boucle principale du serveur
 	bool CleanUp(); // nettoie les ressources utilisées
 
+	bool parseCommand(std::string buffer, int _fd_client); // parse les commandes reçues
+	bool parseSwitchCommand(std::string cmd,std::string buffer, int _fd_client); // switch pour les commandes
+
 public:
 	Server(const char *port, const char *password);
 	~Server();
