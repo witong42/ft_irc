@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/19 12:07:26 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/19 17:10:00 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,7 +226,6 @@ bool Server::wait()
 			{
 				int _fd_client = events[i].data.fd;
 				char buffer[BUFFER_SIZE];
-
 				ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
 
 				if (count == -1)
@@ -250,7 +249,6 @@ bool Server::wait()
 					// Afficher les données reçues
 					buffer[count] = '\0';
 					parseCommand(std::string(buffer), _fd_client);
-					
 					buffer[0] = 0;
 
 					// close(_fd_client);
@@ -260,6 +258,39 @@ bool Server::wait()
 	}
 	return true;
 }
+bool handleNick(std::string buffer, int fd_client)
+{
+	// Handle NICK command
+	std::cout << "Handling NICK command: " << buffer << fd_client << std::endl;
+	return true;
+}
+bool handleUser(std::string buffer, int fd_client)
+{
+	// Handle USER command
+	std::cout << "Handling USER command: " << buffer << fd_client << std::endl;
+	return true;
+}
+bool handleJoin(std::string buffer, int fd_client)
+{
+	// Handle JOIN command
+	std::cout << "Handling JOIN command: " << buffer << fd_client << std::endl;
+	return true;
+}
+bool handlePart(std::string buffer, int fd_client)
+{
+	// Handle PART command
+	std::cout << "Handling PART command: " << buffer << fd_client 	<< std::endl;
+	return true;
+}
+bool handlePrivmsg(std::string buffer, int fd_client)
+{
+	// Handle PRIVMSG command
+	std::cout << "Handling PRIVMSG command: " << buffer <<fd_client<< std::endl;
+	return true;
+}
+
+
+
 
 bool Server::parseSwitchCommand(std::string cmd,std::string buffer, int _fd_client)
 {
@@ -276,7 +307,7 @@ bool Server::parseSwitchCommand(std::string cmd,std::string buffer, int _fd_clie
 	if (commandMap.find(cmd) != commandMap.end()) {
 		return commandMap[cmd](buffer, _fd_client);
 	} else {
-		std::cerr << "Commande non reconnue: " << cmd << std::endl;
+		//std::cerr << "Commande non reconnue: " << cmd << std::endl;
 	}
 	return true;
 }
@@ -289,6 +320,7 @@ bool Server::parseCommand(std::string buffer, int _fd_client)
 	 std::istringstream iss( buffer );
 					std::string cmd;
 					std::getline(iss, cmd,' ') ;
+					
 					std::cout << "fd " << _fd_client << " '"<< cmd << "' \n"<< iss.str()  <<" \n ";
 
 					// Echo - renvoyer les données au client

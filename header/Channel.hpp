@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2025/12/19 12:34:09 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/19 16:15:23 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ class Channel
 {
 	private:
 		std::string		_name;
-		std::string				_topic;
+		std::string		_topic;
 
 		// first bool is operator, second bool is invite
 		std::map<Client *, std::pair<bool, bool> >	_users;
