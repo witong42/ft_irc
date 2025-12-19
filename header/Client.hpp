@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2025/12/19 09:27:05 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/19 09:52:03 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,5 +52,4 @@ class Client
 		void				appendBuffer(const std::string &chunk);	// To store incoming data
 		void				clearBuffer();							// To wipe buffer after processing
 		void				reply(const std::string &msg);			// To write to the socket (_fd)
-};
 };
