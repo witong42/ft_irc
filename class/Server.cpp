@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 20:04:15 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/19 10:01:36 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,11 +247,11 @@ bool Server::wait()
 				{
 					// Afficher les données reçues
 					buffer[count] = '\0';
-					 std::istringstream iss( buffer ); 
+					 std::istringstream iss( buffer );
 					std::string cmd;
 					std::getline(iss, cmd,' ') ;
 					std::cout << "Reçu (" << count << " octets): '" << cmd << "' from fd " << _fd_client << "\n";
-					
+
 					// Echo - renvoyer les données au client
 					// send(_fd_client, buffer, count, 0);
 
