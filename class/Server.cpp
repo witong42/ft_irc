@@ -333,13 +333,12 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 	{
 		return cmdPass(parts, _fd_client);
 	}
-	std::map<std::string, bool (*)(std::vector<std::string>,int)> commandMap;
-	commandMap["NICK"] = &CmdNick;
-	commandMap["USER"] = &CmdUser;
-	commandMap["JOIN"] = &CmdJoin;
-	commandMap["PART"] = &CmdPart;
-	commandMap["PRIVMSG"] = &CmdPrivmsg;
-	
+	std::map<std::string, bool (std::vector<std::string>,int)> commandMap;
+//	commandMap["NICK"] = &CmdNick;
+//	commandMap["USER"] = &CmdUser;
+//	commandMap["JOIN"] = &CmdJoin;
+//	commandMap["PART"] = &CmdPart;
+	commandMap["PRIVMSG"] = &cmdPass;
 	
 	if (commandMap.find(cmd) != commandMap.end())
 	{
