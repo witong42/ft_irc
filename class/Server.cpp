@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/19 22:01:20 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/22 15:54:50 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,7 +351,7 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 	}
 	return true;
 }
-// Example command to test:
+// Example command to test: irssi
 // sev IRC 
 // /connect localhost 6667 pwd123
 
