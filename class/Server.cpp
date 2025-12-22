@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/22 15:54:50 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/22 18:43:13 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <iostream>
 #include <string>
 #include <iostream>
-#include "Server.hpp"
+
 #include <cctype>
 #include <cstring>
 #include <stdexcept>
@@ -30,9 +30,11 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "String.cpp"
+#include "String.hpp"
+#include "Server.hpp"
 
-Server::Server(int port, std::string password)
+
+Server::Server(int port, String password)
 {
 	if (port < 1 || port > 65535)
 	{
@@ -257,65 +259,65 @@ bool Server::wait()
 	}
 	return true;
 }
-bool CmdNick(std::vector<std::string> vector_buffer, int fd_client)
+bool CmdNick(std::vector<String> vector_buffer, Server server)
 {
 	// Handle NICK command
-	std::cout << "Handling NICK command: " << vector_buffer[1] << fd_client << std::endl;
+	std::cout << "Handling NICK command: " << vector_buffer[1] << server.getfd() << std::endl;
 	return true;
 }
-bool CmdUser(std::vector<std::string> vector_buffer, int fd_client)
+bool CmdUser(std::vector<String> vector_buffer, Server server)
 {
 	// Handle USER command
-	std::cout << "Handling USER command: " <<  vector_buffer[1]  << fd_client << std::endl;
+	std::cout << "Handling USER command: " <<  vector_buffer[1]  << server.getfd() << std::endl;
 	return true;
 }
-bool CmdJoin(std::vector<std::string> vector_buffer, int fd_client)
+bool CmdJoin(std::vector<String> vector_buffer, Server server)
 {
 	// Handle JOIN command
-	std::cout << "Handling JOIN command: " <<  vector_buffer[1]  << fd_client << std::endl;
+	std::cout << "Handling JOIN command: " <<  vector_buffer[1]  << server.getfd() << std::endl;
 	return true;
 }
-bool CmdPart(std::vector<std::string> vector_buffer, int fd_client)
+bool CmdPart(std::vector<String> vector_buffer, Server server)
 {
 	// Handle PART command
-	std::cout << "Handling PART command: " <<  vector_buffer[1]  << fd_client << std::endl;
+	std::cout << "Handling PART command: " <<  vector_buffer[1]  << server.getfd() << std::endl;
 	return true;
 }
-bool CmdPrivmsg(std::vector<std::string> vector_buffer, int fd_client)
+bool CmdPrivmsg(std::vector<String> vector_buffer,  Server server)
 {
 	// Handle PRIVMSG command
-	std::cout << "Handling PRIVMSG command: " <<  vector_buffer[1]  << fd_client << std::endl;
+	std::cout << "Handling PRIVMSG command: " <<  vector_buffer[1]  << server.getfd() << std::endl;
 	return true;
 }
-bool CmdPassw(std::vector<std::string> vector_buffer, int fd_client)
+bool CmdPassw(std::vector<String> vector_buffer,  Server server)
 {
 	// Handle PASS command
 	if ( vector_buffer[1] != "")
 	{
 		std::string password =vector_buffer[1]; // Extract password after "PASS "
 		// Here you would typically check the password against the server's password
-		std::cout << "Received PASS command with password: " << password << " from fd: " << fd_client << std::endl;
+		std::cout << "Received PASS command with password: " << password << " from fd: " << server.getfd() << std::endl;
 	}
 	else
 	{
-		std::cerr << "Invalid PASS command format from fd: " << fd_client << std::endl;
+		std::cerr << "Invalid PASS command format from fd: " << server.getfd() << std::endl;
 	}
-	std::cout << "Handling PASS command: " << vector_buffer[1] << fd_client << std::endl;
+	std::cout << "Handling PASS command: " << vector_buffer[1] << server.getfd() << std::endl;
 	return true;
 }
-bool Server::cmdPass(std::vector<std::string> vector_buffer, int fd_client)
+bool Server::checkPassword(String password)
 {
 	// Handle PASS command
-	if ( vector_buffer[1] == _password)
+	if ( password == _password)
 	{
-		std::string password =vector_buffer[1]; // Extract password after "PASS "
+		
 		// Here you would typically check the password against the server's password
-		std::cout << "Received PASS command with password: " << _password << " from fd: " << fd_client << std::endl;
+		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd << std::endl;
 		return true;
 	}
 	else
 	{
-		std::cerr << "Invalid PASS command format from fd: " << fd_client << std::endl;
+		std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
 		return false;
 	}
 	return true;
@@ -326,14 +328,11 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 {
 	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "' fd: " << _fd_client << std::endl;
 	String str(buffer);
-	std::vector<std::string> parts = str.split(" ");
+	std::vector<String> parts = str.split(" ");
 	if(parts.size() == 0)
 		return true;
-	if(parts.size() >=2 && parts[0]=="PASS" )
-	{
-		return cmdPass(parts, _fd_client);
-	}
-	std::map<std::string, bool (*)(std::vector<std::string>,int)> commandMap;
+
+	std::map<std::string, bool (*)(std::vector<String>,Server)> commandMap;
 	commandMap["NICK"] = &CmdNick;
 	commandMap["USER"] = &CmdUser;
 	commandMap["JOIN"] = &CmdJoin;
@@ -343,7 +342,7 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 	
 	if (commandMap.find(cmd) != commandMap.end())
 	{
-		return commandMap[cmd](parts, _fd_client);
+		return commandMap[cmd](parts, *this);
 	}
 	else
 	{
@@ -363,7 +362,7 @@ bool Server::parseCommand(std::string buffer, int _fd_client)
 	std::string cmd;
 
 	String str(buffer);
-	std::vector<std::string> parts = str.split("\r\n");
+	std::vector<String> parts = str.split("\r\n");
 	for (size_t i = 0; i < parts.size(); ++i)
 	{
 		if (parts[i].empty())
@@ -427,4 +426,9 @@ Server::~Server()
 void Server::start()
 {
 	// Start server implementation
+}
+
+int &Server::getfd()
+{
+	return _fd;
 }

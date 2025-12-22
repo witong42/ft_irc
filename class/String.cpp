@@ -6,48 +6,43 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 18:50:54 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/19 20:48:13 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/22 18:43:57 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include <string>
 #include <vector>
+#include "String.hpp"
 
-class String
+String ::String(std::string str) : std::string(str) {};
+String ::String() : std::string() {};
+String ::String(const String &other) : std::string(other) {};
+
+std::vector<String> String ::split(const std::string &delimiter)
 {
-private:
-	std::string _str;
-	std::string _delimiter;
-	std::vector<std::string> _vector;
-	/* data */
-public:
-	String(std::string str) : _str(str) {};
-	
-	std::vector<std::string> split(const std::string &delimiter)
+	_delimiter = delimiter;
+	size_t start = 0;
+	size_t end = std::string::find(_delimiter);
+	while (end != std::string::npos)
 	{
-		_delimiter = delimiter;	
-		size_t start = 0;
-		size_t end = _str.find(_delimiter);
-		while (end != std::string::npos)
-		{
-			_vector.push_back(_str.substr(start, end - start));
-			start = end + _delimiter.length();
-			end = _str.find(_delimiter, start);
-		}
-		_vector.push_back(_str.substr(start, end));
-		return _vector;
+		_vector.push_back(std::string::substr(start, end - start));
+		start = end + _delimiter.length();
+		end = std::string::find(_delimiter, start);
 	}
-	std::string getNpos(size_t pos)
-	{
-		return (pos<_vector.size() ? _vector[pos] : "");
-	}
+	_vector.push_back(std::string::substr(start, end));
+	return _vector;
+}
+String String::getNpos(size_t pos)
+{
+	return (pos < _vector.size() ? _vector[pos] : "");
 	
-	~String();
-};
-std::string join (const std::vector<std::string> &elements, const std::string &delimiter)
+}
+
+std::string String ::join(const std::vector<String> &elements, const std::string &delimiter)
 {
 	std::string _str;
-	
+
 	for (size_t i = 0; i < elements.size(); ++i)
 	{
 		_str += elements[i];
@@ -59,9 +54,7 @@ std::string join (const std::vector<std::string> &elements, const std::string &d
 	return _str;
 }
 
-
-
-
 String::~String()
 {
 }
+
