@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
 /*   Updated: 2025/12/23 11:38:45 by witong           ###   ########.fr       */
@@ -23,7 +23,7 @@ class Channel
 {
 	private:
 		std::string		_name;
-		std::string				_topic;
+		std::string		_topic;
 
 		std::map<Client *, bool>	_users;
 		std::vector<Client *>	_invited;

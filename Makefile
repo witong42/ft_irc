@@ -6,7 +6,7 @@
 #    By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/27 15:19:44 by jegirard          #+#    #+#              #
-#    Updated: 2025/12/18 19:17:29 by jegirard         ###   ########.fr        #
+#    Updated: 2025/12/19 21:50:21 by jegirard         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,7 +68,7 @@ re: fclean all
 
 # Exécution du programme
 run: all
-	./$(BIN_DIR)/$(NAME) 6667 localhost
+	./$(BIN_DIR)/$(NAME) 6667 pwd123
 
 # Affichage des informations de debug
 debug:
@@ -78,7 +78,7 @@ debug:
 	@echo "Include  : $(INCLUDES)"
 #	@echo $(OBJ_DIR)/%.o: $(FUNCTION_DIR)/%.cpp | $(OBJ_DIR)
 #	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-	valgrind  --leak-check=full ./$(BIN_DIR)/$(NAME)
+	valgrind  --leak-check=full ./$(BIN_DIR)/$(NAME) 6667 pwd123
 	make fclean
 
 # Génération des dépendances automatiques

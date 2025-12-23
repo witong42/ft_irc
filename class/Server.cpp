@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/19 10:01:36 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/23 11:39:55 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <iostream>
 #include <string>
 #include <iostream>
-#include "Server.hpp"
+
 #include <cctype>
 #include <cstring>
 #include <stdexcept>
@@ -24,12 +24,20 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
-
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sstream>
+#include <vector>
+#include <map>
+#include "String.hpp"
+#include "Server.hpp"
+#include "Irc.hpp"
 
-Server::Server(int port, const char *password)
+// Example command to test: irssi
+// sev IRC
+// /connect localhost 6667 pwd123
+
+Server::Server(int port, String password)
 {
 	if (port < 1 || port > 65535)
 	{
@@ -46,7 +54,29 @@ Server::Server(int port, const char *password)
 
 	// Constructor implementation
 }
+Server::Server(const char *port, String password)
+{
+	if (!check_port(port))
+	{
+		throw std::invalid_argument("Invalid port number");
+	}
+	Server(std::atoi(port), password);
+	// Constructor implementation
+}
 
+Server::~Server()
+{
+	// Destructor implementation
+}
+void Server::start()
+{
+	// Start server implementation
+}
+
+int &Server::getfd()
+{
+	return _fd;
+}
 void Server::run()
 {
 	if (!createSocket())
@@ -168,6 +198,105 @@ bool Server::AddSockette()
 	return true;
 }
 
+bool Server::checkPassword(String password)
+{
+	// Handle PASS command
+	if (password == _password)
+	{
+
+		// Here you would typically check the password against the server's password
+		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd << std::endl;
+		return true;
+	}
+	else
+	{
+		std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_client)
+{
+	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "' fd: " << _fd_client << std::endl;
+	String str(buffer);
+	std::vector<String> parts = str.split(" ");
+	if (parts.size() == 0)
+		return true;
+
+	std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
+	commandMap["PASS"] = &Irc::CmdPassw;
+	commandMap["NICK"] = &Irc::CmdNick;
+	commandMap["USER"] = &Irc::CmdUser;
+	commandMap["JOIN"] = &Irc::CmdJoin;
+	commandMap["PART"] = &Irc::CmdPart;
+	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
+
+	if (commandMap.find(cmd) != commandMap.end())
+	{
+		return commandMap[cmd](parts, *this);
+	}
+	else
+	{
+		// std::cerr << "Commande non reconnue: " << cmd << std::endl;
+	}
+	return true;
+}
+
+bool Server::parseCommand(std::string buffer, int _fd_client)
+{
+
+	// Command parsing implementation
+	std::istringstream iss(buffer);
+	std::string cmd;
+
+	String str(buffer);
+	std::vector<String> parts = str.split("\r\n");
+	for (size_t i = 0; i < parts.size(); ++i)
+	{
+		if (parts[i].empty())
+			continue;
+		std::istringstream lineStream(parts[i]);
+		std::string lineCmd;
+		std::getline(lineStream, lineCmd, ' ');
+		parseSwitchCommand(lineCmd, parts[i], _fd_client);
+	}
+
+	// Echo - renvoyer les données au client
+	// send(_fd_client, buffer, count, 0);
+
+	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+
+	// On envoie la réponse au client
+	if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0)
+	{
+		std::cerr << "Erreur send()" << std::endl;
+	}
+	return true;
+}
+
+bool Server::CleanUp()
+{
+	// Nettoyage
+	close(_fd);
+	close(_fd_epoll);
+	return 0;
+}
+
+bool Server::check_port(const char *port)
+{
+	int len = std::strlen(port);
+	for (int i = 0; i < len; i++)
+	{
+		if (!isdigit(port[i]))
+			return false;
+	}
+	int port_num = std::atoi(port);
+	if (port_num < 1 || port_num > 65535)
+		return false;
+	return true;
+}
+
 bool Server::wait()
 {
 
@@ -224,7 +353,6 @@ bool Server::wait()
 			{
 				int _fd_client = events[i].data.fd;
 				char buffer[BUFFER_SIZE];
-
 				ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
 
 				if (count == -1)
@@ -245,70 +373,13 @@ bool Server::wait()
 				}
 				else
 				{
-					// Afficher les données reçues
+					// Traiter les données reçues
 					buffer[count] = '\0';
-					 std::istringstream iss( buffer );
-					std::string cmd;
-					std::getline(iss, cmd,' ') ;
-					std::cout << "Reçu (" << count << " octets): '" << cmd << "' from fd " << _fd_client << "\n";
-
-					// Echo - renvoyer les données au client
-					// send(_fd_client, buffer, count, 0);
-
-					std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-
-					// On envoie la réponse au client
-					if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0)
-					{
-						std::cerr << "Erreur send()" << std::endl;
-					}
+					parseCommand(std::string(buffer), _fd_client);
 					buffer[0] = 0;
-
-					// close(_fd_client);
 				}
 			}
 		}
 	}
 	return true;
-}
-
-bool Server::CleanUp()
-{
-	// Nettoyage
-	close(_fd);
-	close(_fd_epoll);
-	return 0;
-}
-
-bool Server::check_port(const char *port)
-{
-	int len = std::strlen(port);
-	for (int i = 0; i < len; i++)
-	{
-		if (!isdigit(port[i]))
-			return false;
-	}
-	int port_num = std::atoi(port);
-	if (port_num < 1 || port_num > 65535)
-		return false;
-	return true;
-}
-
-Server::Server(const char *port, const char *password)
-{
-	if (!check_port(port))
-	{
-		throw std::invalid_argument("Invalid port number");
-	}
-	Server(std::atoi(port), password);
-	// Constructor implementation
-}
-
-Server::~Server()
-{
-	// Destructor implementation
-}
-void Server::start()
-{
-	// Start server implementation
 }

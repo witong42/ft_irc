@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 11:34:51 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 11:37:36 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,10 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+
 #include "Server.cpp"
+#include "String.cpp"
+#include "Irc.cpp"
 
 
 
@@ -35,7 +38,7 @@ int main(int argc, char *argv[])
 		std::cerr << "Usage: /ircserv <port> <password>" << std::endl;
 		return 1;
 	}
-	Server srv = Server(std::atoi(argv[1]), argv[2]);
+	Server srv = Server(std::atoi(argv[1]), String (argv[2]));
 	srv.run();
 	
 	

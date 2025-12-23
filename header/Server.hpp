@@ -23,7 +23,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
-
+#include <string>
+#include <map>
+#include <vector>
+#include "String.hpp"
 
 
 class Server
@@ -33,7 +36,7 @@ private:
 	int _fd; // fichier de descripteur du socket
 	//int _fd_client; // fichier de descripteur du socket client
 	int _fd_epoll; // descripteur epoll
-	const char *_password; // mot de passe du serveur
+	String _password; // mot de passe du serveur
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
@@ -47,9 +50,13 @@ private:
 	bool createPoll(); // crée le descripteur epoll
 	bool wait(); // boucle principale du serveur
 	bool CleanUp(); // nettoie les ressources utilisées
+	bool CheckPassword(String *password); // vérifie le mot de passe
+	bool parseCommand(std::string buffer, int _fd_client); // parse les commandes reçues
+	bool parseSwitchCommand(std::string cmd,std::string buffer, int _fd_client); // switch pour les commandes
+	
 
 public:
-	Server(const char *port, const char *password);
+	Server(const char *port, String password);
 	~Server();
 	class InvalidPortException : public std::exception
 	{
@@ -58,7 +65,9 @@ public:
 			return "Invalid port number";
 		}
 	};
-	Server(int port, const char *password);
+	Server(int port, String password);
+	int &getfd();
+	bool checkPassword(String password);
 	void run();
 
 	void start();
