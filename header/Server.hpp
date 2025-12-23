@@ -26,7 +26,7 @@
 #include <string>
 #include <map>
 #include <vector>
-
+#include "String.hpp"
 
 
 class Server
@@ -36,7 +36,7 @@ private:
 	int _fd; // fichier de descripteur du socket
 	//int _fd_client; // fichier de descripteur du socket client
 	int _fd_epoll; // descripteur epoll
-	std::string _password; // mot de passe du serveur
+	String _password; // mot de passe du serveur
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
@@ -50,13 +50,13 @@ private:
 	bool createPoll(); // crée le descripteur epoll
 	bool wait(); // boucle principale du serveur
 	bool CleanUp(); // nettoie les ressources utilisées
-	bool CheckPassword(const char *password); // vérifie le mot de passe
+	bool CheckPassword(String *password); // vérifie le mot de passe
 	bool parseCommand(std::string buffer, int _fd_client); // parse les commandes reçues
 	bool parseSwitchCommand(std::string cmd,std::string buffer, int _fd_client); // switch pour les commandes
-	bool cmdPass(std::vector<std::string> vector_buffer, int fd_client);
+	
 
 public:
-	Server(const char *port, std::string password);
+	Server(const char *port, String password);
 	~Server();
 	class InvalidPortException : public std::exception
 	{
@@ -65,7 +65,9 @@ public:
 			return "Invalid port number";
 		}
 	};
-	Server(int port, std::string password);
+	Server(int port, String password);
+	int &getfd();
+	bool checkPassword(String password);
 	void run();
 
 	void start();
