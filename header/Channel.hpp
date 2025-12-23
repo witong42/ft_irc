@@ -6,12 +6,14 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2025/12/19 16:15:23 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 11:38:45 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include <string>
+#include <vector>
 #include <map>
 #include "Client.hpp"
 
@@ -23,8 +25,8 @@ class Channel
 		std::string		_name;
 		std::string		_topic;
 
-		// first bool is operator, second bool is invite
-		std::map<Client *, std::pair<bool, bool> >	_users;
+		std::map<Client *, bool>	_users;
+		std::vector<Client *>	_invited;
 
 		// MODE
 		bool					_isInviteOnly;		// +i
@@ -47,25 +49,36 @@ class Channel
 		void	setTopicRestricted(bool status);
 		void	setKey(const std::string &key);
 		void	setLimit(size_t limit);
+		void	removeLimit();
 
 		// Getters
 		const std::string	&getName() const;
 		const std::string	&getTopic() const;
 		const std::string	&getKey() const;
 		size_t				getLimit() const;
+		size_t				getUserCount() const;
+		std::string			getUserList() const; // needed for join
 
 		// Mode status
-		bool				isInviteOnly() const;
-		bool				isTopicRestricted() const;
-		bool				hasLimit() const;
-		bool				hasKey() const;
+		bool	isOperator(Client *user) const;
+		bool	isInviteOnly() const;
+		bool	isTopicRestricted() const;
+		bool	hasLimit() const;
+		bool	hasKey() const;
+		bool	hasUser(Client *user) const;
 
-		// Methods
+		// Mode operations
+		void	addOperator(Client *user);
+		void	removeOperator(Client *user);
+
+		// Actions
+		void	join(Client *user);
+		void	removeUser(Client *user);
 		void	kick(Client* kicker, Client *user);
 		void	invite(Client *user);
 		void	changeTopic(Client *user, std::string topic);
 		void	mode(char param);
-		void	join(Client *user);
-		void	sendPriv(Client *user, std::string msg);
-		void	receivePrive(Client *user, std::string mag);
+
+		void	broadcast(const std::string &msg);
+		void	broadcast(const std::string &msg, Client *excludeUser);
 };
