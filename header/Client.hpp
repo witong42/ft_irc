@@ -6,13 +6,15 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2025/12/19 10:00:43 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/23 12:31:40 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <string>
+#include <iostream>
+#include <sys/socket.h>
 
 class Client
 {
@@ -25,7 +27,7 @@ class Client
 
 		std::string _buffer;
 		bool	_isOperator;
-		bool	_isRegisted;
+		bool	_isRegistered;
 
 	public:
 		// Canonical Form
@@ -38,12 +40,14 @@ class Client
 		// Setters
 		void				setNickname(const std::string &nickname);
 		void				setUsername(const std::string &username);
-		void				setRegisted(bool status);
+		void				setRegistered(bool status);
 		void				setOperator(bool status);
 
 		// Getters
-		const std::string	&getNickname(void) const;
-		const std::string	&getUsername(void) const;
+		int					getFd() const;
+		const std::string	&getIp() const;
+		const std::string	&getNickname() const;
+		const std::string	&getUsername() const;
 		std::string			getBuffer() const;
 		bool				isRegistered() const;
 		bool				isOperator() const;
