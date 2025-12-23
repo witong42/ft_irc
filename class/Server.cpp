@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 11:39:55 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 14:06:22 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -223,18 +223,26 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 	std::vector<String> parts = str.split(" ");
 	if (parts.size() == 0)
 		return true;
-
+	cmd = parts[0];
 	std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
-	commandMap["PASS"] = &Irc::CmdPassw;
-	commandMap["NICK"] = &Irc::CmdNick;
-	commandMap["USER"] = &Irc::CmdUser;
-	commandMap["JOIN"] = &Irc::CmdJoin;
-	commandMap["PART"] = &Irc::CmdPart;
+	commandMap["PASS"]  = &Irc::CmdPassw;
+	commandMap["NICK"]  = &Irc::CmdNick;
+	commandMap["USER"]  = &Irc::CmdUser;
+	commandMap["JOIN"]  = &Irc::CmdJoin;
+	commandMap["PART"]  = &Irc::CmdPart;
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
 
 	if (commandMap.find(cmd) != commandMap.end())
-	{
-		return commandMap[cmd](parts, *this);
+	{	str.pop_front();
+		for ( size_t i=0; i < str.get_vector().size(); i++)
+		{
+			std::cout << "str[" << i << "]: '" << str.get_vector()[i] << "'" << std::endl;
+		}
+
+		
+		
+		return commandMap[cmd](str.get_vector(), *this);
+		
 	}
 	else
 	{
@@ -248,7 +256,7 @@ bool Server::parseCommand(std::string buffer, int _fd_client)
 
 	// Command parsing implementation
 	std::istringstream iss(buffer);
-	std::string cmd;
+	
 
 	String str(buffer);
 	std::vector<String> parts = str.split("\r\n");

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/22 17:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/22 18:37:41 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 13:47:53 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,11 @@ public:
 	String();
 	String(std::string str);
 	String(const String &other);
-	std::string join(const std::vector<String> &elements, const std::string &delimiter);
+	std::string join();
+	std::vector<String> get_vector();
 	std::vector<String> split(const std::string &delimiter);
 	String getNpos(size_t pos);
+	std::vector<String> pop_front(size_t n=1);
+	std::vector<String> pop_back(size_t n=1);
 	~String();
 };
