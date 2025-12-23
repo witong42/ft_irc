@@ -27,30 +27,39 @@
 #include <map>
 #include <vector>
 #include "String.hpp"
+#include "Client.hpp"
+
 
 class Server
 {
 private:
 	int _fd; // fichier de descripteur du socket
 	// int _fd_client; // fichier de descripteur du socket client
-	int _fd_epoll;	  // descripteur epoll
+	int _fd_epoll; // descripteur epoll
+	int _fd_client;
 	String _password; // mot de passe du serveur
+	String _SERVER_NAME; 
+
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
+	//std::vector<Client>*	_invited;
 
-	bool check_port(const char *port);											  // vérifie la validité du port
-	bool createSocket();														  // crée le socket
-	bool socketUnblock();														  // met le socket en non-bloquant
-	bool IPv4bind();															  // lie le socket à une adresse IPv4
-	bool listening();															  // met le socket en écoute
-	bool AddSockette();															  // ajoute le socket au epoll
-	bool createPoll();															  // crée le descripteur epoll
-	bool wait();																  // boucle principale du serveur
-	bool CleanUp();																  // nettoie les ressources utilisées
-	bool CheckPassword(String *password);										  // vérifie le mot de passe
-	bool parseCommand(std::string buffer, int _fd_client);						  // parse les commandes reçues
-	bool parseSwitchCommand(std::string cmd, std::string buffer, int _fd_client); // switch pour les commandes
+
+
+	bool check_port(const char *port);							  // vérifie la validité du port
+	bool createSocket();										  // crée le socket
+	bool socketUnblock();										  // met le socket en non-bloquant
+	bool IPv4bind();											  // lie le socket à une adresse IPv4
+	bool listening();											  // met le socket en écoute
+	bool AddSockette();											  // ajoute le socket au epoll
+	bool createPoll();											  // crée le descripteur epoll
+	bool wait();												  // boucle principale du serveur
+	bool CleanUp();												  // nettoie les ressources utilisées
+	bool parseCommand(std::string buffer);						  // parse les commandes reçues
+	bool parseSwitchCommand(std::string cmd, std::string buffer); // switch pour les commandes
+	bool AddClient(int fd, std::string ip);				  // ajoute un client à la liste des connectés	
+
 
 public:
 	Server(const char *port, String password);
@@ -62,10 +71,12 @@ public:
 			return "Invalid port number";
 		}
 	};
+	bool SendClientMessage(int fd_client, std::string * codes);
+	
 	Server(int port, String password);
 	int &getfd();
-	bool checkPassword(String password);
-	void run();
+	bool CheckPassword(String password);
+	void Run();
 
-	void start();
+	void Start();
 };

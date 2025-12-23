@@ -6,15 +6,21 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 14:44:35 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 19:12:32 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
+#include <vector>
 #include "Irc.hpp"
+#include "String.hpp"
+#include "Server.hpp"
+#include "Client.hpp"
+
 
 
 bool Irc::CmdNick(std::vector<String> argument, Server server)
+
 {
 	if (argument.size() < 1)
 	{
@@ -82,7 +88,7 @@ bool Irc::CmdPassw(std::vector<String> argument,  Server server){
 
 	if( argument[0] != "")
 	{
-		if (server.checkPassword(argument[0]))
+		if (server.CheckPassword(argument[0]))
 		{
 			std::cout << "Password accepted for fd: " << server.getfd() << std::endl;
 			return true;

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 11:37:36 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 19:03:48 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	Server srv = Server(std::atoi(argv[1]), String (argv[2]));
-	srv.run();
+	srv.Run();
 	
 	
 	

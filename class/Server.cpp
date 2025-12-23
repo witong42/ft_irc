@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 14:06:22 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 19:47:43 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 #include "String.hpp"
 #include "Server.hpp"
 #include "Irc.hpp"
+#include "Client.hpp"
 
 // Example command to test: irssi
 // sev IRC
@@ -68,7 +69,7 @@ Server::~Server()
 {
 	// Destructor implementation
 }
-void Server::start()
+void Server::Start()
 {
 	// Start server implementation
 }
@@ -77,7 +78,7 @@ int &Server::getfd()
 {
 	return _fd;
 }
-void Server::run()
+void Server::Run()
 {
 	if (!createSocket())
 	{
@@ -183,11 +184,9 @@ bool Server::createPoll()
 
 bool Server::AddSockette()
 {
-
-	// 5. Ajouter le socket serveur à epoll
-	_ev.events = EPOLLIN; // Surveiller les événements de lecture
-	_ev.data.fd = _fd;
 	// Ajouter le socket serveur à epoll
+	_ev.events = EPOLLIN; // Surveiller les événements de lecture
+	_ev.data.fd = _fd;		// Ajouter le socket serveur à epoll
 	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &_ev) < -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
@@ -198,25 +197,43 @@ bool Server::AddSockette()
 	return true;
 }
 
-bool Server::checkPassword(String password)
+bool Server::CheckPassword(String password)
 {
-	// Handle PASS command
 	if (password == _password)
 	{
-
 		// Here you would typically check the password against the server's password
 		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd << std::endl;
-		return true;
-	}
-	else
-	{
+	//	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+
+		// On envoie la réponse au client
+		
+		std::string codes[4] = {"001", "002", "003", "004"};
+		if (!SendClientMessage(_fd_client, codes))	
+		{
+			
+			std::cerr << "Erreur send()" << std::endl;
+		}
 		std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
 		return false;
 	}
 	return true;
 }
+bool Server::SendClientMessage(int fd_client, std::string* codes)
+{
+	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
+	for ( size_t i = 1; i < codes->size(); ++i)
+	{
+		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
+	}
+	if (send(fd_client, message.c_str(), message.length(), 0) < 0)
+	{
+		std::cerr << "Erreur send()" << std::endl;
+		return false;
+	}
+	return true;
+}
 
-bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_client)
+bool Server::parseSwitchCommand(std::string cmd, std::string buffer)
 {
 	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "' fd: " << _fd_client << std::endl;
 	String str(buffer);
@@ -225,24 +242,17 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 		return true;
 	cmd = parts[0];
 	std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
-	commandMap["PASS"]  = &Irc::CmdPassw;
-	commandMap["NICK"]  = &Irc::CmdNick;
-	commandMap["USER"]  = &Irc::CmdUser;
-	commandMap["JOIN"]  = &Irc::CmdJoin;
-	commandMap["PART"]  = &Irc::CmdPart;
+	commandMap["PASS"] = &Irc::CmdPassw;
+	commandMap["NICK"] = &Irc::CmdNick;
+	commandMap["USER"] = &Irc::CmdUser;
+	commandMap["JOIN"] = &Irc::CmdJoin;
+	commandMap["PART"] = &Irc::CmdPart;
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
 
 	if (commandMap.find(cmd) != commandMap.end())
-	{	str.pop_front();
-		for ( size_t i=0; i < str.get_vector().size(); i++)
-		{
-			std::cout << "str[" << i << "]: '" << str.get_vector()[i] << "'" << std::endl;
-		}
-
-		
-		
+	{
+		str.pop_front();
 		return commandMap[cmd](str.get_vector(), *this);
-		
 	}
 	else
 	{
@@ -251,12 +261,11 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 	return true;
 }
 
-bool Server::parseCommand(std::string buffer, int _fd_client)
+bool Server::parseCommand(std::string buffer)
 {
 
 	// Command parsing implementation
 	std::istringstream iss(buffer);
-	
 
 	String str(buffer);
 	std::vector<String> parts = str.split("\r\n");
@@ -267,19 +276,12 @@ bool Server::parseCommand(std::string buffer, int _fd_client)
 		std::istringstream lineStream(parts[i]);
 		std::string lineCmd;
 		std::getline(lineStream, lineCmd, ' ');
-		parseSwitchCommand(lineCmd, parts[i], _fd_client);
+		parseSwitchCommand(lineCmd, parts[i]);
 	}
 
 	// Echo - renvoyer les données au client
 	// send(_fd_client, buffer, count, 0);
 
-	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-
-	// On envoie la réponse au client
-	if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0)
-	{
-		std::cerr << "Erreur send()" << std::endl;
-	}
 	return true;
 }
 
@@ -339,11 +341,14 @@ bool Server::wait()
 
 				// Afficher info client
 				char client_ip[INET_ADDRSTRLEN];
+				
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				std::cout << "Nouvelle connexion de " << client_ip
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
 				std::cout << "Client fd: " << _fd_client << "\n";
-
+				
+				
+				
 				// Rendre le socket client non-bloquant
 				socketUnblock();
 
@@ -383,11 +388,23 @@ bool Server::wait()
 				{
 					// Traiter les données reçues
 					buffer[count] = '\0';
-					parseCommand(std::string(buffer), _fd_client);
+					parseCommand(std::string(buffer));
 					buffer[0] = 0;
 				}
 			}
 		}
 	}
 	return true;
+}
+bool Server::AddClient(int fd, std::string ip)
+{
+	Client* newClient;
+	std::cout << "Adding client with fd: " << fd << " and IP: " << ip << std::endl;
+	 newClient = new Client(fd, ip);
+	return  newClient->isRegistered();
+
+	//_invited.push_back(newClient);
+	//_invited.push_back(new Client(fd, ip));
+	// Here you would typically create a new Client object and add it to the _connected vector
+
 }
