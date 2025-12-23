@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2025/12/23 12:22:28 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/23 12:31:40 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ class Client
 		// Setters
 		void				setNickname(const std::string &nickname);
 		void				setUsername(const std::string &username);
-		void				setRegisted(bool status);
+		void				setRegistered(bool status);
 		void				setOperator(bool status);
 
 		// Getters
