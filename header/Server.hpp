@@ -56,7 +56,7 @@ private:
 	
 
 public:
-	Server(const char *port, std::string password);
+	Server(const char *port, String password);
 	~Server();
 	class InvalidPortException : public std::exception
 	{
@@ -65,7 +65,7 @@ public:
 			return "Invalid port number";
 		}
 	};
-	Server(int port, std::string password);
+	Server(int port, String password);
 	int &getfd();
 	bool checkPassword(String password);
 	void run();

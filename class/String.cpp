@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 18:50:54 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/22 18:43:57 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 10:45:35 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ std::vector<String> String ::split(const std::string &delimiter)
 }
 String String::getNpos(size_t pos)
 {
-	return (pos < _vector.size() ? _vector[pos] : "");
+	return (pos < _vector.size() ? _vector[pos] : String("")	);
 	
 }
 
