@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/24 00:44:38 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/24 13:11:10 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 #include "String.hpp"
 #include "Server.hpp"
 #include "Irc.hpp"
+#include "Client.hpp"
 
 // Example command to test: irssi
 // sev IRC
@@ -68,7 +69,7 @@ Server::~Server()
 {
 	// Destructor implementation
 }
-void Server::start()
+void Server::Start()
 {
 	// Start server implementation
 }
@@ -77,7 +78,7 @@ int &Server::getfd()
 {
 	return _fd;
 }
-void Server::run()
+void Server::Run()
 {
 	if (!createSocket())
 	{
@@ -183,11 +184,9 @@ bool Server::createPoll()
 
 bool Server::AddSockette()
 {
-
-	// 5. Ajouter le socket serveur à epoll
-	_ev.events = EPOLLIN; // Surveiller les événements de lecture
-	_ev.data.fd = _fd;
 	// Ajouter le socket serveur à epoll
+	_ev.events = EPOLLIN; // Surveiller les événements de lecture
+	_ev.data.fd = _fd;		// Ajouter le socket serveur à epoll
 	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &_ev) < -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
@@ -198,32 +197,50 @@ bool Server::AddSockette()
 	return true;
 }
 
-bool Server::checkPassword(String password)
+bool Server::CheckPassword(String password)
 {
-	// Handle PASS command
 	if (password == _password)
 	{
-
 		// Here you would typically check the password against the server's password
 		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd << std::endl;
-		return true;
-	}
-	else
-	{
+	//	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+
+		// On envoie la réponse au client
+
+		std::string codes[4] = {"001", "002", "003", "004"};
+		if (!SendClientMessage(_fd_client, codes))
+		{
+
+			std::cerr << "Erreur send()" << std::endl;
+		}
 		std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
 		return false;
 	}
 	return true;
 }
+bool Server::SendClientMessage(int fd_client, std::string* codes)
+{
+	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
+	for ( size_t i = 1; i < codes->size(); ++i)
+	{
+		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
+	}
+	if (send(fd_client, message.c_str(), message.length(), 0) < 0)
+	{
+		std::cerr << "Erreur send()" << std::endl;
+		return false;
+	}
+	return true;
+}
 
-bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_client)
+bool Server::parseSwitchCommand(std::string cmd, std::string buffer)
 {
 	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "' fd: " << _fd_client << std::endl;
 	String str(buffer);
 	std::vector<String> parts = str.split(" ");
 	if (parts.size() == 0)
 		return true;
-
+	cmd = parts[0];
 	std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
 	commandMap["PASS"] = &Irc::CmdPassw;
 	commandMap["NICK"] = &Irc::CmdNick;
@@ -234,7 +251,8 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 
 	if (commandMap.find(cmd) != commandMap.end())
 	{
-		return commandMap[cmd](parts, *this);
+		str.pop_front();
+		return commandMap[cmd](str.get_vector(), *this);
 	}
 	else
 	{
@@ -243,12 +261,11 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_cli
 	return true;
 }
 
-bool Server::parseCommand(std::string buffer, int _fd_client)
+bool Server::parseCommand(std::string buffer)
 {
 
 	// Command parsing implementation
 	std::istringstream iss(buffer);
-	std::string cmd;
 
 	String str(buffer);
 	std::vector<String> parts = str.split("\r\n");
@@ -259,19 +276,12 @@ bool Server::parseCommand(std::string buffer, int _fd_client)
 		std::istringstream lineStream(parts[i]);
 		std::string lineCmd;
 		std::getline(lineStream, lineCmd, ' ');
-		parseSwitchCommand(lineCmd, parts[i], _fd_client);
+		parseSwitchCommand(lineCmd, parts[i]);
 	}
 
 	// Echo - renvoyer les données au client
 	// send(_fd_client, buffer, count, 0);
 
-	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-
-	// On envoie la réponse au client
-	if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0)
-	{
-		std::cerr << "Erreur send()" << std::endl;
-	}
 	return true;
 }
 
@@ -331,10 +341,13 @@ bool Server::wait()
 
 				// Afficher info client
 				char client_ip[INET_ADDRSTRLEN];
+
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				std::cout << "Nouvelle connexion de " << client_ip
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
 				std::cout << "Client fd: " << _fd_client << "\n";
+
+
 
 				// Rendre le socket client non-bloquant
 				socketUnblock();
@@ -375,7 +388,7 @@ bool Server::wait()
 				{
 					// Traiter les données reçues
 					buffer[count] = '\0';
-					parseCommand(std::string(buffer), _fd_client);
+					parseCommand(std::string(buffer));
 					buffer[0] = 0;
 				}
 			}
@@ -383,173 +396,15 @@ bool Server::wait()
 	}
 	return true;
 }
-bool CmdNick(std::vector<std::string> vector_buffer, int fd_client)
+bool Server::AddClient(int fd, std::string ip)
 {
-	// Handle NICK command
-	std::cout << "Handling NICK command: " << vector_buffer[1] << fd_client << std::endl;
-	return true;
-}
-bool CmdUser(std::vector<std::string> vector_buffer, int fd_client)
-{
-	// Handle USER command
-	std::cout << "Handling USER command: " <<  vector_buffer[1]  << fd_client << std::endl;
-	return true;
-}
-bool CmdJoin(std::vector<std::string> vector_buffer, int fd_client)
-{
-	// Handle JOIN command
-	std::cout << "Handling JOIN command: " <<  vector_buffer[1]  << fd_client << std::endl;
-	return true;
-}
-bool CmdPart(std::vector<std::string> vector_buffer, int fd_client)
-{
-	// Handle PART command
-	std::cout << "Handling PART command: " <<  vector_buffer[1]  << fd_client << std::endl;
-	return true;
-}
-bool CmdPrivmsg(std::vector<std::string> vector_buffer, int fd_client)
-{
-	// Handle PRIVMSG command
-	std::cout << "Handling PRIVMSG command: " <<  vector_buffer[1]  << fd_client << std::endl;
-	return true;
-}
-bool CmdPassw(std::vector<std::string> vector_buffer, int fd_client)
-{
-	// Handle PASS command
-	if ( vector_buffer[1] != "")
-	{
-		std::string password =vector_buffer[1]; // Extract password after "PASS "
-		// Here you would typically check the password against the server's password
-		std::cout << "Received PASS command with password: " << password << " from fd: " << fd_client << std::endl;
-	}
-	else
-	{
-		std::cerr << "Invalid PASS command format from fd: " << fd_client << std::endl;
-	}
-	std::cout << "Handling PASS command: " << vector_buffer[1] << fd_client << std::endl;
-	return true;
-}
-bool Server::cmdPass(std::vector<std::string> vector_buffer, int fd_client)
-{
-	// Handle PASS command
-	if ( vector_buffer[1] == _password)
-	{
-		std::string password =vector_buffer[1]; // Extract password after "PASS "
-		// Here you would typically check the password against the server's password
-		std::cout << "Received PASS command with password: " << _password << " from fd: " << fd_client << std::endl;
-		return true;
-	}
-	else
-	{
-		std::cerr << "Invalid PASS command format from fd: " << fd_client << std::endl;
-		return false;
-	}
-	return true;
-}
+	Client* newClient;
+	std::cout << "Adding client with fd: " << fd << " and IP: " << ip << std::endl;
+	 newClient = new Client(fd, ip);
+	return  newClient->isRegistered();
 
+	//_invited.push_back(newClient);
+	//_invited.push_back(new Client(fd, ip));
+	// Here you would typically create a new Client object and add it to the _connected vector
 
-bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int _fd_client)
-{
-	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "' fd: " << _fd_client << std::endl;
-	String str(buffer);
-	std::vector<std::string> parts = str.split(" ");
-	if(parts.size() == 0)
-		return true;
-	if(parts.size() >=2 && parts[0]=="PASS" )
-	{
-		return cmdPass(parts, _fd_client);
-	}
-	std::map<std::string, bool (std::vector<std::string>,int)> commandMap;
-//	commandMap["NICK"] = &CmdNick;
-//	commandMap["USER"] = &CmdUser;
-//	commandMap["JOIN"] = &CmdJoin;
-//	commandMap["PART"] = &CmdPart;
-	commandMap["PRIVMSG"] = &cmdPass;
-
-	if (commandMap.find(cmd) != commandMap.end())
-	{
-		return commandMap[cmd](parts, _fd_client);
-	}
-	else
-	{
-		// std::cerr << "Commande non reconnue: " << cmd << std::endl;
-	}
-	return true;
-}
-// Example command to test:
-// sev IRC
-// /connect localhost 6667 pwd123
-
-bool Server::parseCommand(std::string buffer, int _fd_client)
-{
-
-	// Command parsing implementation
-	std::istringstream iss(buffer);
-	std::string cmd;
-
-	String str(buffer);
-	std::vector<std::string> parts = str.split("\r\n");
-	for (size_t i = 0; i < parts.size(); ++i)
-	{
-		if (parts[i].empty())
-			continue;
-		std::istringstream lineStream(parts[i]);
-		std::string lineCmd;
-		std::getline(lineStream, lineCmd, ' ');
-		parseSwitchCommand(lineCmd, parts[i], _fd_client);
-	}
-
-
-	// Echo - renvoyer les données au client
-	// send(_fd_client, buffer, count, 0);
-
-	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-
-	// On envoie la réponse au client
-	if (send(_fd_client, reply.c_str(), reply.length(), 0) < 0)
-	{
-		std::cerr << "Erreur send()" << std::endl;
-	}
-	return true;
-}
-
-bool Server::CleanUp()
-{
-	// Nettoyage
-	close(_fd);
-	close(_fd_epoll);
-	return 0;
-}
-
-bool Server::check_port(const char *port)
-{
-	int len = std::strlen(port);
-	for (int i = 0; i < len; i++)
-	{
-		if (!isdigit(port[i]))
-			return false;
-	}
-	int port_num = std::atoi(port);
-	if (port_num < 1 || port_num > 65535)
-		return false;
-	return true;
-}
-
-Server::Server(const char *port, std::string password)
-{
-	if (!check_port(port))
-	{
-		throw std::invalid_argument("Invalid port number");
-	}
-	Server(std::atoi(port), password);
-	// Constructor implementation
-}
-
-Server::~Server()
-{
-	// Destructor implementation
-}
-void Server::start()
-{
-	// Start server implementation
 }

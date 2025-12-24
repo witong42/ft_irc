@@ -6,16 +6,14 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 11:36:13 by jegirard         ###   ########.fr       */
+/*   Updated: 2025/12/23 19:28:18 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include <vector>
 #include "String.hpp"
-#include "Server.hpp"
-
-
+//#include "Server.hpp"
 
 
 class Irc
