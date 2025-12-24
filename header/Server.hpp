@@ -26,7 +26,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "String.hpp"
+#include "../header/String.hpp"
 #include "Client.hpp"
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 512

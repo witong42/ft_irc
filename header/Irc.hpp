@@ -12,8 +12,8 @@
 
 #pragma once
 #include <vector>
-#include "String.hpp"
-#include "Server.hpp"
+#include "../header/String.hpp"
+#include "../header/Server.hpp"
 
 
 class Irc

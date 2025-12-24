@@ -29,9 +29,9 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "String.hpp"
-#include "Server.hpp"
-#include "Irc.hpp"
+#include "../header/String.hpp"
+#include "../header/Server.hpp"
+#include "../header/Irc.hpp"
 #include "../header/Client.hpp"
 
 // Example command to test: irssi

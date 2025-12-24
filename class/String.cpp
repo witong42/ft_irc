@@ -12,7 +12,7 @@
 
 #include <string>
 #include <vector>
-#include "String.hpp"
+#include "../header/String.hpp"
 #include <iostream>
 
 String ::String(std::string str) : std::string(str) {};
