@@ -13,7 +13,7 @@
 #pragma once
 #include <vector>
 #include "String.hpp"
-//#include "Server.hpp"
+#include "Server.hpp"
 
 
 class Irc

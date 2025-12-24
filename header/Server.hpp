@@ -28,7 +28,8 @@
 #include <vector>
 #include "String.hpp"
 #include "Client.hpp"
-
+#define MAX_EVENTS 10
+#define BUFFER_SIZE 512
 
 class Server
 {
@@ -43,7 +44,7 @@ private:
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
-	//std::vector<Client>*	_invited;
+	std::vector<Client>*	_invited;
 
 
 

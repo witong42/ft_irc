@@ -11,17 +11,16 @@
 /* ************************************************************************** */
 
 
-#define MAX_EVENTS 10
-#define BUFFER_SIZE 512
+
 
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
 
-#include "Server.cpp"
-#include "String.cpp"
-#include "Irc.cpp"
-
+#include "Server.hpp"
+#include "String.hpp"
+#include "Irc.hpp"
+#include "Client.hpp"
 
 
 #define DEFAULT "\033[0m"				// #fefcfcff
