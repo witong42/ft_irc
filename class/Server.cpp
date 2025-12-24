@@ -29,10 +29,10 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "String.hpp"
-#include "Server.hpp"
-#include "Irc.hpp"
-#include "Client.hpp"
+#include "../header/String.hpp"
+#include "../header/Server.hpp"
+#include "../header/Irc.hpp"
+#include "../header/Client.hpp"
 
 // Example command to test: irssi
 // sev IRC
@@ -403,7 +403,7 @@ bool Server::AddClient(int fd, std::string ip)
 	 newClient = new Client(fd, ip);
 	return  newClient->isRegistered();
 
-	//_invited.push_back(newClient);
+	_invited->push_back(*newClient);
 	//_invited.push_back(new Client(fd, ip));
 	// Here you would typically create a new Client object and add it to the _connected vector
 

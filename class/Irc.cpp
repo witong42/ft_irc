@@ -13,9 +13,9 @@
 #include <iostream>
 #include <vector>
 #include "Irc.hpp"
-#include "String.hpp"
-#include "Server.hpp"
-#include "Client.hpp"
+#include "../header/String.hpp"
+#include "../header/Server.hpp"
+#include "../header/Client.hpp"
 
 
 

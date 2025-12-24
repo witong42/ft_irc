@@ -1,19 +1,7 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/11/27 15:19:44 by jegirard          #+#    #+#              #
-#    Updated: 2025/12/19 21:50:21 by jegirard         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 # Nom de l'exécutable
 NAME = ircserv
 CXX = c++
-CXXFLAGS = -g -o0 -Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -g -O0 -Wall -Wextra -Werror -std=c++98
 LDFLAGS = 
 
 # Répertoires
@@ -24,32 +12,41 @@ FUNCTION_DIR = .
 BIN_DIR = bin
 OBJ_DIR = bin/obj
 
-
 # Fichiers sources
-# SRCS = $(wildcard $(FUNCTION_DIR)/*.cpp)
 SRCS = $(FUNCTION_DIR)/main.cpp
+CLASS_List = Channel Client Irc Server String
+SRCS2 = $(patsubst %,$(CLASS_DIR)/%.cpp,$(CLASS_List))
+
+# Fichiers objets
 OBJS = $(patsubst $(FUNCTION_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
+OBJS2 = $(patsubst $(CLASS_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS2))
+ALL_OBJS = $(OBJS) $(OBJS2)
 
 # Chemins d'inclusion
-INCLUDES = -I ./$(HEADER_DIR) -I ./$(TEMPLATE_DIR) -I ./$(CLASS_DIR)
+INCLUDES = -I./$(HEADER_DIR) -I./$(TEMPLATE_DIR) -I./$(CLASS_DIR)
 
 # Règle par défaut
 all: $(BIN_DIR)/$(NAME)
 
 # Création de l'exécutable
-$(BIN_DIR)/$(NAME): $(OBJS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $@ $(LDFLAGS)
+$(BIN_DIR)/$(NAME): $(ALL_OBJS) | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $(ALL_OBJS) -o $@ $(LDFLAGS)
 	@echo "✓ Compilation terminée : $@"
 
-# Compilation des fichiers .cpp en .o
+# Compilation des fichiers .cpp en .o (fonction main.cpp)
 $(OBJ_DIR)/%.o: $(FUNCTION_DIR)/%.cpp | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 	@echo "✓ Compilé : $<"
 
-# Création des répertoires nécessaires
+# Compilation des fichiers .cpp en .o (classes)
+$(OBJ_DIR)/%.o: $(CLASS_DIR)/%.cpp | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	@echo "✓ Compilé : $<"
 
+# Création des répertoires nécessaires
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
+
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
@@ -73,17 +70,15 @@ run: all
 # Affichage des informations de debug
 debug:
 	make re
-	@echo "Sources  : $(SRCS)"
-	@echo "Objets   : $(OBJS)"
+	@echo "Sources  : $(SRCS) $(SRCS2)"
+	@echo "Objets   : $(ALL_OBJS)"
 	@echo "Include  : $(INCLUDES)"
-#	@echo $(OBJ_DIR)/%.o: $(FUNCTION_DIR)/%.cpp | $(OBJ_DIR)
-#	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-	valgrind  --leak-check=full ./$(BIN_DIR)/$(NAME) 6667 pwd123
+	valgrind --leak-check=full ./$(BIN_DIR)/$(NAME) 6667 pwd123
 	make fclean
 
 # Génération des dépendances automatiques
-depend: $(SRCS)
-	$(CXX) $(INCLUDES) -MM $(SRCS) | sed 's|^|$(OBJ_DIR)/|' > .depend
+depend: $(SRCS) $(SRCS2)
+	$(CXX) $(INCLUDES) -MM $(SRCS) $(SRCS2) | sed 's|^|$(OBJ_DIR)/|' > .depend
 
 -include .depend
 
