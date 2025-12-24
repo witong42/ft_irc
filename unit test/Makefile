@@ -4,8 +4,8 @@ CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -I../header
 
 SRCS		=	channel_client.cpp \
-				../class/channel.cpp \
-				../class/client.cpp
+				../class/Channel.cpp \
+				../class/Client.cpp
 
 OBJS		=	$(SRCS:.cpp=.o)
 
