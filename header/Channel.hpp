@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2025/12/24 10:42:42 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/29 13:54:19 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <algorithm>
 #include "../header/Client.hpp"
 
 class Client;
@@ -72,13 +73,13 @@ class Channel
 		void	removeOperator(Client *user); // MODE
 
 		// Actions
-		void	join(Client *user); // JOIN
+		void	addUser(Client *user); // JOIN
 		void	removeUser(Client *user); // PART / QUIT / KICK
-		void	kick(Client* kicker, Client *user); // KICK
 		void	invite(Client *user); // INVITE
+		void	kick(Client* kicker, Client *user); // KICK
 		void	changeTopic(Client *user, std::string topic); // TOPIC
-		void	mode(char param); // MODE
 
 		void	broadcast(const std::string &msg); // PRIVMSG / NOTICE
 		void	broadcast(const std::string &msg, Client *excludeUser); // PRIVMSG / NOTICE
+		void	mode(char param); // MODE
 };
