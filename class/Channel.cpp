@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2025/12/24 11:46:37 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/29 13:54:04 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,89 +120,101 @@ std::string	Channel::getUserList() const
 	return list;
 }
 
+bool	Channel::isOperator(Client *user) const
+{
+	std::map<Client *, bool>::const_iterator it = this->_users.find(user);
+	if (it != this->_users.end())
+		return it->second;
+	return false;
+}
+
+bool	Channel::isInviteOnly() const
+{
+	return this->_isInviteOnly;
+}
+
+bool	Channel::isTopicRestricted() const
+{
+	return this->_isTopicRestricted;
+}
+
+bool	Channel::hasLimit() const
+{
+	return this->_hasLimit;
+}
+
+bool	Channel::hasKey() const
+{
+	return !this->_key.empty();
+}
+
+bool	Channel::hasUser(Client *user) const
+{
+	std::map<Client *, bool>::const_iterator it = this->_users.find(user);
+	if (it != this->_users.end())
+		return true;
+	return false;
+}
+
+void	Channel::addOperator(Client *user)
+{
+	this->_users[user] = true;
+}
+
+void	Channel::removeOperator(Client *user)
+{
+	if (this->_users.find(user) != this->_users.end())
+		this->_users[user] = false;
+}
+
+void	Channel::addUser(Client *user)
+{
+	this->_users[user] = false;
+}
+
+void	Channel::removeUser(Client *user)
+{
+	if (this->_users.find(user) != this->_users.end())
+		this->_users.erase(user);
+
+}
+
+void	Channel::invite(Client *user)
+{
+	if (std::find(this->_invited.begin(), this->_invited.end(), user) == this->_invited.end())
+		this->_invited.push_back(user);
+}
+
+void	Channel::kick(Client* kicker, Client *user)
+{
+	if (this->isOperator(kicker))
+		this->removeUser(user);
+}
+
+void	Channel::changeTopic(Client *user, std::string topic)
+{
+	if (!this->isTopicRestricted() || this->isOperator(user))
+		this->_topic = topic;
+}
+
+void	Channel::broadcast(const std::string &msg)
+{
+	for (std::map<Client *, bool)::iterator it = _users.begin(); it != _users.end(); it++)
+		it->first->reply(msg);
+}
+
+void	Channel::broadcast(const std::string &msg, Client *excludeUser)
+{
+	for (std::map<Client *, bool)::iterator it = _users.begin(); it != _users.end(); it++)
+	{
+		if (it->first != excludeUser)
+			it->first->reply(msg);
+	}
+}
+
 // STOPPED HERE
-
-// bool	Channel::isOperator(Client *user) const
-// {
-// 	(void)user;
-// 	return false;
-// }
-
-// bool	Channel::isInviteOnly() const
-// {
-// 	return _isInviteOnly;
-// }
-
-// bool	Channel::isTopicRestricted() const
-// {
-// 	return _isTopicRestricted;
-// }
-
-// bool	Channel::hasLimit() const
-// {
-// 	return _hasLimit;
-// }
-
-// bool	Channel::hasKey() const
-// {
-// 	return !_key.empty();
-// }
-
-// bool	Channel::hasUser(Client *user) const
-// {
-// 	(void)user;
-// 	return false;
-// }
-
-// void	Channel::addOperator(Client *user)
-// {
-// 	(void)user;
-// }
-
-// void	Channel::removeOperator(Client *user)
-// {
-// 	(void)user;
-// }
-
-// void	Channel::join(Client *user)
-// {
-// 	(void)user;
-// }
-
-// void	Channel::removeUser(Client *user)
-// {
-// 	(void)user;
-// }
-
-// void	Channel::kick(Client* kicker, Client *user)
-// {
-// 	(void)kicker;
-// 	(void)user;
-// }
-
-// void	Channel::invite(Client *user)
-// {
-// 	(void)user;
-// }
-
-// void	Channel::changeTopic(Client *user, std::string topic)
-// {
-// 	(void)user;
-// 	(void)topic;
-// }
 
 // void	Channel::mode(char param)
 // {
 // 	(void)param;
-// }
-
-// void	Channel::broadcast(const std::string &msg)
-// {
-// 	(void)msg;
-// }
-
-// void	Channel::broadcast(const std::string &msg, Client *excludeUser)
-// {
-// 	(void)msg;
-// 	(void)excludeUser;
 // }
