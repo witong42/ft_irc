@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/07 18:33:13 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/07 18:47:27 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -424,6 +424,7 @@ bool Server::AddClient(int fd, std::string ip)
 	 newClient = new Client(fd, ip);
 	return  newClient->isRegistered();
 
+	this->_invited->push_back(*newClient);
 	//_invited.push_back(newClient);
 	//_invited.push_back(new Client(fd, ip));
 	// Here you would typically create a new Client object and add it to the _connected vector

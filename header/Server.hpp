@@ -44,7 +44,7 @@ private:
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
-//	std::vector<Client>*	_invited;
+	std::vector<Client>*	_invited;
 
 
 

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/07 15:40:53 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/07 18:56:56 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 bool Irc::CmdJoin(std::vector<String> argument, Server server)
 {
 	std::cout << "CmdJoin called with argument size: " << argument.size() << " for fd: " << server.getfd() << std::endl;
+	
 	if (argument.size() < 1)
 	{
 		std::cerr << "Invalid JOIN command format from fd: " << server.getfd() << std::endl;
