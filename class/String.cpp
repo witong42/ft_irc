@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 18:50:54 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 14:38:50 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/07 12:33:15 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,18 +76,18 @@ std::vector<String> String ::pop_front(size_t n)
 	{
 		this->_vector[i - n] = this->_vector[i];
 	}
-	std::cout << "_vector.size: " << this->_vector.size() << std::endl;
+	//std::cout << "_vector.size: " << this->_vector.size() << std::endl;
 		_vector.erase(_vector.begin(), _vector.begin() + n);
 
 	for (size_t j = 0; j < _vector.size(); ++j)
 	{
-		std::cout << "Popped _vector[" << j << "]: " << _vector[j] << std::endl;
+//		std::cout << "Popped _vector[" << j << "]: " << _vector[j] << std::endl;
 	}
-	std::cout << "_vector.size a: " << this->_vector.size() << std::endl;
+	//std::cout << "_vector.size a: " << this->_vector.size() << std::endl;
 	this->join();
-	std::cout << "_vector.size b: " << this->_vector.size() << std::endl;
-	std::cout << "Popped elements: " << this->_vector.size() << std::endl;
-	std::cout << "After pop_front, joined string: " << *this << std::endl;
+	//std::cout << "_vector.size b: " << this->_vector.size() << std::endl;
+	//std::cout << "Popped elements: " << this->_vector.size() << std::endl;
+	//std::cout << "After pop_front, joined string: " << *this << std::endl;
 	return popped_elements;
 }
 std::vector<String> String ::pop_back(size_t n)

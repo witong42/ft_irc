@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 19:47:43 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/07 16:05:22 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,10 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "../header/String.hpp"
-#include "../header/Server.hpp"
-#include "../header/Irc.hpp"
-#include "../header/Client.hpp"
+#include "String.hpp"
+#include "Server.hpp"
+#include "Irc.hpp"
+#include "Client.hpp"
 
 // Example command to test: irssi
 // sev IRC
@@ -199,15 +199,24 @@ bool Server::AddSockette()
 
 bool Server::CheckPassword(String password)
 {
+	
 	if (password == _password)
 	{
 		// Here you would typically check the password against the server's password
+		std::cout << "Password accepted for fd: " << password;
 		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd << std::endl;
-	//	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+		std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
 
 		// On envoie la réponse au client
 		
 		std::string codes[4] = {"001", "002", "003", "004"};
+		std::cout << "Sending welcome messages to fd: " << _fd_client << std::endl;
+		std::cout << "Codes to send: ";
+		for (size_t i = 0; i < 4; ++i)
+		{
+			std::cout << codes[i] << " ";
+		}
+		std::cout << std::endl;
 		if (!SendClientMessage(_fd_client, codes))	
 		{
 			
@@ -256,7 +265,7 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer)
 	}
 	else
 	{
-		// std::cerr << "Commande non reconnue: " << cmd << std::endl;
+		 std::cerr << "Commande non reconnue: " << cmd << std::endl;
 	}
 	return true;
 }
@@ -268,6 +277,7 @@ bool Server::parseCommand(std::string buffer)
 	std::istringstream iss(buffer);
 
 	String str(buffer);
+	std::cout << "parseCommand buffer: '\n" << buffer << "\n' fd: " << _fd_client << std::endl;
 	std::vector<String> parts = str.split("\r\n");
 	for (size_t i = 0; i < parts.size(); ++i)
 	{
@@ -281,7 +291,7 @@ bool Server::parseCommand(std::string buffer)
 
 	// Echo - renvoyer les données au client
 	// send(_fd_client, buffer, count, 0);
-
+	send(_fd_client, buffer.c_str(), buffer.length(), 0);
 	return true;
 }
 
@@ -311,8 +321,11 @@ bool Server::wait()
 {
 
 	// 6. Boucle principale
+	events->events = EPOLLIN | EPOLLET; // Edge-triggered
+	
 	while (true)
 	{
+		std::cout << "316 Waiting for events...\n";
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
 		if (nfds < 0)
 		{
@@ -389,9 +402,16 @@ bool Server::wait()
 					// Traiter les données reçues
 					buffer[count] = '\0';
 					parseCommand(std::string(buffer));
+					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
+			if (events->events &(EPOLLHUP | EPOLLERR | EPOLLRDHUP))
+			{
+
+				close(_fd_client);
+			}
+			
 		}
 	}
 	return true;
@@ -403,7 +423,7 @@ bool Server::AddClient(int fd, std::string ip)
 	 newClient = new Client(fd, ip);
 	return  newClient->isRegistered();
 
-	_invited->push_back(*newClient);
+	//_invited.push_back(newClient);
 	//_invited.push_back(new Client(fd, ip));
 	// Here you would typically create a new Client object and add it to the _connected vector
 

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 19:12:32 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/07 15:40:53 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 }
 bool Irc::CmdJoin(std::vector<String> argument, Server server)
 {
+	std::cout << "CmdJoin called with argument size: " << argument.size() << " for fd: " << server.getfd() << std::endl;
 	if (argument.size() < 1)
 	{
 		std::cerr << "Invalid JOIN command format from fd: " << server.getfd() << std::endl;
@@ -98,9 +99,9 @@ bool Irc::CmdPassw(std::vector<String> argument,  Server server){
 			std::cout << "Password rejected for fd: " << server.getfd() << std::endl;
 			
 		}
-		std::string password =argument[1]; // Extract password after "PASS "
+		//std::string password =argument[1]; // Extract password after "PASS "
 		// Here you would typically check the password against the server's password
-		std::cout << "Received PASS command with password: " << password << " from fd: " << server.getfd() << std::endl;
+		//std::cout << "Received PASS command with password: " << password << " from fd: " << server.getfd() << std::endl;
 	}
 	
 	else

@@ -9,7 +9,7 @@
       "externalConsole": false,
       "cwd": "/home/jegirard/Documents/Rang_05/ft_irc",
       "program": "/home/jegirard/Documents/Rang_05/ft_irc/bin/ircserv",
-      "args": ["6667", "mypassword"],
+      "args": ["6667", "pwd123"],
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
