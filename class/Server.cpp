@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/07 16:05:22 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/07 18:33:13 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,9 +217,8 @@ bool Server::CheckPassword(String password)
 			std::cout << codes[i] << " ";
 		}
 		std::cout << std::endl;
-		if (!SendClientMessage(_fd_client, codes))	
+		if (!SendClientMessage(_fd_client, codes))
 		{
-			
 			std::cerr << "Erreur send()" << std::endl;
 		}
 		std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
@@ -244,7 +243,7 @@ bool Server::SendClientMessage(int fd_client, std::string* codes)
 
 bool Server::parseSwitchCommand(std::string cmd, std::string buffer)
 {
-	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "' fd: " << _fd_client << std::endl;
+	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "'\n fd client: " << _fd_client << std::endl;
 	String str(buffer);
 	std::vector<String> parts = str.split(" ");
 	if (parts.size() == 0)
@@ -342,8 +341,10 @@ bool Server::wait()
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
 
-				int _fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
-				if (_fd_client == -1)
+				this->_fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
+				
+				
+				if (this->_fd_client == -1)
 				{
 					if (errno != EAGAIN && errno != EWOULDBLOCK)
 					{
@@ -358,7 +359,7 @@ bool Server::wait()
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				std::cout << "Nouvelle connexion de " << client_ip
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
-				std::cout << "Client fd: " << _fd_client << "\n";
+				std::cout << "Client fd: " << this->_fd_client << "\n";
 				
 				
 				
@@ -367,49 +368,49 @@ bool Server::wait()
 
 				// Ajouter le client à epoll
 				_ev.events = EPOLLIN | EPOLLET; // Edge-triggered
-				_ev.data.fd = _fd_client;
-				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &_ev) == -1)
+				_ev.data.fd = this->_fd_client;
+				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, this->_fd_client, &_ev) == -1)
 				{
 					std::cerr << "Erreur ajout client à epoll\n";
-					close(_fd_client);
+					close(this->_fd_client);
 				}
 			}
 			// Données disponibles sur un socket client
 			else
 			{
-				int _fd_client = events[i].data.fd;
+				this->_fd_client = events[i].data.fd;
 				char buffer[BUFFER_SIZE];
-				ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
+				ssize_t count = recv(this->_fd_client, buffer, sizeof(buffer) - 1, 0);
 
 				if (count == -1)
 				{
 					if (errno != EAGAIN)
 					{
 						std::cerr << "Erreur recv\n";
-						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
-						close(_fd_client);
+						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, this->_fd_client, NULL);
+						close(this->_fd_client);
 					}
 				}
 				else if (count == 0)
 				{
 					// Client a fermé la connexion
-					std::cout << "Client déconnecté (fd: " << _fd_client << ")\n";
-					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
-					close(_fd_client);
+					std::cout << "Client déconnecté (fd: " << this->_fd_client << ")\n";
+					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, this->_fd_client, NULL);
+					close(this->_fd_client);
 				}
 				else
 				{
 					// Traiter les données reçues
 					buffer[count] = '\0';
 					parseCommand(std::string(buffer));
-					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
+					std::cout << "392 Received from fd " << this->_fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
 			if (events->events &(EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
 
-				close(_fd_client);
+				close(this->_fd_client);
 			}
 			
 		}
