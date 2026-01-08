@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 16:56:11 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 19:46:52 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,27 +40,26 @@ Client &Client::operator=(const Client &rhs)
 	return *this;
 }
 
-
 Client::~Client()
 {
 }
 
-void	Client::setNickname(const std::string &nickname)
+void Client::setNickname(const std::string &nickname)
 {
 	this->_nickname = nickname;
 }
 
-void	Client::setUsername(const std::string &username)
+void Client::setUsername(const std::string &username)
 {
 	this->_username = username;
 }
 
-void	Client::setRegistered(bool status)
+void Client::setRegistered(bool status)
 {
 	this->_isRegistered = status;
 }
 
-void	Client::setOperator(bool status)
+void Client::setOperator(bool status)
 {
 	this->_isOperator = status;
 }
@@ -75,56 +74,51 @@ const std::string &Client::getIp() const
 	return this->_ip;
 }
 
-const std::string	&Client::getNickname(void) const
+const std::string &Client::getNickname(void) const
 {
 	return this->_nickname;
 }
 
-const std::string	&Client::getUsername(void) const
+const std::string &Client::getUsername(void) const
 {
 	return this->_username;
 }
 
-std::string	Client::getBuffer() const
+std::string Client::getBuffer() const
 {
 	return this->_buffer;
 }
 
-bool	Client::isRegistered() const
+bool Client::isRegistered() const
 {
 	return this->_isRegistered;
 }
 
-bool	Client::isOperator() const
+bool Client::isOperator() const
 {
 	return this->_isOperator;
 }
 
-void	Client::appendBuffer(const std::string &chunk)
+void Client::appendBuffer(const std::string &chunk)
 {
 	this->_buffer += chunk;
 }
 
-void	Client::clearBuffer()
+void Client::clearBuffer()
 {
 	this->_buffer.clear();
 }
 
-void	Client::reply(const std::string &msg)
+void Client::reply(const std::string &msg)
 {
 	std::string finalString = msg + "\r\n";
 	if (send(this->_fd, finalString.c_str(), finalString.length(), 0) == -1)
 		std::cerr << "Error: Failed to send message to client " << this->_fd << std::endl;
-
-
-		
-
-		
 }
-bool Client::SendClientMessage(std::string* codes)
+bool Client::message(std::string *codes)
 {
 	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
-	for ( size_t i = 1; i < codes->size(); ++i)
+	for (size_t i = 1; i < codes->size(); ++i)
 	{
 		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
 	}

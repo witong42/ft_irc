@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 14:33:58 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 19:46:59 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,64 +49,64 @@ Channel::~Channel()
 {
 }
 
-void	Channel::setTopic(const std::string &topic)
+void Channel::setTopic(const std::string &topic)
 {
 	this->_topic = topic;
 }
 
-void	Channel::setInviteOnly(bool status)
+void Channel::setInviteOnly(bool status)
 {
 	this->_isInviteOnly = status;
 }
 
-void	Channel::setTopicRestricted(bool status)
+void Channel::setTopicRestricted(bool status)
 {
 	this->_isTopicRestricted = status;
 }
 
-void	Channel::setKey(const std::string &key)
+void Channel::setKey(const std::string &key)
 {
 	this->_key = key;
 }
 
-void	Channel::setLimit(size_t limit)
+void Channel::setLimit(size_t limit)
 {
 	this->_limit = limit;
 	this->_hasLimit = true;
 }
 
-void	Channel::removeLimit()
+void Channel::removeLimit()
 {
 	this->_limit = 0;
 	this->_hasLimit = false;
 }
 
-const std::string	&Channel::getName() const
+const std::string &Channel::getName() const
 {
 	return this->_name;
 }
 
-const std::string	&Channel::getTopic() const
+const std::string &Channel::getTopic() const
 {
 	return this->_topic;
 }
 
-const std::string	&Channel::getKey() const
+const std::string &Channel::getKey() const
 {
 	return this->_key;
 }
 
-size_t	Channel::getLimit() const
+size_t Channel::getLimit() const
 {
 	return this->_limit;
 }
 
-size_t	Channel::getUserCount() const
+size_t Channel::getUserCount() const
 {
 	return this->_users.size();
 }
 
-std::string	Channel::getUserList() const
+std::string Channel::getUserList() const
 {
 	std::string list;
 	std::map<Client *, bool>::const_iterator it;
@@ -121,7 +121,7 @@ std::string	Channel::getUserList() const
 	return list;
 }
 
-bool	Channel::isOperator(Client *user) const
+bool Channel::isOperator(Client *user) const
 {
 	std::map<Client *, bool>::const_iterator it = this->_users.find(user);
 	if (it != this->_users.end())
@@ -129,27 +129,27 @@ bool	Channel::isOperator(Client *user) const
 	return false;
 }
 
-bool	Channel::isInviteOnly() const
+bool Channel::isInviteOnly() const
 {
 	return this->_isInviteOnly;
 }
 
-bool	Channel::isTopicRestricted() const
+bool Channel::isTopicRestricted() const
 {
 	return this->_isTopicRestricted;
 }
 
-bool	Channel::hasLimit() const
+bool Channel::hasLimit() const
 {
 	return this->_hasLimit;
 }
 
-bool	Channel::hasKey() const
+bool Channel::hasKey() const
 {
 	return !this->_key.empty();
 }
 
-bool	Channel::hasUser(Client *user) const
+bool Channel::hasUser(Client *user) const
 {
 	std::map<Client *, bool>::const_iterator it = this->_users.find(user);
 	if (it != this->_users.end())
@@ -157,54 +157,53 @@ bool	Channel::hasUser(Client *user) const
 	return false;
 }
 
-void	Channel::addOperator(Client *user)
+void Channel::addOperator(Client *user)
 {
 	this->_users[user] = true;
 }
 
-void	Channel::removeOperator(Client *user)
+void Channel::removeOperator(Client *user)
 {
 	if (this->_users.find(user) != this->_users.end())
 		this->_users[user] = false;
 }
 
-void	Channel::addUser(Client *user)
+void Channel::addUser(Client *user)
 {
 	this->_users[user] = false;
 }
 
-void	Channel::removeUser(Client *user)
+void Channel::removeUser(Client *user)
 {
 	if (this->_users.find(user) != this->_users.end())
 		this->_users.erase(user);
-
 }
 
-void	Channel::invite(Client *user)
+void Channel::invite(Client *user)
 {
 	if (std::find(this->_invited.begin(), this->_invited.end(), user) == this->_invited.end())
 		this->_invited.push_back(user);
 }
 
-void	Channel::kick(Client* kicker, Client *user)
+void Channel::kick(Client *kicker, Client *user)
 {
 	if (this->isOperator(kicker))
 		this->removeUser(user);
 }
 
-void	Channel::changeTopic(Client *user, std::string topic)
+void Channel::changeTopic(Client *user, std::string topic)
 {
 	if (!this->isTopicRestricted() || this->isOperator(user))
 		this->_topic = topic;
 }
 
-void	Channel::broadcast(const std::string &msg)
+void Channel::broadcast(const std::string &msg)
 {
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
 		it->first->reply(msg);
 }
 
-void	Channel::broadcast(const std::string &msg, Client *excludeUser)
+void Channel::broadcast(const std::string &msg, Client *excludeUser)
 {
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
 	{
