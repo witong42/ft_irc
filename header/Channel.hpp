@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2025/12/23 11:38:45 by witong           ###   ########.fr       */
+/*   Updated: 2025/12/29 13:54:19 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <algorithm>
 #include "../header/Client.hpp"
 
 class Client;
@@ -44,12 +45,12 @@ class Channel
 		~Channel();
 
 		// Setters
-		void	setTopic(const std::string &topic);
-		void	setInviteOnly(bool status);
-		void	setTopicRestricted(bool status);
-		void	setKey(const std::string &key);
-		void	setLimit(size_t limit);
-		void	removeLimit();
+		void	setTopic(const std::string &topic); // TOPIC
+		void	setInviteOnly(bool status); // MODE
+		void	setTopicRestricted(bool status); // MODE
+		void	setKey(const std::string &key); // MODE
+		void	setLimit(size_t limit); // MODE
+		void	removeLimit(); // MODE
 
 		// Getters
 		const std::string	&getName() const;
@@ -57,7 +58,7 @@ class Channel
 		const std::string	&getKey() const;
 		size_t				getLimit() const;
 		size_t				getUserCount() const;
-		std::string			getUserList() const; // needed for join
+		std::string			getUserList() const; // JOIN
 
 		// Mode status
 		bool	isOperator(Client *user) const;
@@ -68,17 +69,17 @@ class Channel
 		bool	hasUser(Client *user) const;
 
 		// Mode operations
-		void	addOperator(Client *user);
-		void	removeOperator(Client *user);
+		void	addOperator(Client *user); // MODE
+		void	removeOperator(Client *user); // MODE
 
 		// Actions
-		void	join(Client *user);
-		void	removeUser(Client *user);
-		void	kick(Client* kicker, Client *user);
-		void	invite(Client *user);
-		void	changeTopic(Client *user, std::string topic);
-		void	mode(char param);
+		void	addUser(Client *user); // JOIN
+		void	removeUser(Client *user); // PART / QUIT / KICK
+		void	invite(Client *user); // INVITE
+		void	kick(Client* kicker, Client *user); // KICK
+		void	changeTopic(Client *user, std::string topic); // TOPIC
 
-		void	broadcast(const std::string &msg);
-		void	broadcast(const std::string &msg, Client *excludeUser);
+		void	broadcast(const std::string &msg); // PRIVMSG / NOTICE
+		void	broadcast(const std::string &msg, Client *excludeUser); // PRIVMSG / NOTICE
+		void	mode(char param); // MODE
 };

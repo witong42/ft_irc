@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/08 13:51:36 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 17:14:35 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@
 #include <vector>
 #include <map>
 #include "String.hpp"
-#include "Server.hpp"
+#include "../header/Server.hpp"
 #include "Irc.hpp"
 #include "Client.hpp"
 
@@ -210,18 +210,40 @@ bool Server::CheckPassword(String password)
 		// On envoie la réponse au client
 		
 		std::string codes[4] = {"001", "002", "003", "004"};
-		std::cout << "Sending welcome messages to fd: " << _fd_client << std::endl;
+		std::cout << "Sending welcome messages to fd: " << _client.getFd() << std::endl;
 		std::cout << "Codes to send: ";
 		std::cout << std::endl;
-		if (!SendClientMessage(_fd_client, codes))
+		if (!_client.SendClientMessage(codes))
 		{
 			std::cerr << "Erreur send()" << std::endl;
+			return true;
 		}
-		std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
+		
 		return false;
 	}
+	std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
 	return true;
 }
+Client Server::SelectClient(int fd) {
+	
+	
+
+auto it = std::find_if(this->_invited.begin(), this->_invited.end(), 
+                           [fd](const Client& obj){
+                               return obj.getFd() == fd ;
+                           });
+    
+    if (it != _invited.end()) {
+        std::cout << "Trouvé avec ID: " << it->getFd() << std::endl;
+    } else {
+        std::cout << "Non trouvé" << std::endl;
+    }
+    return 0;
+	
+	
+}
+
+
 bool Server::SendClientMessage(int fd_client, std::string* codes)
 {
 	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
@@ -239,7 +261,7 @@ bool Server::SendClientMessage(int fd_client, std::string* codes)
 
 bool Server::parseSwitchCommand(std::string cmd, std::string buffer)
 {
-	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "'\n fd client: " << _fd_client << std::endl;
+	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "'\n fd client: " << _client.getFd() << std::endl;
 	String str(buffer);
 	std::vector<String> parts = str.split(" ");
 	if (parts.size() == 0)
@@ -272,7 +294,7 @@ bool Server::parseCommand(std::string buffer)
 	std::istringstream iss(buffer);
 
 	String str(buffer);
-	std::cout << "parseCommand buffer: '\n" << buffer << "\n' fd: " << _fd_client << std::endl;
+	std::cout << "parseCommand buffer: '\n" << buffer << "\n' fd: " << _client.getFd() << std::endl;
 	std::vector<String> parts = str.split("\r\n");
 	for (size_t i = 0; i < parts.size(); ++i)
 	{
@@ -286,7 +308,7 @@ bool Server::parseCommand(std::string buffer)
 
 	// Echo - renvoyer les données au client
 	// send(_fd_client, buffer, count, 0);
-	send(_fd_client, buffer.c_str(), buffer.length(), 0);
+	send(_client.getFd(), buffer.c_str(), buffer.length(), 0);
 	return true;
 }
 
@@ -337,10 +359,10 @@ bool Server::wait()
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
 
-				this->_fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
+				int fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
+			
 				
-				
-				if (this->_fd_client == -1)
+				if (fd_client == -1)
 				{
 					if (errno != EAGAIN && errno != EWOULDBLOCK)
 					{
@@ -353,60 +375,59 @@ bool Server::wait()
 				char client_ip[INET_ADDRSTRLEN];
 				
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+				_client = Client(fd_client,client_ip);
 				std::cout << "Nouvelle connexion de " << client_ip
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
-				std::cout << "Client fd: " << this->_fd_client << "\n";
-				
-				
-				
+				std::cout << "Client fd: " << _client.getFd() << "\n";
 				// Rendre le socket client non-bloquant
 				socketUnblock();
 
 				// Ajouter le client à epoll
 				_ev.events = EPOLLIN | EPOLLET; // Edge-triggered
-				_ev.data.fd = this->_fd_client;
-				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, this->_fd_client, &_ev) == -1)
+				_ev.data.fd = this->_client.getFd();
+				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, this->_client.getFd(), &_ev) == -1)
 				{
 					std::cerr << "Erreur ajout client à epoll\n";
-					close(this->_fd_client);
+					close(this->_client.getFd());
+					
 				}
 			}
 			// Données disponibles sur un socket client
 			else
 			{
-				this->_fd_client = events[i].data.fd;
+				this->_client = events[i].data.fd;
 				char buffer[BUFFER_SIZE];
-				ssize_t count = recv(this->_fd_client, buffer, sizeof(buffer) - 1, 0);
+				ssize_t count = recv(this->_client.getFd(), buffer, sizeof(buffer) - 1, 0);
 
 				if (count == -1)
 				{
 					if (errno != EAGAIN)
 					{
 						std::cerr << "Erreur recv\n";
-						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, this->_fd_client, NULL);
-						close(this->_fd_client);
+						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, this->_client.getFd(), NULL);
+						close(this->_client.getFd());
 					}
 				}
 				else if (count == 0)
 				{
 					// Client a fermé la connexion
-					std::cout << "Client déconnecté (fd: " << this->_fd_client << ")\n";
-					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, this->_fd_client, NULL);
-					close(this->_fd_client);
+					std::cout << "Client déconnecté (fd: " << this->_client.getFd() << ")\n";
+					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, this->_client.getFd(), NULL);
+					close(this->_client.getFd());
 				}
 				else
 				{
 					// Traiter les données reçues
 					buffer[count] = '\0';
 					parseCommand(std::string(buffer));
-					std::cout << "392 Received from fd " << this->_fd_client << ": " << buffer << std::endl;
+					std::cout << "392 Received from fd " << this->_client.getFd() << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
 			if (events->events &(EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
 
-				close(this->_fd_client);
+				close(this->_client.getFd());
 			}
 			
 		}

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 14:01:34 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 15:58:34 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class Client
 		std::string _buffer;
 		bool	_isOperator;
 		bool	_isRegistered;
-		
+
 	public:
 		// Canonical Form
 		Client();
@@ -56,4 +56,5 @@ class Client
 		void				appendBuffer(const std::string &chunk);	// To store incoming data
 		void				clearBuffer();							// To wipe buffer after processing
 		void				reply(const std::string &msg);			// To write to the socket (_fd)
+		bool 				SendClientMessage(std::string* codes);
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2025/12/23 12:22:40 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/08 16:56:11 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ Client &Client::operator=(const Client &rhs)
 	}
 	return *this;
 }
+
 
 Client::~Client()
 {
@@ -114,4 +115,23 @@ void	Client::reply(const std::string &msg)
 	std::string finalString = msg + "\r\n";
 	if (send(this->_fd, finalString.c_str(), finalString.length(), 0) == -1)
 		std::cerr << "Error: Failed to send message to client " << this->_fd << std::endl;
+
+
+		
+
+		
+}
+bool Client::SendClientMessage(std::string* codes)
+{
+	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
+	for ( size_t i = 1; i < codes->size(); ++i)
+	{
+		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
+	}
+	if (send(_fd, message.c_str(), message.length(), 0) < 0)
+	{
+		std::cerr << "Erreur send()" << std::endl;
+		return false;
+	}
+	return true;
 }

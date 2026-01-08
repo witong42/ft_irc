@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #pragma once
-
+#include <algorithm>
 #include <cstring>
 #include <cstdlib>
 #include <cctype>
@@ -27,7 +27,8 @@
 #include <map>
 #include <vector>
 #include "../header/String.hpp"
-#include "Client.hpp"
+
+#include "../header/Client.hpp"
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 512
 
@@ -37,14 +38,15 @@ private:
 	int _fd; // fichier de descripteur du socket
 	// int _fd_client; // fichier de descripteur du socket client
 	int _fd_epoll; // descripteur epoll
-	int _fd_client;
+	//int _fd_client;
+	Client _client;
 	String _password; // mot de passe du serveur
 	String _SERVER_NAME; 
 
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
-	std::vector<Client>*	_invited;
+	std::vector<Client>	_invited;
 
 
 
@@ -59,7 +61,8 @@ private:
 	bool CleanUp();												  // nettoie les ressources utilisées
 	bool parseCommand(std::string buffer);						  // parse les commandes reçues
 	bool parseSwitchCommand(std::string cmd, std::string buffer); // switch pour les commandes
-	bool AddClient(int fd, std::string ip);				  // ajoute un client à la liste des connectés	
+	bool AddClient(int fd, std::string ip);				  // ajoute un client à la liste des connectés
+	Client SelectClient(int fd);
 
 
 public:
