@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 19:28:18 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 20:20:55 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,14 @@
 #include <vector>
 #include "../header/String.hpp"
 #include "../header/Server.hpp"
-
+#include "../header/Channel.hpp"
+#include <string>
 
 class Irc
 {
+private:
+    std::map<String, Channel *> _channels;
+	Channel* findChannel(String channel);
 public:
     static bool CmdNick(std::vector<String> vector_buffer, Server server);
     static bool CmdUser(std::vector<String> vector_buffer, Server server);

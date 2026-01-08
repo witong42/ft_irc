@@ -6,12 +6,13 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/08 19:47:11 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 20:37:21 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include "Irc.hpp"
 #include "../header/String.hpp"
 #include "../header/Server.hpp"
@@ -40,6 +41,12 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 	std::cout << "Handling USER command: " << argument[0] << server.getfd() << std::endl;
 	return true;
 }
+
+  Channel* Irc::findChannel(String channel) {
+        std::map<String, Channel*>::iterator it = _channels.find(channel);
+        return (it != _channels.end()) ? it->second : NULL;
+    }
+
 bool Irc::CmdJoin(std::vector<String> argument, Server server)
 {
 	std::cout << "CmdJoin called with argument size: " << argument.size() << " for fd: " << server.getfd() << std::endl;
@@ -49,7 +56,9 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 		std::cerr << "Invalid JOIN command format from fd: " << server.getfd() << std::endl;
 		return false;
 	}
-	// Handle JOIN command
+	Channel* channel = findChannel(argument[0]);
+	
+			// Handle JOIN command
 	std::cout << "Handling JOIN command: " << argument[0] << server.getfd() << std::endl;
 	return true;
 }
