@@ -6,11 +6,12 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 12:25:08 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 13:41:51 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/Channel.hpp"
+
 
 Channel::Channel(const std::string &name, Client *creator) : _name(name)
 {
@@ -59,7 +60,7 @@ void	Channel::setTopicRestricted(bool status)
 
 void	Channel::setKey(const std::string &key)
 {
-
+_key = key;
 	
 }
 void	Channel::setLimit(size_t limit)	
@@ -126,8 +127,58 @@ void Channel::addOperator(Client *user)
 	if (it != _users.end())
 		it->second = true;
 }	
+void Channel::removeOperator(Client *user)
+{
+	std::map<Client *, bool>::iterator it = _users.find(user);
+	if (it != _users.end())
+		it->second = false;
+}
 
-void Channel::broadcast(const String &msg)
+
+
+void Channel::join(Client *user)
+{
+	_users[user] = false; // By default, user is not an operator
+}
+void Channel::removeUser(Client *user)
+{
+	_users.erase(user);
+}
+
+void Channel::kick(Client* kicker, Client *user)
+{
+	if (hasUser(user))
+	{
+		std::string kickMessage = ":" + kicker->getNickname() + " KICK " + _name + " " + user->getNickname() + " :You have been kicked from the channel.";
+		broadcast(kickMessage);
+		removeUser(user);
+	}
+}
+
+
+bool Channel::hasUser(Client *user) const
+{
+	return _users.find(user) != _users.end();
+}
+
+
+
+void Channel::invite(Client *user)
+{
+	_invited.push_back(user);
+}
+void Channel::changeTopic(Client *user, std::string topic)
+{
+	_topic = topic;
+	std::string topicMessage = ":" + user->getNickname() + " TOPIC " + _name + " :" + topic;
+	broadcast(topicMessage);
+}
+
+void	Channel::mode(char param){
+	
+}
+
+void Channel::broadcast(const std::string &msg)
 {
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); ++it)
 	{
@@ -135,7 +186,7 @@ void Channel::broadcast(const String &msg)
 		user->sendMessage(msg);
 	}
 }
-void Channel::broadcast(const String &msg, Client *excludeUser)
+void Channel::broadcast(const std::string &msg, Client *excludeUser)
 {
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); ++it)
 	{
@@ -146,45 +197,7 @@ void Channel::broadcast(const String &msg, Client *excludeUser)
 }
 
 
-bool Channel::hasUser(Client *user) const
-{
-	return _users.find(user) != _users.end();
-}
-void Channel::join(Client *user)
-{
-	_users[user] = false; // By default, user is not an operator
-}
-void Channel::removeUser(Client *user)
-{
-	_users.erase(user);
-}
-void Channel::kick(Client* kicker, Client *user)
-{
-	if (hasUser(user))
-	{
-		std::string kickMessage = ":" + kicker->getNickname() + " KICK " + _name + " " + user->getNickname() + " :You have been kicked from the channel.";
-		broadcast(kickMessage);
-		removeUser(user);
-	}
-}
-void Channel::invite(Client *user)
-{
-	_invited.push_back(user);
-}
-void Channel::changeTopic(Client *user, String topic)
-{
-	_topic = topic;
-	std::string topicMessage = ":" + user->getNickname() + " TOPIC " + _name + " :" + topic;
-	broadcast(topicMessage);
-}
 
-
-void Channel::removeOperator(Client *user)
-{
-	std::map<Client *, bool>::iterator it = _users.find(user);
-	if (it != _users.end())
-		it->second = false;
-}
 void	Channel::setInviteOnly(bool status)
 {
 	_isInviteOnly = status;
@@ -198,14 +211,8 @@ bool	Channel::isTopicRestricted() const
 {
 	return _isTopicRestricted;
 }
-void	Channel::setKey(const String &key)
-{
-	_key = key;
-}
-const String	&Channel::getKey() const
-{
-	return _key;
-}
+
+
 bool	Channel::hasKey() const
 {
 	return !_key.empty();
@@ -215,10 +222,7 @@ bool	Channel::hasLimit() const
 {
 	return _hasLimit;
 }
-void	Channel::removeLimit()
-{	
-	_hasLimit = false;
-}
+
 
 
 	
