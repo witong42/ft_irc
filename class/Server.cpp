@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/07 18:47:27 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 13:51:36 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,10 +212,6 @@ bool Server::CheckPassword(String password)
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << "Sending welcome messages to fd: " << _fd_client << std::endl;
 		std::cout << "Codes to send: ";
-		for (size_t i = 0; i < 4; ++i)
-		{
-			std::cout << codes[i] << " ";
-		}
 		std::cout << std::endl;
 		if (!SendClientMessage(_fd_client, codes))
 		{

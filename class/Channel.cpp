@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 13:41:51 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 14:02:34 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,16 +174,15 @@ void Channel::changeTopic(Client *user, std::string topic)
 	broadcast(topicMessage);
 }
 
-void	Channel::mode(char param){
-	
-}
+
+
 
 void Channel::broadcast(const std::string &msg)
 {
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); ++it)
 	{
 		Client *user = it->first;
-		user->sendMessage(msg);
+		user->reply(msg);
 	}
 }
 void Channel::broadcast(const std::string &msg, Client *excludeUser)
@@ -192,7 +191,7 @@ void Channel::broadcast(const std::string &msg, Client *excludeUser)
 	{
 		Client *user = it->first;
 		if (user != excludeUser)
-			user->sendMessage(msg);
+			user->reply(msg);
 	}
 }
 
