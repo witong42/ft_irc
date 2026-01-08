@@ -46,7 +46,8 @@ private:
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
-	std::vector<Client>	_invited;
+	// std::vector<Client>*	_invited;
+	std::map<int, Client*> _invited;
 
 
 
@@ -62,7 +63,7 @@ private:
 	bool parseCommand(std::string buffer);						  // parse les commandes reçues
 	bool parseSwitchCommand(std::string cmd, std::string buffer); // switch pour les commandes
 	bool AddClient(int fd, std::string ip);				  // ajoute un client à la liste des connectés
-	Client SelectClient(int fd);
+	Client* SelectClient(int fd);
 
 
 public:

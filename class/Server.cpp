@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/08 17:14:35 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/08 18:21:11 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,21 +224,11 @@ bool Server::CheckPassword(String password)
 	std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
 	return true;
 }
-Client Server::SelectClient(int fd) {
-	
-	
 
-auto it = std::find_if(this->_invited.begin(), this->_invited.end(), 
-                           [fd](const Client& obj){
-                               return obj.getFd() == fd ;
-                           });
-    
-    if (it != _invited.end()) {
-        std::cout << "Trouvé avec ID: " << it->getFd() << std::endl;
-    } else {
-        std::cout << "Non trouvé" << std::endl;
-    }
-    return 0;
+Client* Server::SelectClient(int fd) {
+	auto it = this->_invited.find(fd);
+	
+	
 	
 	
 }
