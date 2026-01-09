@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/09 13:02:32 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/09 13:24:54 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,15 +44,12 @@ Server::Server(int port, String password)
 	{
 		throw std::invalid_argument("Invalid port number");
 	}
-
 	_password = password;
-
 	// Initialisation de l'adresse
 	std::memset(&_address, 0, sizeof(_address));
 	_address.sin_port = htons(port);
 	_address.sin_family = AF_INET;
 	_address.sin_addr.s_addr = INADDR_ANY;
-
 	// Constructor implementation
 }
 Server::Server(const char *port, String password)
@@ -249,63 +246,6 @@ bool Server::SendClientMessage(int fd_client, std::string *codes)
 	}
 	return true;
 }
-/*
-
-
-bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int fd)
-{
-	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "'\n fd client: " << fd << std::endl;
-	String str(buffer);
-	std::vector<String> parts = str.split(" ");
-	if (parts.size() == 0)
-		return true;
-	cmd = parts[0];
-	std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
-	commandMap["PASS"] = &Irc::CmdPassw;
-	commandMap["NICK"] = &Irc::CmdNick;
-	commandMap["USER"] = &Irc::CmdUser;
-	commandMap["JOIN"] = &Irc::CmdJoin;
-	commandMap["PART"] = &Irc::CmdPart;
-	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
-
-	if (commandMap.find(cmd) != commandMap.end())
-	{
-		str.pop_front();
-		return commandMap[cmd](str.get_vector(), *this);
-	}
-	else
-	{
-		std::cerr << "Commande non reconnue: " << cmd << std::endl;
-	}
-	return true;
-}bool Server::parseCommand(std::string buffer, int fd)
-{
-
-	// Command parsing implementation
-	std::istringstream iss(buffer);
-
-	String str(buffer);
-	std::cout << "parseCommand buffer: '\n"
-			  << buffer << "\n' fd: " << fd << std::endl;
-	std::vector<String> parts = str.split("\r\n");
-	for (size_t i = 0; i < parts.size(); ++i)
-	{
-		if (parts[i].empty())
-			continue;
-		std::istringstream lineStream(parts[i]);
-		std::string lineCmd;
-		std::getline(lineStream, lineCmd, ' ');
-		parseSwitchCommand(lineCmd, parts[i], fd);
-	}
-
-	// Echo - renvoyer les données au client
-	// send(_fd_client, buffer, count, 0);
-	send(fd, buffer.c_str(), buffer.length(), 0);
-	return true;
-}
-*/
-
-
 
 bool Server::CleanUp()
 {
@@ -413,9 +353,9 @@ bool Server::wait()
 				{
 					// Traiter les données reçues
 					buffer[count] = '\0';
-					//parseCommand(std::string(buffer), _fd_client);
+					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
-					
+
 					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}

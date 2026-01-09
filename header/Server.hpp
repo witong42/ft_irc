@@ -6,8 +6,8 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 13:02:02 by jegirard         ###   ########.fr       */
-/*                           >                                                 */
+/*   Updated: 2026/01/09 13:22:08 by jegirard         ###   ########.fr       */
+/*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
@@ -27,7 +27,6 @@
 #include <map>
 #include <vector>
 #include "../header/String.hpp"
-
 #include "../header/Client.hpp"
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 512
@@ -48,19 +47,16 @@ private:
 	// std::vector<Client>*	_invited;
 	std::map<int, Client *> _invited;
 
-	bool check_port(const char *port);									  // vérifie la validité du port
-	bool createSocket();												  // crée le socket
-	bool socketUnblock();												  // met le socket en non-bloquant
-	bool IPv4bind();													  // lie le socket à une adresse IPv4
-	bool listening();													  // met le socket en écoute
-	bool AddSockette();													  // ajoute le socket au epoll
-	bool createPoll();													  // crée le descripteur epoll
-	bool wait();														  // boucle principale du serveur
-	bool CleanUp();														  // nettoie les ressources utilisées
-	bool parseCommand(std::string buffer, int fd);						  // parse les commandes reçues
-	bool parseSwitchCommand(std::string cmd, std::string buffer, int fd); // switch pour les commandes
-	bool AddClient(int fd, std::string ip);								  // ajoute un client à la liste des connectés
-
+	bool check_port(const char *port);		// vérifie la validité du port
+	bool createSocket();					// crée le socket
+	bool socketUnblock();					// met le socket en non-bloquant
+	bool IPv4bind();						// lie le socket à une adresse IPv4
+	bool listening();						// met le socket en écoute
+	bool AddSockette();						// ajoute le socket au epoll
+	bool createPoll();						// crée le descripteur epoll
+	bool wait();							// boucle principale du serveur
+	bool CleanUp();							// nettoie les ressources utilisées
+	bool AddClient(int fd, std::string ip); // ajoute un client à la liste des connectés
 	Client *findInvitedByfd(int idRecherche);
 
 public:
