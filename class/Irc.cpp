@@ -6,17 +6,41 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/09 09:57:34 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/09 12:16:42 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
+
+
+#include <cstdlib>
+
+#include <string>
+
+
+#include <cctype>
+#include <cstring>
+#include <stdexcept>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/epoll.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <sstream>
 #include <vector>
 #include <map>
+#include "String.hpp"
+
 #include "Irc.hpp"
 #include "../header/String.hpp"
 #include "../header/Server.hpp"
 #include "../header/Client.hpp"
+
+Irc::Irc() {}
+Irc::~Irc() {}
 
 bool Irc::CmdNick(std::vector<String> argument, Server server)
 
@@ -56,7 +80,17 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 		std::cerr << "Invalid JOIN command format from fd: " << server.getfd() << std::endl;
 		return false;
 	}
-	Channel* channel = findChannel(argument[0]);
+	// Channel* channel = findChannel(argument[0]);
+
+		//std::map<int, Client *>::iterator it = this->_invited.find(server.getfd());
+	std::map<String, Channel*>::iterator it = _channels.find(argument[0]);
+		if (it != this->_channels.end()) {	
+			std::cout << "Channel " << argument[0] << " found for JOIN command." << std::endl;
+		} else {
+			std::cout << "Channel " << argument[0] << " not found. Creating new channel." << std::endl;
+			Channel* newChannel = new Channel(argument[0], NULL); // Assuming NULL for creator for now			
+			this->_channels[argument[0]] = newChannel;
+		}
 	
 			// Handle JOIN command
 	std::cout << "Handling JOIN command: " << argument[0] << server.getfd() << std::endl;
@@ -84,7 +118,7 @@ bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
 	std::cout << "Handling PRIVMSG command: " << vector_buffer[0] << server.getfd() << std::endl;
 	return true;
 }
-bool Irc::CmdPassw(std::vector<String> argument, Server server)
+ bool Irc::CmdPassw(std::vector<String> argument, Server server)
 {
 
 	if (argument.size() < 1)
@@ -92,7 +126,8 @@ bool Irc::CmdPassw(std::vector<String> argument, Server server)
 		std::cerr << "Invalid PASS command format from fd: " << server.getfd() << std::endl;
 		return false;
 	}
-
+	std::cout << "CmdPassw called with argument size: " << argument.size() << " for fd: " << server.getfd() << std::endl;
+	std::cout << "Password attempt: '" << argument[0] << std::endl;
 	if (argument[0] != "")
 	{
 		if (server.CheckPassword(argument[0], server.getfd()))
@@ -114,4 +149,62 @@ bool Irc::CmdPassw(std::vector<String> argument, Server server)
 		std::cerr << "Invalid PASS command format from fd: " << server.getfd() << std::endl;
 	}
 	return false;
+}
+
+
+bool Irc::parseCommand(std::string buffer, Server server)
+{
+
+	// Command parsing implementation
+	
+
+	String str(buffer);
+	std::cout << "parseCommand buffer: '\n"
+			  << buffer << "\n' fd: " << server.getClientFd() << std::endl;
+	std::vector<String> parts = str.split("\r\n");
+	for (size_t i = 0; i < parts.size(); ++i)
+	{
+		if (parts[i].empty())
+			continue;
+		std::istringstream lineStream(parts[i]);
+		std::string lineCmd;
+		std::getline(lineStream, lineCmd, ' ');
+		parseSwitchCommand(lineCmd, parts[i], server);
+	}
+
+	// Echo - renvoyer les données au client
+	// send(_fd_client, buffer, count, 0);
+	send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
+	return true;
+}
+
+bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
+{
+	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "'\n fd client: " << server.getClientFd() << std::endl;
+	String str(buffer);
+	std::vector<String> parts = str.split(" ");
+	if (parts.size() == 0)
+		return true;
+	cmd = parts[0];
+	//std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
+	std::map<std::string, bool (Irc::*)(std::vector<String>, Server)> commandMap;
+	commandMap["PASS"] = &Irc::CmdPassw;
+	commandMap["NICK"] = &Irc::CmdNick;
+	commandMap["USER"] = &Irc::CmdUser;
+	commandMap["JOIN"] = &Irc::CmdJoin;
+	commandMap["PART"] = &Irc::CmdPart;
+	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
+
+	if (commandMap.find(cmd) != commandMap.end())
+	{
+		str.pop_front();
+		//return commandMap[cmd](str.get_vector(), server);
+		//return (commandMap[cmd]( str.get_vector(), server));
+		return true;
+	}
+	else
+	{
+		std::cerr << "Commande non reconnue: " << cmd << std::endl;
+	}
+	return true;
 }

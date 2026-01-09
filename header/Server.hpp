@@ -77,6 +77,7 @@ public:
 
 	Server(int port, String password);
 	int &getfd();
+	int &getClientFd();
 	bool CheckPassword(String password, int fd);
 	void Run();
 

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/08 19:46:37 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/09 12:18:24 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,10 @@ void Server::Start()
 int &Server::getfd()
 {
 	return _fd;
+}
+int &Server::getClientFd()
+{
+	return _fd_client;
 }
 void Server::Run()
 {
@@ -245,6 +249,8 @@ bool Server::SendClientMessage(int fd_client, std::string *codes)
 	}
 	return true;
 }
+/*
+
 
 bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int fd)
 {
@@ -273,6 +279,7 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int fd)
 	}
 	return true;
 }
+*/
 
 bool Server::parseCommand(std::string buffer, int fd)
 {
@@ -327,7 +334,7 @@ bool Server::wait()
 
 	// 6. Boucle principale
 	events->events = EPOLLIN | EPOLLET; // Edge-triggered
-
+	Irc irc = Irc();
 	while (true)
 	{
 		std::cout << "316 Waiting for events...\n";
@@ -406,7 +413,9 @@ bool Server::wait()
 				{
 					// Traiter les données reçues
 					buffer[count] = '\0';
-					parseCommand(std::string(buffer), _fd_client);
+					//parseCommand(std::string(buffer), _fd_client);
+					irc.parseCommande(buffer, *this);
+					
 					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
