@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/09 12:18:24 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/09 13:02:32 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -278,10 +278,7 @@ bool Server::parseSwitchCommand(std::string cmd, std::string buffer, int fd)
 		std::cerr << "Commande non reconnue: " << cmd << std::endl;
 	}
 	return true;
-}
-*/
-
-bool Server::parseCommand(std::string buffer, int fd)
+}bool Server::parseCommand(std::string buffer, int fd)
 {
 
 	// Command parsing implementation
@@ -306,6 +303,9 @@ bool Server::parseCommand(std::string buffer, int fd)
 	send(fd, buffer.c_str(), buffer.length(), 0);
 	return true;
 }
+*/
+
+
 
 bool Server::CleanUp()
 {
@@ -414,7 +414,7 @@ bool Server::wait()
 					// Traiter les données reçues
 					buffer[count] = '\0';
 					//parseCommand(std::string(buffer), _fd_client);
-					irc.parseCommande(buffer, *this);
+					irc.parseCommand(buffer, *this);
 					
 					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
