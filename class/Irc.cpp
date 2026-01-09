@@ -6,17 +6,15 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/09 12:16:42 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/09 13:18:33 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 
-
 #include <cstdlib>
 
 #include <string>
-
 
 #include <cctype>
 #include <cstring>
@@ -66,10 +64,11 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 	return true;
 }
 
-  Channel* Irc::findChannel(String channel) {
-        std::map<String, Channel*>::iterator it = _channels.find(channel);
-        return (it != _channels.end()) ? it->second : NULL;
-    }
+Channel *Irc::findChannel(String channel)
+{
+	std::map<String, Channel *>::iterator it = _channels.find(channel);
+	return (it != _channels.end()) ? it->second : NULL;
+}
 
 bool Irc::CmdJoin(std::vector<String> argument, Server server)
 {
@@ -82,17 +81,20 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 	}
 	// Channel* channel = findChannel(argument[0]);
 
-		//std::map<int, Client *>::iterator it = this->_invited.find(server.getfd());
-	std::map<String, Channel*>::iterator it = _channels.find(argument[0]);
-		if (it != this->_channels.end()) {	
-			std::cout << "Channel " << argument[0] << " found for JOIN command." << std::endl;
-		} else {
-			std::cout << "Channel " << argument[0] << " not found. Creating new channel." << std::endl;
-			Channel* newChannel = new Channel(argument[0], NULL); // Assuming NULL for creator for now			
-			this->_channels[argument[0]] = newChannel;
-		}
-	
-			// Handle JOIN command
+	// std::map<int, Client *>::iterator it = this->_invited.find(server.getfd());
+	std::map<String, Channel *>::iterator it = _channels.find(argument[0]);
+	if (it != this->_channels.end())
+	{
+		std::cout << "Channel " << argument[0] << " found for JOIN command." << std::endl;
+	}
+	else
+	{
+		std::cout << "Channel " << argument[0] << " not found. Creating new channel." << std::endl;
+		Channel *newChannel = new Channel(argument[0], NULL); // Assuming NULL for creator for now
+		this->_channels[argument[0]] = newChannel;
+	}
+
+	// Handle JOIN command
 	std::cout << "Handling JOIN command: " << argument[0] << server.getfd() << std::endl;
 	return true;
 }
@@ -118,7 +120,7 @@ bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
 	std::cout << "Handling PRIVMSG command: " << vector_buffer[0] << server.getfd() << std::endl;
 	return true;
 }
- bool Irc::CmdPassw(std::vector<String> argument, Server server)
+bool Irc::CmdPassw(std::vector<String> argument, Server server)
 {
 
 	if (argument.size() < 1)
@@ -151,12 +153,10 @@ bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
 	return false;
 }
 
-
 bool Irc::parseCommand(std::string buffer, Server server)
 {
 
 	// Command parsing implementation
-	
 
 	String str(buffer);
 	std::cout << "parseCommand buffer: '\n"
@@ -186,7 +186,6 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	if (parts.size() == 0)
 		return true;
 	cmd = parts[0];
-	//std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
 	std::map<std::string, bool (Irc::*)(std::vector<String>, Server)> commandMap;
 	commandMap["PASS"] = &Irc::CmdPassw;
 	commandMap["NICK"] = &Irc::CmdNick;
@@ -194,13 +193,10 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	commandMap["JOIN"] = &Irc::CmdJoin;
 	commandMap["PART"] = &Irc::CmdPart;
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
-
 	if (commandMap.find(cmd) != commandMap.end())
 	{
 		str.pop_front();
-		//return commandMap[cmd](str.get_vector(), server);
-		//return (commandMap[cmd]( str.get_vector(), server));
-		return true;
+		return (this->*(commandMap[cmd]))(str.get_vector(), server); // Notez les parenthèses !
 	}
 	else
 	{
