@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/12 13:39:27 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/12 15:46:49 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,6 +199,8 @@ void Channel::changeTopic(Client *user, std::string topic)
 
 void Channel::broadcast(const std::string &msg)
 {
+	std::cout << "Broadcasting message to channel " << this->_name << ": " << msg << std::endl;
+	std::cout << "Number of users in channel: " << this->_users.size() << std::endl;
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
 		it->first->reply(msg);
 }

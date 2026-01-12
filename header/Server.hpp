@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/09 13:22:08 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/12 15:17:37 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ private:
 	bool wait();							// boucle principale du serveur
 	bool CleanUp();							// nettoie les ressources utilisées
 	bool AddClient(int fd, std::string ip); // ajoute un client à la liste des connectés
-	Client *findInvitedByfd(int idRecherche);
+
+	
 
 public:
 	Server(const char *port, String password);
@@ -70,7 +71,7 @@ public:
 		}
 	};
 	bool SendClientMessage(int fd_client, std::string *codes);
-
+	Client *findInvitedByfd(int idRecherche);
 	Server(int port, String password);
 	int &getfd();
 	int &getClientFd();
