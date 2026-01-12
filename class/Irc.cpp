@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/12 11:48:19 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/12 15:04:33 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,8 +91,14 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 	{
 		std::cout << "Channel " << argument[1] << " not found. Creating new channel." << std::endl;
 		Channel *newChannel = new Channel(argument[1], NULL); 
+		std::cout << "Created new channel: fd " << server.getfd() << std::endl;
+		std::cout << "Invited users map size: " << this->_invited.size() << std::endl;
+		std::cout << "Invited user fd: " << this->_invited[server.getfd()]->getFd() << std::endl;
 		newChannel->addUser(this->_invited[server.getfd()]);
+		std::cout << "Added user fd " << server.getfd()<< std::endl;
+		
 		newChannel->addOperator(this->_invited[server.getfd()]);
+		
 		// Assuming NULL for creator for now
 		this->_channels[argument[1]] = newChannel;
 	}

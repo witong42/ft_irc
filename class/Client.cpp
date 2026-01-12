@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 19:46:52 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/12 13:41:19 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ void Client::clearBuffer()
 void Client::reply(const std::string &msg)
 {
 	std::string finalString = msg + "\r\n";
+	std::cout << "Sending to client " << this->_fd << ": " << finalString;	
 	if (send(this->_fd, finalString.c_str(), finalString.length(), 0) == -1)
 		std::cerr << "Error: Failed to send message to client " << this->_fd << std::endl;
 }

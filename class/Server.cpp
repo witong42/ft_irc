@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/09 13:24:54 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/12 14:29:11 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,7 +374,9 @@ bool Server::AddClient(int fd, std::string ip)
 	std::cout << "Adding client with fd: " << fd << " and IP: " << ip << std::endl;
 	newClient = new Client(fd, ip);
 	_invited[fd] = newClient;
-
+	std::cout << "Client added. Current number of invited clients: " << _invited.size() << std::endl;
+	std::cout << "Client fd: " << newClient->getFd() << std::endl;
+	
 	return newClient->isRegistered();
 
 	// Here you would typically create a new Client object and add it to the _connected vector
