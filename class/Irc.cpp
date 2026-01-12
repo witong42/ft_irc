@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/09 13:18:33 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/12 11:48:19 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ bool Irc::CmdNick(std::vector<String> argument, Server server)
 		return false;
 	}
 	// Handle NICK command
-	std::cout << "Handling NICK command: " << argument[0] << server.getfd() << std::endl;
+	std::cout << "Handling NICK command: " << argument[1] << server.getfd() << std::endl;
 	return true;
 }
 bool Irc::CmdUser(std::vector<String> argument, Server server)
@@ -60,7 +60,7 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 		return false;
 	}
 	// Handle USER command
-	std::cout << "Handling USER command: " << argument[0] << server.getfd() << std::endl;
+	std::cout << "Handling USER command: " << argument[1] << server.getfd() << std::endl;
 	return true;
 }
 
@@ -82,20 +82,23 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 	// Channel* channel = findChannel(argument[0]);
 
 	// std::map<int, Client *>::iterator it = this->_invited.find(server.getfd());
-	std::map<String, Channel *>::iterator it = _channels.find(argument[0]);
+	std::map<String, Channel *>::iterator it = _channels.find(argument[1]);
 	if (it != this->_channels.end())
 	{
-		std::cout << "Channel " << argument[0] << " found for JOIN command." << std::endl;
+		std::cout << "Channel " << argument[1] << " found for JOIN command." << std::endl;
 	}
 	else
 	{
-		std::cout << "Channel " << argument[0] << " not found. Creating new channel." << std::endl;
-		Channel *newChannel = new Channel(argument[0], NULL); // Assuming NULL for creator for now
-		this->_channels[argument[0]] = newChannel;
+		std::cout << "Channel " << argument[1] << " not found. Creating new channel." << std::endl;
+		Channel *newChannel = new Channel(argument[1], NULL); 
+		newChannel->addUser(this->_invited[server.getfd()]);
+		newChannel->addOperator(this->_invited[server.getfd()]);
+		// Assuming NULL for creator for now
+		this->_channels[argument[1]] = newChannel;
 	}
 
 	// Handle JOIN command
-	std::cout << "Handling JOIN command: " << argument[0] << server.getfd() << std::endl;
+	std::cout << "Handling JOIN command: " << argument[1] << server.getfd() << std::endl;
 	return true;
 }
 bool Irc::CmdPart(std::vector<String> argument, Server server)
@@ -106,7 +109,7 @@ bool Irc::CmdPart(std::vector<String> argument, Server server)
 		return false;
 	}
 	// Handle PART command
-	std::cout << "Handling PART command: " << argument[0] << server.getfd() << std::endl;
+	std::cout << "Handling PART command: " << argument[1] << server.getfd() << std::endl;
 	return true;
 }
 bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
@@ -117,7 +120,8 @@ bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
 		return false;
 	}
 	// Handle PRIVMSG command
-	std::cout << "Handling PRIVMSG command: " << vector_buffer[0] << server.getfd() << std::endl;
+	std::cout << "Handling PRIVMSG command: " << vector_buffer[1] <<"|" <<server.getfd() << std::endl;
+	this->_channels[vector_buffer[1]]->broadcast("Message to channel " + vector_buffer[2]);
 	return true;
 }
 bool Irc::CmdPassw(std::vector<String> argument, Server server)
@@ -129,10 +133,10 @@ bool Irc::CmdPassw(std::vector<String> argument, Server server)
 		return false;
 	}
 	std::cout << "CmdPassw called with argument size: " << argument.size() << " for fd: " << server.getfd() << std::endl;
-	std::cout << "Password attempt: '" << argument[0] << std::endl;
-	if (argument[0] != "")
+	std::cout << "Password attempt: '" << argument[1] << std::endl;
+	if (argument[1] != "")
 	{
-		if (server.CheckPassword(argument[0], server.getfd()))
+		if (server.CheckPassword(argument[1], server.getfd()))
 		{
 			std::cout << "Password accepted for fd: " << server.getfd() << std::endl;
 			return true;
@@ -193,9 +197,13 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	commandMap["JOIN"] = &Irc::CmdJoin;
 	commandMap["PART"] = &Irc::CmdPart;
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
+	for (size_t i = 0; i < str.get_vector().size(); ++i)
+	{
+		std::cout << "Argument " << i << ": '" << str.get_vector()[i] << "'" << std::endl;
+	}
 	if (commandMap.find(cmd) != commandMap.end())
 	{
-		str.pop_front();
+		//str.pop_front();
 		return (this->*(commandMap[cmd]))(str.get_vector(), server); // Notez les parenthèses !
 	}
 	else
