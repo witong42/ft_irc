@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2026/01/05 12:49:40 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/13 08:46:37 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,9 @@ class Channel
 			char lastSign;
 
 			// Constructor
-			ModeContext(const std::vector<std::string> &a)
-				: adding(true), argIdx(0), args(a), appliedArgs(""), appliedModes(""), lastSign('\0') {}
+			ModeContext(const std::vector<std::string> &a) : adding(true), argIdx(0), args(a), appliedArgs(""), appliedModes(""), lastSign('\0')
+			{
+			}
 		};
 		bool handleModeI(ModeContext &ctx);
 		bool handleModeT(ModeContext &ctx);
