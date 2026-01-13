@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/12 15:17:37 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/13 11:06:57 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,20 +45,18 @@ private:
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
 	// std::vector<Client>*	_invited;
-	std::map<int, Client *> _invited;
+	std::map<int, Client *> _connected_clients; // liste des clients connectés
 
 	bool check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
 	bool socketUnblock();					// met le socket en non-bloquant
 	bool IPv4bind();						// lie le socket à une adresse IPv4
 	bool listening();						// met le socket en écoute
-	bool AddSockette();						// ajoute le socket au epoll
+	bool AddSocket();						// ajoute le socket au epoll
 	bool createPoll();						// crée le descripteur epoll
 	bool wait();							// boucle principale du serveur
 	bool CleanUp();							// nettoie les ressources utilisées
 	bool AddClient(int fd, std::string ip); // ajoute un client à la liste des connectés
-
-	
 
 public:
 	Server(const char *port, String password);

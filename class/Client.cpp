@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/12 13:41:19 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/13 10:51:55 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _buffer(""), _isOperator(false), _isRegistered(false)
 {
+
+	
 }
 
 Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _buffer(""), _isOperator(false), _isRegistered(false)

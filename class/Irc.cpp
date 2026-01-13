@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/12 15:37:51 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/13 12:02:36 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,20 +83,21 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 
 	// std::map<int, Client *>::iterator it = this->_invited.find(server.getfd());
 	std::map<String, Channel *>::iterator it = _channels.find(argument[1]);
+	Client *invitedUser = server.findInvitedByfd(server.getClientFd());
 	if (it != this->_channels.end())
 	{
 		std::cout << "Channel " << argument[1] << " found for JOIN command." << std::endl;
+		it->second->addUser(invitedUser);
 	}
 	else
 	{
 		std::cout << "Channel " << argument[1] << " not found. Creating new channel." << std::endl;
-		Channel *newChannel = new Channel(argument[1], NULL); 
-		Client* invitedUser = server.findInvitedByfd(server.getfd());
-		std::cout << "Created new channel: fd " << server.getfd() << std::endl;
-		std::cout << "Added user fd " << server.getfd()<< std::endl;
+		Channel *newChannel = new Channel(argument[1], NULL);
+		
+		std::cout << "Created new channel: fd " << server.getClientFd() << std::endl;
+		std::cout << "Added user fd " << invitedUser->getFd() << std::endl;
 		newChannel->addUser(invitedUser);
 		newChannel->addOperator(invitedUser);
-		
 		// Assuming NULL for creator for now
 		this->_channels[argument[1]] = newChannel;
 	}
@@ -124,13 +125,14 @@ bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
 		return false;
 	}
 	// Handle PRIVMSG command
-	std::cout << "Handling PRIVMSG command: " << vector_buffer[1] <<"|" <<server.getfd() << std::endl;
+	std::cout << "Handling PRIVMSG command: " << vector_buffer[1] << "|" << server.getfd() << std::endl;
 	std::cout << "Message content: " << vector_buffer[2] << std::endl;
 	std::cout << "Broadcasting message to channel: " << vector_buffer[1] << std::endl;
 	std::cout << "Message: " << "Message to channel " + vector_buffer[2] << std::endl;
 	std::cout << "Channel exists: " << (this->_channels.find(vector_buffer[1]) != this->_channels.end() ? "Yes" : "No") << std::endl;
-	
-	this->_channels[vector_buffer[1]]->broadcast("Message to channel " + vector_buffer[2]);
+	std::cout << "number of chennel" << this->_channels.size();
+	//this->_channels[vector_buffer[1]]->broadcast("Message to channel " + vector_buffer[2]);
+	//send(server.getClientFd(), vector_buffer[2].c_str(), vector_buffer[2].length(), 0);
 	return true;
 }
 bool Irc::CmdPassw(std::vector<String> argument, Server server)
@@ -187,6 +189,7 @@ bool Irc::parseCommand(std::string buffer, Server server)
 
 	// Echo - renvoyer les données au client
 	// send(_fd_client, buffer, count, 0);
+	std::cout << "parseCommand  fd client" << server.getClientFd();
 	send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
 	return true;
 }
@@ -212,7 +215,7 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	}
 	if (commandMap.find(cmd) != commandMap.end())
 	{
-		//str.pop_front();
+		// str.pop_front();
 		return (this->*(commandMap[cmd]))(str.get_vector(), server); // Notez les parenthèses !
 	}
 	else

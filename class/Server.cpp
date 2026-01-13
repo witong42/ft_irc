@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/12 14:29:11 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/13 10:44:56 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ void Server::Run()
 	{
 		throw std::runtime_error("Creating epoll instance failed");
 	}
-	if (!AddSockette())
+	if (!AddSocket())
 	{
 		throw std::runtime_error("Adding socket to epoll failed");
 	}
@@ -183,7 +183,7 @@ bool Server::createPoll()
 	return true;
 }
 
-bool Server::AddSockette()
+bool Server::AddSocket()
 {
 	// Ajouter le socket serveur à epoll
 	_ev.events = EPOLLIN; // Surveiller les événements de lecture
@@ -228,13 +228,18 @@ bool Server::CheckPassword(String password, int fd)
 
 Client *Server::findInvitedByfd(int idRecherche)
 {
-	std::map<int, Client *>::iterator it = _invited.find(idRecherche);
-	return (it != _invited.end()) ? it->second : NULL;
+	std::map<int, Client *>::iterator it = _connected_clients.find(idRecherche);
+	std::cout << "Searching for client with fd: " << idRecherche << std::endl;
+	std::cout << "Current connected clients count: " << _connected_clients.size() << std::endl;
+	std::cout << "Client found: " << (it != _connected_clients.end() ? "Yes" : "No") << std::endl;
+	std::cout << "Client pointer: " << (it != _connected_clients.end() ? it->second : NULL) << std::endl;
+	std::cout << "Client fd: " << (it != _connected_clients.end() ? it->second->getFd() : -1) << std::endl;
+	return (it != _connected_clients.end()) ? it->second : NULL;
 }
 
 bool Server::SendClientMessage(int fd_client, std::string *codes)
 {
-	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
+	std::string message = ":localhost  " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
 	for (size_t i = 1; i < codes->size(); ++i)
 	{
 		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
@@ -373,8 +378,8 @@ bool Server::AddClient(int fd, std::string ip)
 	Client *newClient;
 	std::cout << "Adding client with fd: " << fd << " and IP: " << ip << std::endl;
 	newClient = new Client(fd, ip);
-	_invited[fd] = newClient;
-	std::cout << "Client added. Current number of invited clients: " << _invited.size() << std::endl;
+	_connected_clients[fd] = newClient;
+	std::cout << "Client added. Current number of invited clients: " << _connected_clients.size() << std::endl;
 	std::cout << "Client fd: " << newClient->getFd() << std::endl;
 	
 	return newClient->isRegistered();
