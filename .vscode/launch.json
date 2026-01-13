@@ -8,6 +8,7 @@
       "stopAtEntry": false,
       "externalConsole": false,
       "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build avec make",
       "program": "${workspaceFolder}/bin/ircserv",
       "args": ["6667", "pwd123"],
       "MIMode": "gdb",

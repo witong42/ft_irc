@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/13 12:02:36 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/13 17:26:53 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
 	std::cout << "Message: " << "Message to channel " + vector_buffer[2] << std::endl;
 	std::cout << "Channel exists: " << (this->_channels.find(vector_buffer[1]) != this->_channels.end() ? "Yes" : "No") << std::endl;
 	std::cout << "number of chennel" << this->_channels.size();
-	//this->_channels[vector_buffer[1]]->broadcast("Message to channel " + vector_buffer[2]);
+	this->_channels[vector_buffer[1]]->broadcast("Message to channel " + vector_buffer[2]);
 	//send(server.getClientFd(), vector_buffer[2].c_str(), vector_buffer[2].length(), 0);
 	return true;
 }
@@ -188,8 +188,9 @@ bool Irc::parseCommand(std::string buffer, Server server)
 	}
 
 	// Echo - renvoyer les données au client
-	// send(_fd_client, buffer, count, 0);
+	 //send(_fd_client, buffer, count, 0);
 	std::cout << "parseCommand  fd client" << server.getClientFd();
+	
 	send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
 	return true;
 }
