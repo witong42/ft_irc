@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/24 13:11:10 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/13 10:44:56 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,10 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "../header/String.hpp"
+#include "String.hpp"
 #include "../header/Server.hpp"
-#include "../header/Irc.hpp"
-#include "../header/Client.hpp"
+#include "Irc.hpp"
+#include "Client.hpp"
 
 // Example command to test: irssi
 // sev IRC
@@ -44,15 +44,12 @@ Server::Server(int port, String password)
 	{
 		throw std::invalid_argument("Invalid port number");
 	}
-
 	_password = password;
-
 	// Initialisation de l'adresse
 	std::memset(&_address, 0, sizeof(_address));
 	_address.sin_port = htons(port);
 	_address.sin_family = AF_INET;
 	_address.sin_addr.s_addr = INADDR_ANY;
-
 	// Constructor implementation
 }
 Server::Server(const char *port, String password)
@@ -78,6 +75,10 @@ int &Server::getfd()
 {
 	return _fd;
 }
+int &Server::getClientFd()
+{
+	return _fd_client;
+}
 void Server::Run()
 {
 	if (!createSocket())
@@ -101,7 +102,7 @@ void Server::Run()
 	{
 		throw std::runtime_error("Creating epoll instance failed");
 	}
-	if (!AddSockette())
+	if (!AddSocket())
 	{
 		throw std::runtime_error("Adding socket to epoll failed");
 	}
@@ -182,11 +183,11 @@ bool Server::createPoll()
 	return true;
 }
 
-bool Server::AddSockette()
+bool Server::AddSocket()
 {
 	// Ajouter le socket serveur à epoll
 	_ev.events = EPOLLIN; // Surveiller les événements de lecture
-	_ev.data.fd = _fd;		// Ajouter le socket serveur à epoll
+	_ev.data.fd = _fd;	  // Ajouter le socket serveur à epoll
 	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd, &_ev) < -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
@@ -197,31 +198,49 @@ bool Server::AddSockette()
 	return true;
 }
 
-bool Server::CheckPassword(String password)
+bool Server::CheckPassword(String password, int fd)
 {
+
 	if (password == _password)
 	{
 		// Here you would typically check the password against the server's password
+		std::cout << "Password accepted for fd: " << password;
 		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd << std::endl;
-	//	std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+		std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
 
 		// On envoie la réponse au client
 
 		std::string codes[4] = {"001", "002", "003", "004"};
-		if (!SendClientMessage(_fd_client, codes))
+		std::cout << "Sending welcome messages to fd: " << fd << std::endl;
+		std::cout << "Codes to send: ";
+		std::cout << std::endl;
+		if (!(*findInvitedByfd(_fd_client)).message(codes))
 		{
-
 			std::cerr << "Erreur send()" << std::endl;
+			return true;
 		}
-		std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
+
 		return false;
 	}
+	std::cerr << "Invalid PASS command format from fd: " << _fd << std::endl;
 	return true;
 }
-bool Server::SendClientMessage(int fd_client, std::string* codes)
+
+Client *Server::findInvitedByfd(int idRecherche)
 {
-	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
-	for ( size_t i = 1; i < codes->size(); ++i)
+	std::map<int, Client *>::iterator it = _connected_clients.find(idRecherche);
+	std::cout << "Searching for client with fd: " << idRecherche << std::endl;
+	std::cout << "Current connected clients count: " << _connected_clients.size() << std::endl;
+	std::cout << "Client found: " << (it != _connected_clients.end() ? "Yes" : "No") << std::endl;
+	std::cout << "Client pointer: " << (it != _connected_clients.end() ? it->second : NULL) << std::endl;
+	std::cout << "Client fd: " << (it != _connected_clients.end() ? it->second->getFd() : -1) << std::endl;
+	return (it != _connected_clients.end()) ? it->second : NULL;
+}
+
+bool Server::SendClientMessage(int fd_client, std::string *codes)
+{
+	std::string message = ":localhost  " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
+	for (size_t i = 1; i < codes->size(); ++i)
 	{
 		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
 	}
@@ -230,58 +249,6 @@ bool Server::SendClientMessage(int fd_client, std::string* codes)
 		std::cerr << "Erreur send()" << std::endl;
 		return false;
 	}
-	return true;
-}
-
-bool Server::parseSwitchCommand(std::string cmd, std::string buffer)
-{
-	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "' fd: " << _fd_client << std::endl;
-	String str(buffer);
-	std::vector<String> parts = str.split(" ");
-	if (parts.size() == 0)
-		return true;
-	cmd = parts[0];
-	std::map<std::string, bool (*)(std::vector<String>, Server)> commandMap;
-	commandMap["PASS"] = &Irc::CmdPassw;
-	commandMap["NICK"] = &Irc::CmdNick;
-	commandMap["USER"] = &Irc::CmdUser;
-	commandMap["JOIN"] = &Irc::CmdJoin;
-	commandMap["PART"] = &Irc::CmdPart;
-	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
-
-	if (commandMap.find(cmd) != commandMap.end())
-	{
-		str.pop_front();
-		return commandMap[cmd](str.get_vector(), *this);
-	}
-	else
-	{
-		// std::cerr << "Commande non reconnue: " << cmd << std::endl;
-	}
-	return true;
-}
-
-bool Server::parseCommand(std::string buffer)
-{
-
-	// Command parsing implementation
-	std::istringstream iss(buffer);
-
-	String str(buffer);
-	std::vector<String> parts = str.split("\r\n");
-	for (size_t i = 0; i < parts.size(); ++i)
-	{
-		if (parts[i].empty())
-			continue;
-		std::istringstream lineStream(parts[i]);
-		std::string lineCmd;
-		std::getline(lineStream, lineCmd, ' ');
-		parseSwitchCommand(lineCmd, parts[i]);
-	}
-
-	// Echo - renvoyer les données au client
-	// send(_fd_client, buffer, count, 0);
-
 	return true;
 }
 
@@ -311,8 +278,11 @@ bool Server::wait()
 {
 
 	// 6. Boucle principale
+	events->events = EPOLLIN | EPOLLET; // Edge-triggered
+	Irc irc = Irc();
 	while (true)
 	{
+		std::cout << "316 Waiting for events...\n";
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
 		if (nfds < 0)
 		{
@@ -329,7 +299,8 @@ bool Server::wait()
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
 
-				int _fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
+				_fd_client = accept(_fd, (struct sockaddr *)&client_addr, &client_len);
+
 				if (_fd_client == -1)
 				{
 					if (errno != EAGAIN && errno != EWOULDBLOCK)
@@ -343,12 +314,11 @@ bool Server::wait()
 				char client_ip[INET_ADDRSTRLEN];
 
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+				AddClient(_fd_client, client_ip);
+
 				std::cout << "Nouvelle connexion de " << client_ip
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
 				std::cout << "Client fd: " << _fd_client << "\n";
-
-
-
 				// Rendre le socket client non-bloquant
 				socketUnblock();
 
@@ -364,7 +334,7 @@ bool Server::wait()
 			// Données disponibles sur un socket client
 			else
 			{
-				int _fd_client = events[i].data.fd;
+				_fd_client = events[i].data.fd;
 				char buffer[BUFFER_SIZE];
 				ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
 
@@ -388,9 +358,16 @@ bool Server::wait()
 				{
 					// Traiter les données reçues
 					buffer[count] = '\0';
-					parseCommand(std::string(buffer));
+					// parseCommand(std::string(buffer), _fd_client);
+					irc.parseCommand(buffer, *this);
+
+					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
+			}
+			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
+			{
+				close(_fd_client);
 			}
 		}
 	}
@@ -398,13 +375,14 @@ bool Server::wait()
 }
 bool Server::AddClient(int fd, std::string ip)
 {
-	Client* newClient;
+	Client *newClient;
 	std::cout << "Adding client with fd: " << fd << " and IP: " << ip << std::endl;
-	 newClient = new Client(fd, ip);
-	return  newClient->isRegistered();
+	newClient = new Client(fd, ip);
+	_connected_clients[fd] = newClient;
+	std::cout << "Client added. Current number of invited clients: " << _connected_clients.size() << std::endl;
+	std::cout << "Client fd: " << newClient->getFd() << std::endl;
+	
+	return newClient->isRegistered();
 
-	_invited->push_back(*newClient);
-	//_invited.push_back(new Client(fd, ip));
 	// Here you would typically create a new Client object and add it to the _connected vector
-
 }

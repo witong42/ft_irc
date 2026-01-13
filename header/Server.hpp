@@ -6,12 +6,12 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/18 13:02:02 by jegirard         ###   ########.fr       */
-/*                           >                                                 */
+/*   Updated: 2026/01/13 11:06:57 by jegirard         ###   ########.fr       */
+/*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-
+#include <algorithm>
 #include <cstring>
 #include <cstdlib>
 #include <cctype>
@@ -27,7 +27,7 @@
 #include <map>
 #include <vector>
 #include "../header/String.hpp"
-#include "Client.hpp"
+#include "../header/Client.hpp"
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 512
 
@@ -38,29 +38,25 @@ private:
 	// int _fd_client; // fichier de descripteur du socket client
 	int _fd_epoll; // descripteur epoll
 	int _fd_client;
+	//	Client _client;
 	String _password; // mot de passe du serveur
-	String _SERVER_NAME; 
-
+	String _SERVER_NAME;
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
-	std::vector<Client>*	_invited;
+	// std::vector<Client>*	_invited;
+	std::map<int, Client *> _connected_clients; // liste des clients connectés
 
-
-
-	bool check_port(const char *port);							  // vérifie la validité du port
-	bool createSocket();										  // crée le socket
-	bool socketUnblock();										  // met le socket en non-bloquant
-	bool IPv4bind();											  // lie le socket à une adresse IPv4
-	bool listening();											  // met le socket en écoute
-	bool AddSockette();											  // ajoute le socket au epoll
-	bool createPoll();											  // crée le descripteur epoll
-	bool wait();												  // boucle principale du serveur
-	bool CleanUp();												  // nettoie les ressources utilisées
-	bool parseCommand(std::string buffer);						  // parse les commandes reçues
-	bool parseSwitchCommand(std::string cmd, std::string buffer); // switch pour les commandes
-	bool AddClient(int fd, std::string ip);				  // ajoute un client à la liste des connectés	
-
+	bool check_port(const char *port);		// vérifie la validité du port
+	bool createSocket();					// crée le socket
+	bool socketUnblock();					// met le socket en non-bloquant
+	bool IPv4bind();						// lie le socket à une adresse IPv4
+	bool listening();						// met le socket en écoute
+	bool AddSocket();						// ajoute le socket au epoll
+	bool createPoll();						// crée le descripteur epoll
+	bool wait();							// boucle principale du serveur
+	bool CleanUp();							// nettoie les ressources utilisées
+	bool AddClient(int fd, std::string ip); // ajoute un client à la liste des connectés
 
 public:
 	Server(const char *port, String password);
@@ -72,11 +68,12 @@ public:
 			return "Invalid port number";
 		}
 	};
-	bool SendClientMessage(int fd_client, std::string * codes);
-	
+	bool SendClientMessage(int fd_client, std::string *codes);
+	Client *findInvitedByfd(int idRecherche);
 	Server(int port, String password);
 	int &getfd();
-	bool CheckPassword(String password);
+	int &getClientFd();
+	bool CheckPassword(String password, int fd);
 	void Run();
 
 	void Start();
