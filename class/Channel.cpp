@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2025/12/29 13:54:04 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/05 12:49:40 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,22 +199,186 @@ void Channel::changeTopic(Client *user, std::string topic)
 
 void	Channel::broadcast(const std::string &msg)
 {
-	for (std::map<Client *, bool)::iterator it = _users.begin(); it != _users.end(); it++)
+	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
 		it->first->reply(msg);
 }
 
 void	Channel::broadcast(const std::string &msg, Client *excludeUser)
 {
-	for (std::map<Client *, bool)::iterator it = _users.begin(); it != _users.end(); it++)
+	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
 	{
 		if (it->first != excludeUser)
 			it->first->reply(msg);
 	}
 }
 
-// STOPPED HERE
+bool Channel::handleModeI(ModeContext &ctx)
+{
+	setInviteOnly(ctx.adding);
+	return true;
+}
 
-// void	Channel::mode(char param)
-// {
-// 	(void)param;
-// }
+bool Channel::handleModeT(ModeContext &ctx)
+{
+	setTopicRestricted(ctx.adding);
+	return true;
+}
+
+bool Channel::handleModeK(ModeContext &ctx)
+{
+	if (ctx.adding)
+	{
+		if (ctx.argIdx >= ctx.args.size())
+			return false;
+		std::string key = ctx.args[ctx.argIdx++];
+		setKey(key);
+		ctx.appliedArgs += " " + key;
+	}
+	else
+		setKey("");
+	return true;
+}
+
+bool Channel::handleModeL(ModeContext &ctx)
+{
+	if (ctx.adding)
+	{
+		if (ctx.argIdx >= ctx.args.size())
+			return false;
+		std::string limit = ctx.args[ctx.argIdx++];
+		setLimit(std::atoi(limit.c_str()));
+		ctx.appliedArgs += " " + limit;
+	}
+	else
+		removeLimit();
+	return true;
+}
+
+bool Channel::handleModeO(ModeContext &ctx)
+{
+	if (ctx.argIdx >= ctx.args.size())
+		return false;
+
+	std::string nick = ctx.args[ctx.argIdx++];
+	Client *target = NULL;
+
+	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); ++it)
+	{
+		if (it->first->getNickname() == nick)
+		{
+			target = it->first;
+			break;
+		}
+	}
+
+	if (target)
+	{
+		if (ctx.adding)
+			addOperator(target);
+		else
+			removeOperator(target);
+		ctx.appliedArgs += " " + nick;
+		return true;
+	}
+	return false;
+}
+
+void Channel::processModeChar(char c, ModeContext &ctx, Client *user)
+{
+	if (c == '+' || c == '-')
+	{
+		if (c == '+')
+			ctx.adding = true;
+		else
+			ctx.adding = false;
+		return;
+	}
+
+	bool success = false;
+	switch (c)
+	{
+		case 'i': success = handleModeI(ctx);
+			break;
+		case 't': success = handleModeT(ctx);
+			break;
+		case 'k': success = handleModeK(ctx);
+			break;
+		case 'l': success = handleModeL(ctx);
+			break;
+		case 'o': success = handleModeO(ctx);
+			break;
+		default:
+			// RFC 2812: 472 ERR_UNKNOWNMODE
+			std::string cStr(1, c);
+			user->reply("472 " + user->getNickname() + " " + cStr + " :is unknown mode char to me");
+			break;
+	}
+
+	if (success)
+	{
+		char currentSign = ctx.adding ? '+' : '-';
+		if (ctx.lastSign != currentSign)
+		{
+			ctx.appliedModes += currentSign;
+			ctx.lastSign = currentSign;
+		}
+		ctx.appliedModes += c;
+	}
+}
+
+void Channel::sendChannelModes(Client *user)
+{
+	std::string modeStr = "+";
+	std::string argsStr = "";
+
+	if (isInviteOnly())
+		modeStr += "i";
+	if (isTopicRestricted())
+		modeStr += "t";
+	if (hasKey())
+		modeStr += "k";
+	if (hasLimit()) {
+		modeStr += "l";
+		std::stringstream ss;
+		ss << getLimit();
+		argsStr += " " + ss.str();
+	}
+
+	// 324 RPL_CHANNELMODEIS
+	user->reply("324 " + user->getNickname() + " " + _name + " " + modeStr + argsStr);
+}
+
+bool Channel::checkOperatorPrivileges(Client *user)
+{
+	if (!isOperator(user))
+	{
+		// 482 ERR_CHANOPRIVSNEEDED
+		user->reply("482 " + user->getNickname() + " " + _name + " :You're not channel operator");
+		return false;
+	}
+	return true;
+}
+
+void	Channel::mode(Client *user, const std::string &modes, const std::vector<std::string> &args)
+{
+	// RFC 2812: If no modes given, return current modes (RPL_CHANNELMODEIS)
+	if (modes.empty())
+	{
+		sendChannelModes(user);
+		return;
+	}
+
+	// RFC 2812: Check for Operator Privileges
+	if (!checkOperatorPrivileges(user))
+		return;
+
+	ModeContext ctx(args);
+
+	for (size_t i = 0; i < modes.length(); i++)
+	{
+		processModeChar(modes[i], ctx, user);
+	}
+
+	if (!ctx.appliedModes.empty())
+		broadcast(":" + user->getNickname() + " MODE " + _name + " " + ctx.appliedModes + ctx.appliedArgs);
+}

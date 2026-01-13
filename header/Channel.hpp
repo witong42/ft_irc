@@ -6,16 +6,19 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2025/12/29 13:54:19 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/13 08:46:37 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <cstdlib>
+#include <sstream>
 #include "../header/Client.hpp"
 
 class Client;
@@ -35,6 +38,31 @@ class Channel
 		std::string				_key;				// +k
 		size_t					_limit;				// +l
 		bool					_hasLimit;			// +l
+
+		// MODE Helpers
+		struct ModeContext
+		{
+			bool adding;
+			size_t argIdx;
+			const std::vector<std::string> &args;
+			std::string appliedArgs;
+			std::string appliedModes;
+			char lastSign;
+
+			// Constructor
+			ModeContext(const std::vector<std::string> &a) : adding(true), argIdx(0), args(a), appliedArgs(""), appliedModes(""), lastSign('\0')
+			{
+			}
+		};
+		bool handleModeI(ModeContext &ctx);
+		bool handleModeT(ModeContext &ctx);
+		bool handleModeK(ModeContext &ctx);
+		bool handleModeL(ModeContext &ctx);
+		bool handleModeO(ModeContext &ctx);
+		void processModeChar(char c, ModeContext &ctx, Client *user);
+
+		void sendChannelModes(Client *user);
+		bool checkOperatorPrivileges(Client *user);
 
 	public:
 		// Canonical Form
@@ -81,5 +109,7 @@ class Channel
 
 		void	broadcast(const std::string &msg); // PRIVMSG / NOTICE
 		void	broadcast(const std::string &msg, Client *excludeUser); // PRIVMSG / NOTICE
-		void	mode(char param); // MODE
+		void	mode(Client *user, const std::string &modes, const std::vector<std::string> &args); // MODE
 };
+
+#endif
