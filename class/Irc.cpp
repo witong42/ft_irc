@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 14:25:41 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/14 15:56:57 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,7 +276,7 @@ bool Irc::parseCommand(std::string buffer, Server server)
 	// send(_fd_client, buffer, count, 0);
 	std::cout << "parseCommand  fd client" << server.getClientFd();
 
-	send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
+	//send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
 	return true;
 }
 
@@ -308,7 +308,6 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	}
 	else if (cmd == "CAP")
 	{
-		
 		std::vector<String> args = str.get_vector();
 		if (args.size() > 1)
 		{
