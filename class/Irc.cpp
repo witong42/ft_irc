@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 11:31:32 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/14 12:15:14 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,56 +43,53 @@ Irc::~Irc() {}
 bool Irc::CmdNick(std::vector<String> argument, Server server)
 
 {
-	if (argument.size() < 2) // Adjusted for index 1 being the nick
-	{
-		std::string error = "431 :No nickname given\r\n";
-		send(server.getClientFd(), error.c_str(), error.length(), 0);
-		return false;
-	}
-	// Basic nick validation (add more as needed)
-	String nick = argument[1];
-	if (nick.empty() || nick.length() > 9 || !isalnum(nick[0]))
-	{
-		std::string error = "432 " + nick + " :Erroneous nickname\r\n";
-		send(server.getClientFd(), error.c_str(), error.length(), 0);
-		return false;
-	}
-	// Set nick in client
-	Client *client = server.findInvitedByfd(server.getClientFd());
-	if (client)
-	{
-		client->setNickname(nick);
-	}
-	std::cout << "Handling NICK command: " << nick << " for fd: " << server.getClientFd() << std::endl;
-	// Send RPL_WELCOME if USER was already sent (simplified)
-	// For now, just log; full impl needs state tracking
-	return true;
+    if (argument.size() < 2) // Adjusted for index 1 being the nick
+    {
+        std::string error = "431 :No nickname given\r\n";
+        send(server.getClientFd(), error.c_str(), error.length(), 0);
+        return false;
+    }
+    // Basic nick validation (add more as needed)
+    String nick = argument[1];
+    if (nick.empty() || nick.length() > 9 || !isalnum(nick[0])) {
+        std::string error = "432 " + nick + " :Erroneous nickname\r\n";
+        send(server.getClientFd(), error.c_str(), error.length(), 0);
+        return false;
+    }
+    // Set nick in client
+    Client *client = server.findInvitedByfd(server.getClientFd());
+    if (client) {
+        client->setNickname(nick);
+    }
+    std::cout << "Handling NICK command: " << nick << " for fd: " << server.getClientFd() << std::endl;
+    // Send RPL_WELCOME if USER was already sent (simplified)
+    // For now, just log; full impl needs state tracking
+    return true;
 }
+
 bool Irc::CmdUser(std::vector<String> argument, Server server)
 {
-	if (argument.size() < 5) // USER <username> <hostname> <servername> <realname>
-	{
-		std::string error = "461 USER :Not enough parameters\r\n";
-		send(server.getClientFd(), error.c_str(), error.length(), 0);
-		return false;
-	}
-	// Set username in client
-	Client *client = server.findInvitedByfd(server.getClientFd());
-	if (client)
-	{
-		client->setUsername(argument[1]);
-	}
-	std::cout << "Handling USER command: " << argument[1] << " for fd: " << server.getClientFd() << std::endl;
-	// Send welcome if NICK was set
-	if (client && !client->getNickname().empty())
-	{
-		std::string welcome = "001 " + client->getNickname() + " :Welcome to the ft_irc server!\r\n";
-		welcome += "002 " + client->getNickname() + " :This is a sample message for code 002\r\n";
-		welcome += "003 " + client->getNickname() + " :This is a sample message for code 003\r\n";
-		send(server.getClientFd(), welcome.c_str(), welcome.length(), 0);
-		std::cout << "Sent welcome to fd: " << server.getClientFd() << std::endl;
-	}
-	return true;
+    if (argument.size() < 5) // USER <username> <hostname> <servername> <realname>
+    {
+        std::string error = "461 USER :Not enough parameters\r\n";
+        send(server.getClientFd(), error.c_str(), error.length(), 0);
+        return false;
+    }
+    // Set username in client
+    Client *client = server.findInvitedByfd(server.getClientFd());
+    if (client) {
+        client->setUsername(argument[1]);
+    }
+    std::cout << "Handling USER command: " << argument[1] << " for fd: " << server.getClientFd() << std::endl;
+    // Send welcome if NICK was set
+    if (client && !client->getNickname().empty()) {
+        std::string welcome = "001 " + client->getNickname() + " :Welcome to the ft_irc server!\r\n";
+        welcome += "002 " + client->getNickname() + " :This is a sample message for code 002\r\n";
+        welcome += "003 " + client->getNickname() + " :This is a sample message for code 003\r\n";
+        send(server.getClientFd(), welcome.c_str(), welcome.length(), 0);
+        std::cout << "Sent welcome to fd: " << server.getClientFd() << std::endl;
+    }
+    return true;
 }
 
 Channel *Irc::findChannel(String channel)
