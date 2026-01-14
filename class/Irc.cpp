@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 16:13:43 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/14 16:20:06 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,10 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 	{
 		std::cerr << "Invalid JOIN command format from fd: " << server.getClientFd() << std::endl;
 		return false;
+	}
+		while (!argument[1].empty() && !isalnum(argument[1][argument[1].size() - 1]) && argument[1][argument[1].size() - 1] != '#')
+	{
+		argument[1] = argument[1].substr(0, argument[1].size() - 1);
 	}
 	// Channel* channel = findChannel(argument[0]);
 
@@ -276,7 +280,7 @@ bool Irc::parseCommand(std::string buffer, Server server)
 	// send(_fd_client, buffer, count, 0);
 	std::cout << "parseCommand  fd client" << server.getClientFd();
 
-	//send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
+	// send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
 	return true;
 }
 

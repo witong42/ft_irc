@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Irc.cpp                                            :+:      :+:    :+:   */
+/*   Irc_new.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 13:44:47 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/14 16:18:12 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ bool Irc::CmdNick(std::vector<String> argument, Server server)
 	// For now, just log; full impl needs state tracking
 	return true;
 }
+
 bool Irc::CmdUser(std::vector<String> argument, Server server)
 {
 	if (argument.size() < 5) // USER <username> <hostname> <servername> <realname>
