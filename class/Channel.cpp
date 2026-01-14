@@ -3,21 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/05 12:49:40 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/14 12:07:14 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/Channel.hpp"
 #include "../header/Client.hpp"
 
-Channel::Channel() : _name(""), _topic(""), _isInviteOnly(false), _isTopicRestricted(false), _key(""), _limit(0), _hasLimit(false)
+Channel::Channel() : _name(""), _topic(""), _isInviteOnly(false), _isTopicRestricted(false), _key(""), _limit("")
 {
 }
 
-Channel::Channel(const std::string &name, Client *creator) : _name(name), _topic(""), _isInviteOnly(false), _isTopicRestricted(false), _key(""), _limit(0), _hasLimit(false)
+Channel::Channel(const std::string &name, Client *creator) : _name(name), _topic(""), _isInviteOnly(false), _isTopicRestricted(false), _key(""), _limit("")
 {
 	if (creator)
 		addOperator(creator);
@@ -40,7 +40,6 @@ Channel &Channel::operator=(const Channel &rhs)
 		this->_isTopicRestricted = rhs._isTopicRestricted;
 		this->_key = rhs._key;
 		this->_limit = rhs._limit;
-		this->_hasLimit = rhs._hasLimit;
 	}
 	return *this;
 }
@@ -69,16 +68,9 @@ void Channel::setKey(const std::string &key)
 	this->_key = key;
 }
 
-void Channel::setLimit(size_t limit)
+void Channel::setLimit(const std::string &limit)
 {
 	this->_limit = limit;
-	this->_hasLimit = true;
-}
-
-void Channel::removeLimit()
-{
-	this->_limit = 0;
-	this->_hasLimit = false;
 }
 
 const std::string &Channel::getName() const
@@ -96,7 +88,7 @@ const std::string &Channel::getKey() const
 	return this->_key;
 }
 
-size_t Channel::getLimit() const
+const std::string &Channel::getLimit() const
 {
 	return this->_limit;
 }
@@ -139,14 +131,14 @@ bool Channel::isTopicRestricted() const
 	return this->_isTopicRestricted;
 }
 
-bool Channel::hasLimit() const
-{
-	return this->_hasLimit;
-}
-
 bool Channel::hasKey() const
 {
 	return !this->_key.empty();
+}
+
+bool Channel::hasLimit() const
+{
+	return !this->_limit.empty();
 }
 
 bool Channel::hasUser(Client *user) const
@@ -246,11 +238,11 @@ bool Channel::handleModeL(ModeContext &ctx)
 		if (ctx.argIdx >= ctx.args.size())
 			return false;
 		std::string limit = ctx.args[ctx.argIdx++];
-		setLimit(std::atoi(limit.c_str()));
+		setLimit(limit);
 		ctx.appliedArgs += " " + limit;
 	}
 	else
-		removeLimit();
+		setLimit("");
 	return true;
 }
 
@@ -309,8 +301,7 @@ void Channel::processModeChar(char c, ModeContext &ctx, Client *user)
 			break;
 		default:
 			// RFC 2812: 472 ERR_UNKNOWNMODE
-			std::string cStr(1, c);
-			user->reply("472 " + user->getNickname() + " " + cStr + " :is unknown mode char to me");
+			user->reply("472 " + user->getNickname() + " " + c + " :is unknown mode char to me");
 			break;
 	}
 
@@ -339,13 +330,11 @@ void Channel::sendChannelModes(Client *user)
 		modeStr += "k";
 	if (hasLimit()) {
 		modeStr += "l";
-		std::stringstream ss;
-		ss << getLimit();
-		argsStr += " " + ss.str();
+		argsStr += " " + getLimit();
 	}
 
 	// 324 RPL_CHANNELMODEIS
-	user->reply("324 " + user->getNickname() + " " + _name + " " + modeStr + argsStr);
+	user->reply("324 " + user->getNickname() + " " + this->_name + " " + modeStr + argsStr);
 }
 
 bool Channel::checkOperatorPrivileges(Client *user)
@@ -353,7 +342,7 @@ bool Channel::checkOperatorPrivileges(Client *user)
 	if (!isOperator(user))
 	{
 		// 482 ERR_CHANOPRIVSNEEDED
-		user->reply("482 " + user->getNickname() + " " + _name + " :You're not channel operator");
+		user->reply("482 " + user->getNickname() + " " + this->_name + " :You're not channel operator");
 		return false;
 	}
 	return true;
@@ -367,18 +356,14 @@ void	Channel::mode(Client *user, const std::string &modes, const std::vector<std
 		sendChannelModes(user);
 		return;
 	}
-
 	// RFC 2812: Check for Operator Privileges
 	if (!checkOperatorPrivileges(user))
 		return;
-
 	ModeContext ctx(args);
-
 	for (size_t i = 0; i < modes.length(); i++)
 	{
 		processModeChar(modes[i], ctx, user);
 	}
-
 	if (!ctx.appliedModes.empty())
-		broadcast(":" + user->getNickname() + " MODE " + _name + " " + ctx.appliedModes + ctx.appliedArgs);
+		broadcast(":" + user->getNickname() + " MODE " + this->_name + " " + ctx.appliedModes + ctx.appliedArgs);
 }
