@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2026/01/13 08:46:37 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/14 10:38:16 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,7 @@ class Channel
 		bool					_isInviteOnly;		// +i
 		bool					_isTopicRestricted;	// +t
 		std::string				_key;				// +k
-		size_t					_limit;				// +l
-		bool					_hasLimit;			// +l
+		std::string				_limit;				// +l
 
 		// MODE Helpers
 		struct ModeContext
@@ -77,14 +76,13 @@ class Channel
 		void	setInviteOnly(bool status); // MODE
 		void	setTopicRestricted(bool status); // MODE
 		void	setKey(const std::string &key); // MODE
-		void	setLimit(size_t limit); // MODE
-		void	removeLimit(); // MODE
+		void	setLimit(const std::string &limit); // MODE
 
 		// Getters
 		const std::string	&getName() const;
 		const std::string	&getTopic() const;
 		const std::string	&getKey() const;
-		size_t				getLimit() const;
+		const std::string	&getLimit() const;
 		size_t				getUserCount() const;
 		std::string			getUserList() const; // JOIN
 
@@ -92,8 +90,8 @@ class Channel
 		bool	isOperator(Client *user) const;
 		bool	isInviteOnly() const;
 		bool	isTopicRestricted() const;
-		bool	hasLimit() const;
 		bool	hasKey() const;
+		bool	hasLimit() const;
 		bool	hasUser(Client *user) const;
 
 		// Mode operations
