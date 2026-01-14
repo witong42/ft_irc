@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 15:56:57 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/14 16:13:43 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -305,30 +305,6 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	{
 		// str.pop_front();
 		return (this->*(commandMap[cmd]))(str.get_vector(), server); // Notez les parenthèses !
-	}
-	else if (cmd == "CAP")
-	{
-		std::vector<String> args = str.get_vector();
-		if (args.size() > 1)
-		{
-			if (args[1] == "LS")
-			{
-				std::string response = "CAP * LS :\r\n";
-				send(server.getClientFd(), response.c_str(), response.length(), 0);
-			}
-			else if (args[1] == "REQ")
-			{
-				std::string response = "CAP * NAK :" + (args.size() > 2 ? args[2] : String("")) + "\r\n";
-				send(server.getClientFd(), response.c_str(), response.length(), 0);
-			}
-			else if (args[1] == "END")
-			{
-				// Terminate CAP negotiation
-				std::string response = "CAP * ACK :END\r\n";
-				send(server.getClientFd(), response.c_str(), response.length(), 0);
-			}
-		}
-		return true;
 	}
 	else
 	{
