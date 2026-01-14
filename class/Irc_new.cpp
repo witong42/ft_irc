@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 14:07:43 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/14 13:44:47 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 
 Channel *Irc::findChannel(String channel)
 {
-	std::map<String, Channel *>::iterator it = _channels.find(channel);
+	std::map<std::string, Channel *>::iterator it = _channels.find(channel);
 	return (it != _channels.end()) ? it->second : NULL;
 }
 
@@ -110,7 +110,7 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 		std::cerr << "Invalid JOIN command format from fd: " << server.getClientFd() << std::endl;
 		return false;
 	}
-	String channelName = argument[1];
+	std::string channelName = argument[1].c_str();
 	// Normalize: remove trailing non-alphanumeric except #
 	while (!channelName.empty() && !isalnum(channelName[channelName.size() - 1]) && channelName[channelName.size() - 1] != '#')
 	{
@@ -119,7 +119,6 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 	std::cout << "Normalized channel name: '" << channelName << "'" << std::endl;
 
 	// std::map<int, Client *>::iterator it = this->_invited.find(server.getfd());
-	
 	std::map<std::string, Channel *>::iterator it = _channels.find(channelName);
 	Client *invitedUser = server.findInvitedByfd(server.getClientFd());
 	if (it != this->_channels.end())
@@ -155,37 +154,38 @@ bool Irc::CmdPart(std::vector<String> argument, Server server)
 	std::cout << "Handling PART command: " << argument[1] << server.getClientFd() << std::endl;
 	return true;
 }
-bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
+bool Irc::CmdPrivmsg(std::vector<String> argument, Server server)
 {
-	if (vector_buffer.size() < 3) // Need target and message
+	if (argument.size() < 3) // Need target and message
 	{
 		std::cerr << "Invalid PRIVMSG command format from fd: " << server.getClientFd() << std::endl;
 		return false;
 	}
 	// Handle PRIVMSG command
-	std::cout << "Handling PRIVMSG command: " << vector_buffer[1] << "|" << server.getClientFd() << std::endl;
-	std::cout << "Message content: " << vector_buffer[2] << std::endl;
-	std::cout << "Broadcasting message to channel: " << vector_buffer[1] << std::endl;
-	std::cout << "Message: " << vector_buffer[2] << std::endl;
-	std::cout << "Channel exists: " << (this->_channels.find(vector_buffer[1]) != this->_channels.end() ? "Yes" : "No") << std::endl;
+	std::cout << "Handling PRIVMSG command: " << argument[1] << "|" << server.getClientFd() << std::endl;
+	std::cout << "Message content: " << argument[2] << std::endl;
+	std::cout << "Broadcasting message to channel: " << argument[1] << std::endl;
+	std::cout << "Message: " << argument[2] << std::endl;
+	std::cout << "Channel exists: " << (this->_channels.find(argument[1]) != this->_channels.end() ? "Yes" : "No") << std::endl;
 	std::cout << "number of chennel" << this->_channels.size();
-	if (this->_channels.find(vector_buffer[1]) != this->_channels.end())
+	if (this->_channels.find(argument[1]) != this->_channels.end())
 	{
 		Client *sender = server.findInvitedByfd(server.getClientFd());
 		if (sender && !sender->getNickname().empty())
 		{
-			std::string msg = ":" + sender->getNickname() + " PRIVMSG " + vector_buffer[1] + " " + vector_buffer[2] + "\r\n";
-			this->_channels[vector_buffer[1]]->broadcast(msg, sender);
+			std::string msg = ":" + sender->getNickname() + " PRIVMSG " + argument[1] + " " + argument[2] + "\r\n";
+			this->_channels[argument[1]]->broadcast(msg, sender);
 		}
 	}
 	else
 	{
-		std::string error = "403 " + vector_buffer[1] + " :No such channel\r\n";
+		std::string error = "403 " + argument[1] + " :No such channel\r\n";
 		send(server.getClientFd(), error.c_str(), error.length(), 0);
 	}
 	// send(server.getClientFd(), vector_buffer[2].c_str(), vector_buffer[2].length(), 0);
 	return true;
 }
+
 bool Irc::CmdPassw(std::vector<String> argument, Server server)
 {
 
