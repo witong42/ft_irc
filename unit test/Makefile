@@ -3,7 +3,10 @@ NAME		=	test_unit
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -I../header
 
-SRCS		=	channel_client.cpp \
+SRCS		=	main.cpp \
+				client_test.cpp \
+				channel_test.cpp \
+				mode_test.cpp \
 				../class/Channel.cpp \
 				../class/Client.cpp
 

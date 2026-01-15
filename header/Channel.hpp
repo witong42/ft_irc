@@ -6,16 +6,19 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2025/12/29 13:54:19 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/14 10:38:16 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <cstdlib>
+#include <sstream>
 #include "../header/Client.hpp"
 
 class Client;
@@ -33,8 +36,32 @@ class Channel
 		bool					_isInviteOnly;		// +i
 		bool					_isTopicRestricted;	// +t
 		std::string				_key;				// +k
-		size_t					_limit;				// +l
-		bool					_hasLimit;			// +l
+		std::string				_limit;				// +l
+
+		// MODE Helpers
+		struct ModeContext
+		{
+			bool adding;
+			size_t argIdx;
+			const std::vector<std::string> &args;
+			std::string appliedArgs;
+			std::string appliedModes;
+			char lastSign;
+
+			// Constructor
+			ModeContext(const std::vector<std::string> &a) : adding(true), argIdx(0), args(a), appliedArgs(""), appliedModes(""), lastSign('\0')
+			{
+			}
+		};
+		bool handleModeI(ModeContext &ctx);
+		bool handleModeT(ModeContext &ctx);
+		bool handleModeK(ModeContext &ctx);
+		bool handleModeL(ModeContext &ctx);
+		bool handleModeO(ModeContext &ctx);
+		void processModeChar(char c, ModeContext &ctx, Client *user);
+
+		void sendChannelModes(Client *user);
+		bool checkOperatorPrivileges(Client *user);
 
 	public:
 		// Canonical Form
@@ -49,14 +76,13 @@ class Channel
 		void	setInviteOnly(bool status); // MODE
 		void	setTopicRestricted(bool status); // MODE
 		void	setKey(const std::string &key); // MODE
-		void	setLimit(size_t limit); // MODE
-		void	removeLimit(); // MODE
+		void	setLimit(const std::string &limit); // MODE
 
 		// Getters
 		const std::string	&getName() const;
 		const std::string	&getTopic() const;
 		const std::string	&getKey() const;
-		size_t				getLimit() const;
+		const std::string	&getLimit() const;
 		size_t				getUserCount() const;
 		std::string			getUserList() const; // JOIN
 
@@ -64,8 +90,8 @@ class Channel
 		bool	isOperator(Client *user) const;
 		bool	isInviteOnly() const;
 		bool	isTopicRestricted() const;
-		bool	hasLimit() const;
 		bool	hasKey() const;
+		bool	hasLimit() const;
 		bool	hasUser(Client *user) const;
 
 		// Mode operations
@@ -81,5 +107,7 @@ class Channel
 
 		void	broadcast(const std::string &msg); // PRIVMSG / NOTICE
 		void	broadcast(const std::string &msg, Client *excludeUser); // PRIVMSG / NOTICE
-		void	mode(char param); // MODE
+		void	mode(Client *user, const std::string &modes, const std::vector<std::string> &args); // MODE
 };
+
+#endif
