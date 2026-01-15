@@ -103,14 +103,3 @@ void test_reply() {
 
     std::cout << "Reply OK" << std::endl;
 }
-
-int main() {
-    test_constructors();
-    test_setters_getters();
-    test_buffer();
-    test_edge_cases();
-    test_reply();
-
-    std::cout << "All tests passed!" << std::endl;
-    return 0;
-}
