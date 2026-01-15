@@ -1,0 +1,11 @@
+/connect localhost pwd123
+
+/join #foobar                    ; join channel #foobar.
+
+/join &foo fubar                 ; join channel &foo using key "fubar".
+
+/join #foo,&bar fubar            ; join channel #foo using key "fubar" and &bar using no key.
+
+/join #foo,#bar fubar,foobar     ; join channel #foo using key "fubar" and channel #bar using key "foobar".
+
+/join #foo,#bar                  ; join channels #foo and #bar.

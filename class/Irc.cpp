@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/15 09:26:51 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/15 09:40:55 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,7 @@ bool Irc::CmdMode(std::vector<String> argument, Server server)
 		return false;
 	}
 	std::string target = argument[1];
-	Client *client = server.findInvitedByfd(server.getClientFd()); // Assuming this method exists
+	Client *client = server.findInvitedByfd(server.getClientFd());
 	if (!client)
 	{
 		std::cerr << "Client not found for fd: " << server.getClientFd() << std::endl;
@@ -183,7 +183,7 @@ bool Irc::CmdMode(std::vector<String> argument, Server server)
 
 		std::string modes = (argument.size() > 2) ? std::string(argument[2]) : "";
 		std::vector<std::string> modeArgs;
-		for (size_t i = 3; i < argument.size(); ++i)
+		for (size_t i = 3; i < argument.size(); i++)
 		{
 			modeArgs.push_back(std::string(argument[i]));
 		}
