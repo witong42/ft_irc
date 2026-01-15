@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/15 09:35:49 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/15 10:06:21 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,21 @@ private:
 	std::map<int, Client *> _invited;
 
 	Channel *findChannel(String channel);
-
-public:
-	Irc();
-	~Irc();
-
 	bool CmdNick(std::vector<String> argument, Server server);
 	bool CmdUser(std::vector<String> argument, Server server);
 	bool CmdJoin(std::vector<String> argument, Server server);
 	bool CmdPart(std::vector<String> argument, Server server);
+	bool CmdMode(std::vector<String> argument, Server server);
 	bool CmdPrivmsg(std::vector<String> argument, Server server);
 	bool CmdPassw(std::vector<String> argument, Server server);
-	bool CmdMode(std::vector<String> argument, Server server);
 	bool CmdCap(std::vector<String> argument, Server server);
+	bool CmdKick(std::vector<String> argument, Server server);
+	bool CmdInvite(std::vector<String> argument, Server server);
+	bool CmdTopic(std::vector<String> argument, Server server);
 	bool parseSwitchCommand(std::string cmd, std::string buffer, Server server);
+
+public:
+	Irc();
+	~Irc();
 	bool parseCommand(std::string buffer, Server server);
 };

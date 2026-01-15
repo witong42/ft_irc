@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/15 09:26:51 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/15 10:05:01 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,12 @@
 
 Irc::Irc() {}
 Irc::~Irc() {}
+
+Channel *Irc::findChannel(String channel)
+{
+	std::map<String, Channel *>::iterator it = _channels.find(channel);
+	return (it != _channels.end()) ? it->second : NULL;
+}
 
 bool Irc::CmdNick(std::vector<String> argument, Server server)
 
@@ -96,11 +102,7 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 	return true;
 }
 
-Channel *Irc::findChannel(String channel)
-{
-	std::map<String, Channel *>::iterator it = _channels.find(channel);
-	return (it != _channels.end()) ? it->second : NULL;
-}
+
 
 bool Irc::CmdJoin(std::vector<String> argument, Server server)
 {
@@ -284,6 +286,40 @@ bool Irc::CmdCap(std::vector<String> argument, Server server)
 	}
 	return true;
 }
+bool Irc::CmdKick(std::vector<String> argument, Server server)
+{
+	if (argument.size() < 1)
+	{
+		std::cerr << "Invalid KICK command format from fd: " << server.getClientFd() << std::endl;
+		return false;
+	}
+	// Handle KICK command
+	std::cout << "Handling KICK command: " << argument[1] << server.getClientFd() << std::endl;
+	return true;
+}
+bool Irc::CmdInvite(std::vector<String> argument, Server server)
+{
+	if (argument.size() < 1)
+	{
+		std::cerr << "Invalid INVITE command format from fd: " << server.getClientFd() << std::endl;
+		return false;
+	}
+	// Handle INVITE command
+	std::cout << "Handling INVITE command: " << argument[1] << server.getClientFd() << std::endl;
+	return true;
+}
+bool Irc::CmdTopic(std::vector<String> argument, Server server)
+{
+	if (argument.size() < 1)
+	{
+		std::cerr << "Invalid TOPIC command format from fd: " << server.getClientFd() << std::endl;
+		return false;
+	}
+	// Handle PART command
+	std::cout << "Handling TOPIC command: " << argument[1] << server.getClientFd() << std::endl;
+	return true;
+}
+
 
 bool Irc::parseCommand(std::string buffer, Server server)
 {
@@ -328,6 +364,9 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	commandMap["PART"] = &Irc::CmdPart;
 	commandMap["MODE"] = &Irc::CmdMode;
 	commandMap["CAP"] = &Irc::CmdCap;
+	commandMap["KICK"] = &Irc::CmdKick;
+	commandMap["INVITE"] = &Irc::CmdInvite;
+	commandMap["TOPIC"] = &Irc::CmdTopic;
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
 	for (size_t i = 0; i < str.get_vector().size(); ++i)
 	{
