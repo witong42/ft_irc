@@ -1,0 +1,140 @@
+
+Serveur en écoute sur le port 6667...
+316 Waiting for events...
+ Waiting  passing
+Adding client with fd: 5 and IP: 127.0.0.1
+Client added. Current number of invited clients: 1
+Client fd: 5
+Nouvelle connexion de 127.0.0.1:46484
+Client fd: 5
+316 Waiting for events...
+ Waiting  passing
+parseCommand buffer: '
+CAP LS
+PASS pwd123
+NICK toot
+USER jegirard jegirard localhost :Jean Girard-Reydet
+
+' fd: 5
+parseSwitchCommand cmd: 'CAP' buffer: 'CAP LS'
+ fd client: 5
+Argument 0: 'CAP'
+Argument 1: 'LS'
+parseSwitchCommand cmd: 'PASS' buffer: 'PASS pwd123'
+ fd client: 5
+Argument 0: 'PASS'
+Argument 1: 'pwd123'
+CmdPassw called with argument size: 2 for fd: 5
+Password attempt: 'pwd123
+Password accepted for fd: pwd123Received PASS command with password: pwd123 from fd: 3
+Sending welcome messages to fd: 5
+Codes to send: 
+Searching for client with fd: 5
+Current connected clients count: 1
+Client found: Yes
+Client pointer: 0x4392c0
+Client fd: 5
+Password rejected for fd: 5
+parseSwitchCommand cmd: 'NICK' buffer: 'NICK toot'
+ fd client: 5
+Argument 0: 'NICK'
+Argument 1: 'toot'
+Searching for client with fd: 5
+Current connected clients count: 1
+Client found: Yes
+Client pointer: 0x4392c0
+Client fd: 5
+Handling NICK command: toot for fd: 5
+parseSwitchCommand cmd: 'USER' buffer: 'USER jegirard jegirard localhost :Jean Girard-Reydet'
+ fd client: 5
+Argument 0: 'USER'
+Argument 1: 'jegirard'
+Argument 2: 'jegirard'
+Argument 3: 'localhost'
+Argument 4: ':Jean'
+Argument 5: 'Girard-Reydet'
+Searching for client with fd: 5
+Current connected clients count: 1
+Client found: Yes
+Client pointer: 0x4392c0
+Client fd: 5
+Handling USER command: jegirard for fd: 5
+Sent welcome to fd: 5
+parseCommand  fd client5392 Received from fd 5: CAP LS
+PASS pwd123
+NICK toot
+USER jegirard jegirard localhost :Jean Girard-Reydet
+
+316 Waiting for events...
+ Waiting  passing
+parseCommand buffer: '
+CAP END
+
+' fd: 5
+parseSwitchCommand cmd: 'CAP' buffer: 'CAP END'
+ fd client: 5
+Argument 0: 'CAP'
+Argument 1: 'END'
+parseCommand  fd client5392 Received from fd 5: CAP END
+
+316 Waiting for events...
+ Waiting  passing
+parseCommand buffer: '
+MODE jegirard +i
+
+' fd: 5
+parseSwitchCommand cmd: 'MODE' buffer: 'MODE jegirard +i'
+ fd client: 5
+Argument 0: 'MODE'
+Argument 1: 'jegirard'
+Argument 2: '+i'
+Searching for client with fd: 5
+Current connected clients count: 1
+Client found: Yes
+Client pointer: 0x4392c0
+Client fd: 5
+parseCommand  fd client5392 Received from fd 5: MODE jegirard +i
+
+316 Waiting for events...
+ Waiting  passing
+parseCommand buffer: '
+WHOIS toot
+
+' fd: 5
+parseSwitchCommand cmd: 'WHOIS' buffer: 'WHOIS toot'
+ fd client: 5
+Argument 0: 'WHOIS'
+Argument 1: 'toot'
+Commande non reconnue: WHOIS
+parseCommand  fd client5392 Received from fd 5: WHOIS toot
+
+316 Waiting for events...
+ Waiting  passing
+parseCommand buffer: '
+MODE toot +i
+
+' fd: 5
+parseSwitchCommand cmd: 'MODE' buffer: 'MODE toot +i'
+ fd client: 5
+Argument 0: 'MODE'
+Argument 1: 'toot'
+Argument 2: '+i'
+Searching for client with fd: 5
+Current connected clients count: 1
+Client found: Yes
+Client pointer: 0x4392c0
+Client fd: 5
+parseCommand  fd client5392 Received from fd 5: MODE toot +i
+
+316 Waiting for events...
+ Waiting  passing
+parseCommand buffer: '
+PING localhost
+
+' fd: 5
+parseSwitchCommand cmd: 'PING' buffer: 'PING localhost'
+ fd client: 5
+Argument 0: 'PING'
+Argument 1: 'localhost'
+Commande non reconnue: PING
+parseCommand  fd client5392 Received from fd 5: PING localhost

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/13 10:44:56 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/15 12:32:45 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,6 +173,8 @@ bool Server::listening()
 bool Server::createPoll()
 {
 	// IPv4 bind implementation
+	// equivalent de pool
+	
 	_fd_epoll = epoll_create1(0);
 	if (_fd_epoll == -1)
 	{
@@ -283,7 +285,9 @@ bool Server::wait()
 	while (true)
 	{
 		std::cout << "316 Waiting for events...\n";
+		// equivqalent de poll
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
+		std::cout << " Waiting  passing\n";
 		if (nfds < 0)
 		{
 			std::cerr << "Erreur epoll_wait\n";
@@ -323,7 +327,7 @@ bool Server::wait()
 				socketUnblock();
 
 				// Ajouter le client à epoll
-				_ev.events = EPOLLIN | EPOLLET; // Edge-triggered
+				_ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered
 				_ev.data.fd = _fd_client;
 				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &_ev) == -1)
 				{
@@ -361,14 +365,28 @@ bool Server::wait()
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
 
+				
+					
+
 					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
+
+
+
+				
 			}
 			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
 				close(_fd_client);
 			}
+
+			if (events[i].events & EPOLLOUT)
+			{
+						// Gérer l'écriture si nécessaire
+						std::cout << "Ready to write to fd " << _fd_client << std::endl;
+			}
+			
 		}
 	}
 	return true;

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/15 10:05:01 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/15 12:13:53 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ bool Irc::CmdNick(std::vector<String> argument, Server server)
 
 bool Irc::CmdUser(std::vector<String> argument, Server server)
 {
+	std::cout << "			CmdUser called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
 	if (argument.size() < 5) // USER <username> <hostname> <servername> <realname>
 	{
 		std::string error = "461 USER :Not enough parameters\r\n";
@@ -99,6 +100,7 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 		send(server.getClientFd(), welcome.c_str(), welcome.length(), 0);
 		std::cout << "Sent welcome to fd: " << server.getClientFd() << std::endl;
 	}
+	std::cout << "			Handling USER command: " << argument[1] << " for fd: " << server.getClientFd() << std::endl;	
 	return true;
 }
 
@@ -182,7 +184,6 @@ bool Irc::CmdMode(std::vector<String> argument, Server server)
 			client->reply("403 " + client->getNickname() + " " + target + " :No such channel");
 			return false;
 		}
-
 		std::string modes = (argument.size() > 2) ? std::string(argument[2]) : "";
 		std::vector<std::string> modeArgs;
 		for (size_t i = 3; i < argument.size(); ++i)
