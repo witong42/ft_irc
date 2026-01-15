@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 16:20:06 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/15 09:26:51 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,7 @@ bool Irc::CmdMode(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
+bool Irc::CmdPrivmsg(std::vector<String> argument, Server server)
 {
 	if (argument.size() < 3)
 	{
@@ -228,17 +228,6 @@ bool Irc::CmdPrivmsg(std::vector<String> vector_buffer, Server server)
 	return true;
 }
 
-bool Irc::CmdMode(std::vector<String> argument, Server server)
-{
-	if (argument.size() < 1)
-	{
-		std::cerr << "Invalid PART command format from fd: " << server.getfd() << std::endl;
-		return false;
-	}
-	// Handle PART command
-	std::cout << "Handling PART command: " << argument[1] << server.getfd() << std::endl;
-	return true;
-}
 bool Irc::CmdPassw(std::vector<String> argument, Server server)
 {
 
