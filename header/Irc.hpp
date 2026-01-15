@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/14 15:48:58 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/15 09:22:25 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ public:
 	bool CmdPart(std::vector<String> vector_buffer, Server server);
 	bool CmdPrivmsg(std::vector<String> vector_buffer, Server server);
 	bool CmdPassw(std::vector<String> vector_buffer, Server server);
-	bool CmdMode(std::vector<String> argument, Server server);
+	bool (std::vector<String> argument, Server server);
 	bool CmdCap(std::vector<String> argument, Server server);
 	bool parseSwitchCommand(std::string cmd, std::string buffer, Server server);
 	bool parseCommand(std::string buffer, Server server);
