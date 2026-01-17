@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/14 12:07:14 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/17 12:05:30 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,16 +177,43 @@ void Channel::invite(Client *user)
 		this->_invited.push_back(user);
 }
 
-void Channel::kick(Client *kicker, Client *user)
+void Channel::kick(Client *kicker, const std::string &targetNick, const std::string &reason)
 {
-	if (this->isOperator(kicker))
-		this->removeUser(user);
+	if (!this->isOperator(kicker))
+	{
+		kicker->reply("482 " + kicker->getNickname() + " " + this->_name + " :You're not channel operator");
+		return;
+	}
+
+	Client *target = findUserByNickname(targetNick);
+	if (!target)
+	{
+		kicker->reply("441 " + kicker->getNickname() + " " + targetNick + " " + this->_name + " :They aren't on that channel");
+		return;
+	}
+
+	std::string msg = ":" + kicker->getNickname() + " KICK " + this->_name + " " + targetNick;
+	if (!reason.empty())
+		msg += " :" + reason;
+
+	this->broadcast(msg);
+	this->removeUser(target);
 }
 
 void Channel::changeTopic(Client *user, std::string topic)
 {
 	if (!this->isTopicRestricted() || this->isOperator(user))
 		this->_topic = topic;
+}
+
+Client *Channel::findUserByNickname(const std::string &nickname)
+{
+	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
+	{
+		if (it->first->getNickname() == nickname)
+			return it->first;
+	}
+	return NULL;
 }
 
 void	Channel::broadcast(const std::string &msg)
@@ -252,16 +279,7 @@ bool Channel::handleModeO(ModeContext &ctx)
 		return false;
 
 	std::string nick = ctx.args[ctx.argIdx++];
-	Client *target = NULL;
-
-	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); ++it)
-	{
-		if (it->first->getNickname() == nick)
-		{
-			target = it->first;
-			break;
-		}
-	}
+	Client *target = findUserByNickname(nick);
 
 	if (target)
 	{
