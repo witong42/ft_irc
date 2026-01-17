@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 10:18:52 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/17 10:25:19 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,7 +313,7 @@ bool Irc::CmdKick(std::vector<String> argument, Server server)
 			std::cerr << "Client not found for KICK command from fd: " << server.getClientFd() << std::endl;
 			return false;
 		}
-		channel->kick(invitedUser, targetUser, (argument.size() > 3) ? argument[3] : "No reason provided");
+	//	channel->kick(invitedUser, targetUser, (argument.size() > 3) ? argument[3] : "No reason provided");
 		
 	}	// Handle KICK command
 	std::cout << "Handling KICK command: " << argument[1] << server.getClientFd() << std::endl;

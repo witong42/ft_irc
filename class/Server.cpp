@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 10:17:14 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/17 10:35:32 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ bool Server::createSocket()
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
 		std::cerr << "Erreur setsockopt\n";
-		close(_fd);
+		close(getServerFd());
 		return false;
 	}
 	return true;
@@ -152,7 +152,7 @@ bool Server::IPv4bind()
 	if (bind(_fd_server, (struct sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		std::cerr << "Erreur bind\n";
-		close(_fd);
+		close(getServerFd());
 		return false;
 	}
 	return true;
