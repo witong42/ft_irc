@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2026/01/14 10:38:16 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/17 11:29:45 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,10 @@ class Channel
 		void	addUser(Client *user); // JOIN
 		void	removeUser(Client *user); // PART / QUIT / KICK
 		void	invite(Client *user); // INVITE
-		void	kick(Client* kicker, Client *user); // KICK
+		void	kick(Client *kicker, const std::string &targetNick, const std::string &reason); // KICK
 		void	changeTopic(Client *user, std::string topic); // TOPIC
+
+		Client	*findUserByNickname(const std::string &nickname);
 
 		void	broadcast(const std::string &msg); // PRIVMSG / NOTICE
 		void	broadcast(const std::string &msg, Client *excludeUser); // PRIVMSG / NOTICE

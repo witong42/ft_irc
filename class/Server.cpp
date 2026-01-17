@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 10:17:14 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/17 10:34:57 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ bool Server::createSocket()
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
 		std::cerr << "Erreur setsockopt\n";
-		close(_fd);
+		close(_fd_server);
 		return false;
 	}
 	return true;
@@ -152,7 +152,7 @@ bool Server::IPv4bind()
 	if (bind(_fd_server, (struct sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		std::cerr << "Erreur bind\n";
-		close(_fd);
+		close(_fd_server);
 		return false;
 	}
 	return true;
@@ -174,7 +174,7 @@ bool Server::createPoll()
 {
 	// IPv4 bind implementation
 	// equivalent de pool
-	
+
 	_fd_epoll = epoll_create1(0);
 	if (_fd_epoll == -1)
 	{
@@ -365,8 +365,8 @@ bool Server::wait()
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
 
-				
-					
+
+
 
 					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
@@ -374,7 +374,7 @@ bool Server::wait()
 
 
 
-				
+
 			}
 			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
@@ -386,7 +386,7 @@ bool Server::wait()
 						// Gérer l'écriture si nécessaire
 						std::cout << "Ready to write to fd " << _fd_client << std::endl;
 			}
-			
+
 		}
 	}
 	return true;
@@ -399,7 +399,7 @@ bool Server::AddClient(int fd, std::string ip)
 	_connected_clients[fd] = newClient;
 	std::cout << "Client added. Current number of invited clients: " << _connected_clients.size() << std::endl;
 	std::cout << "Client fd: " << newClient->getFd() << std::endl;
-	
+
 	return newClient->isRegistered();
 
 	// Here you would typically create a new Client object and add it to the _connected vector

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 10:18:52 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/17 12:09:46 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,10 +64,8 @@ bool Irc::CmdNick(std::vector<String> argument, Server server)
 		return false;
 	}
 	// Set nick in client
-	
 	//Client *client = server.close(_fd_epoll);
 	Client *client = server.findConnectedByfd(server.getClientFd());
-(server.getClientFd());
 	if (client)
 	{
 		client->setNickname(nick);
@@ -187,7 +185,7 @@ bool Irc::CmdMode(std::vector<String> argument, Server server)
 		}
 		std::string modes = (argument.size() > 2) ? std::string(argument[2]) : "";
 		std::vector<std::string> modeArgs;
-		for (size_t i = 3; i < argument.size(); ++i)
+		for (size_t i = 3; i < argument.size(); i++)
 		{
 			modeArgs.push_back(std::string(argument[i]));
 		}
@@ -291,35 +289,40 @@ bool Irc::CmdCap(std::vector<String> argument, Server server)
 }
 bool Irc::CmdKick(std::vector<String> argument, Server server)
 {
-
-	std::cout << "CmdKick called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
-	if (argument.size() < 3 && argument.size() > 5)
+	if (argument.size() < 3)
 	{
-		std::cerr << "Invalid KICK command format from fd: " << server.getClientFd() << std::endl;
+		std::string error = "461 KICK :Not enough parameters\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
 		return false;
 	}
-	else
+	Channel *channel = findChannel(argument[1]);
+	if (!channel)
 	{
-		Channel *channel = findChannel(argument[1]);
-		if (!channel)
+		std::string error = "403 " + argument[1] + " :No such channel\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		return false;
+	}
+	Client *kicker = server.findConnectedByfd(server.getClientFd());
+	if (!kicker)
+		return false;
+
+	std::string reason = "";
+	if (argument.size() > 3)
+	{
+		for (size_t i = 3; i < argument.size(); i++)
 		{
-			std::cerr << "Channel not found for KICK command from fd: " << server.getClientFd() << std::endl;
-			return false;
+			if (i > 3)
+				reason += " ";
+			reason += argument[i];
 		}
-		Client *invitedUser = server.findConnectedByfd(server.getClientFd());
-		Client *targetUser = server.findConnectedByfd(std::atoi(argument[2].c_str()));
-		if (!invitedUser || !targetUser)
-		{
-			std::cerr << "Client not found for KICK command from fd: " << server.getClientFd() << std::endl;
-			return false;
-		}
-		channel->kick(invitedUser, targetUser, (argument.size() > 3) ? argument[3] : "No reason provided");
-		
-	}	// Handle KICK command
+		if (!reason.empty() && reason[0] == ':')
+			reason = reason.substr(1);
+	}
+	channel->kick(kicker, argument[2], reason);
 	std::cout << "Handling KICK command: " << argument[1] << server.getClientFd() << std::endl;
 	return true;
 }
-bool Irc::CmdInvite(std::vector<String> argument, Server server) 
+bool Irc::CmdInvite(std::vector<String> argument, Server server)
 {
 
 	std::cout << "CmdKick called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
