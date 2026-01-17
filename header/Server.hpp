@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 10:03:58 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/17 12:28:09 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ private:
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
-		std::map<int, Client *> _connected_clients; // liste des clients connectés
+	std::map<int, Client *> _connected_clients; // liste des clients connectés
 
 	bool check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
@@ -69,6 +69,8 @@ public:
 	};
 	bool SendClientMessage(int fd_client, std::string *codes);
 	Client *findConnectedByfd(int idRecherche);
+	Client *findConnectedByNickname(String Nickname);
+	Client *findConnectedByUsername(String Username);
 	Server(int port, String password);
 	int &getServerFd();
 	int &getClientFd();
