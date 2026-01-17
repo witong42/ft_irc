@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/13 11:06:57 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/17 10:03:58 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@
 class Server
 {
 private:
-	int _fd; // fichier de descripteur du socket
+	int _fd_server; // fichier de descripteur du socket
 	// int _fd_client; // fichier de descripteur du socket client
 	int _fd_epoll; // descripteur epoll
 	int _fd_client;
@@ -44,8 +44,7 @@ private:
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
-	// std::vector<Client>*	_invited;
-	std::map<int, Client *> _connected_clients; // liste des clients connectés
+		std::map<int, Client *> _connected_clients; // liste des clients connectés
 
 	bool check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
@@ -69,9 +68,9 @@ public:
 		}
 	};
 	bool SendClientMessage(int fd_client, std::string *codes);
-	Client *findInvitedByfd(int idRecherche);
+	Client *findConnectedByfd(int idRecherche);
 	Server(int port, String password);
-	int &getfd();
+	int &getServerFd();
 	int &getClientFd();
 	bool CheckPassword(String password, int fd);
 	void Run();
