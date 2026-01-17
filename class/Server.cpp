@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 10:34:57 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/17 12:28:45 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ bool Server::createSocket()
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
 		std::cerr << "Erreur setsockopt\n";
-		close(_fd_server);
+		close(getServerFd());
 		return false;
 	}
 	return true;
@@ -152,7 +152,7 @@ bool Server::IPv4bind()
 	if (bind(_fd_server, (struct sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		std::cerr << "Erreur bind\n";
-		close(_fd_server);
+		close(getServerFd());
 		return false;
 	}
 	return true;
@@ -188,8 +188,8 @@ bool Server::createPoll()
 bool Server::AddSocket()
 {
 	// Ajouter le socket serveur à epoll
-	_ev.events = EPOLLIN; // Surveiller les événements de lecture
-	_ev.data.fd = _fd_server;	  // Ajouter le socket serveur à epoll
+	_ev.events = EPOLLIN;	  // Surveiller les événements de lecture
+	_ev.data.fd = _fd_server; // Ajouter le socket serveur à epoll
 	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_server, &_ev) < -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
@@ -231,12 +231,28 @@ bool Server::CheckPassword(String password, int fd)
 Client *Server::findConnectedByfd(int idRecherche)
 {
 	std::map<int, Client *>::iterator it = _connected_clients.find(idRecherche);
-	std::cout << "Searching for client with fd: " << idRecherche << std::endl;
-	std::cout << "Current connected clients count: " << _connected_clients.size() << std::endl;
-	std::cout << "Client found: " << (it != _connected_clients.end() ? "Yes" : "No") << std::endl;
-	std::cout << "Client pointer: " << (it != _connected_clients.end() ? it->second : NULL) << std::endl;
-	std::cout << "Client fd: " << (it != _connected_clients.end() ? it->second->getFd() : -1) << std::endl;
+
 	return (it != _connected_clients.end()) ? it->second : NULL;
+}
+
+Client *Server::findConnectedByNickname(String Nickname)
+{
+	for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
+	{
+		if (it->second->getNickname() == Nickname)
+			return it->second;
+	}
+	return (NULL);
+}
+
+Client *Server::findConnectedByUsername(String Find)
+{
+	for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
+	{
+		if (it->second->getUsername() == Find)
+			return it->second;
+	}
+	return (NULL);
 }
 
 bool Server::SendClientMessage(int fd_client, std::string *codes)
@@ -365,16 +381,9 @@ bool Server::wait()
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
 
-
-
-
 					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
-
-
-
-
 			}
 			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
@@ -383,10 +392,9 @@ bool Server::wait()
 
 			if (events[i].events & EPOLLOUT)
 			{
-						// Gérer l'écriture si nécessaire
-						std::cout << "Ready to write to fd " << _fd_client << std::endl;
+				// Gérer l'écriture si nécessaire
+				std::cout << "Ready to write to fd " << _fd_client << std::endl;
 			}
-
 		}
 	}
 	return true;

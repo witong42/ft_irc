@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 12:09:46 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/17 12:33:11 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -325,14 +325,39 @@ bool Irc::CmdKick(std::vector<String> argument, Server server)
 bool Irc::CmdInvite(std::vector<String> argument, Server server)
 {
 
-	std::cout << "CmdKick called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
-	if (argument.size() < 1)
+	std::cout << "Invite called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
+	if (argument.size() != 3)
 	{
-		std::cerr << "Invalid INVITE command format from fd: " << server.getClientFd() << std::endl;
-		return false;
+
+		std::string error = "serveur 461 tonnick KICK :Not enough parameters\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+	}
+	else
+	{
+		Channel *channel = findChannel(argument[2]);
+		if (!channel)
+		{
+			std::string error = "serveur 403 tonnick " + argument[2] + " :No such channel\r\n";
+			send(server.getClientFd(), error.c_str(), error.length(), 0);
+			return false;
+		}
+		
+		Client *connectedUser = server.findConnectedByfd(server.getClientFd());
+		Client *invitedUser = server.findConnectedByNickname(argument[1]);
+		
+		if (!connectedUser || !invitedUser)
+		{
+			std::string error = "serveur 401 tonnick " + argument[1] + " :No such nick\r\n";
+			send(server.getClientFd(), error.c_str(), error.length(), 0);
+			return false;
+		}
+	
+		// channel->invite(invitedUser, argument[1]);
+		channel->invite(invitedUser);
+				
 	}
 	// Handle INVITE command
-	std::cout << "Handling INVITE command: " << argument[1] << server.getClientFd() << std::endl;
+	std::cout << "End INVITE command: " << argument[1] << server.getClientFd() << std::endl;
 	return true;
 }
 bool Irc::CmdTopic(std::vector<String> argument, Server server)
