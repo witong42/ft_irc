@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/15 10:06:21 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/17 09:59:12 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ class Irc
 {
 private:
 	std::map<String, Channel *> _channels;
-	std::map<int, Client *> _invited;
+	std::map<int, Client *> _clients;
 
 	Channel *findChannel(String channel);
 	bool CmdNick(std::vector<String> argument, Server server);
