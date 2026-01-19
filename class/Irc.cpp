@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 12:33:11 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/19 10:25:45 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,7 +235,10 @@ bool Irc::CmdPassw(std::vector<String> argument, Server server)
 	std::cout << "CmdPassw called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
 	if (argument.size() < 1)
 	{
-		std::cerr << "Invalid PASS command format from fd: " << server.getClientFd() << std::endl;
+		 //461 <nick> CONNECT :Not enough parameters
+		std::string error = "461 " + argument[1] + " CONNECT :Not enough parametersr\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		std::cout << error << std::endl;
 		return false;
 	}
 	std::cout << "CmdPassw called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
