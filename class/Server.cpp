@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/19 10:25:00 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/19 13:30:37 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -342,7 +342,7 @@ bool Server::wait()
 				socketUnblock();
 
 				// Ajouter le client à epoll
-				_ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered
+				_ev.events = EPOLLIN | EPOLLOUT| EPOLLET; // Edge-triggered
 				_ev.data.fd = _fd_client;
 				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &_ev) == -1)
 				{
@@ -351,7 +351,7 @@ bool Server::wait()
 				}
 			}
 			// Données disponibles sur un socket client
-			else
+			else if (events[i].events & EPOLLIN)
 			{
 				_fd_client = events[i].data.fd;
 				char buffer[BUFFER_SIZE];
@@ -384,16 +384,19 @@ bool Server::wait()
 					buffer[0] = 0;
 				}
 			}
+			
+			if (events[i].events & EPOLLOUT)
+			{
+				// Gérer l'écriture si nécessaire
+				std::cout << "EPOLLOUT Ready to write to fd " << _fd_client << std::endl;
+			}
+			
 			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
 				close(_fd_client);
 			}
 
-			if (events[i].events & EPOLLOUT)
-			{
-				// Gérer l'écriture si nécessaire
-				std::cout << "Ready to write to fd " << _fd_client << std::endl;
-			}
+
 		}
 	}
 	return true;
