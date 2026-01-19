@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/19 13:30:37 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/19 13:53:07 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,10 +138,7 @@ bool Server::createSocket()
 bool Server::socketUnblock()
 {
 	// Set socket to non-blocking implementation
-	int flags = fcntl(_fd_server, F_GETFL, 0);
-	if (flags == -1)
-		return false;
-	if (fcntl(_fd_server, F_SETFL, flags | O_NONBLOCK) == -1)
+	if (fcntl(_fd_server, F_SETFL, O_NONBLOCK) == -1)
 		return false;
 	return true;
 }
