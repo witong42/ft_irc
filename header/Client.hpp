@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 19:47:20 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/19 12:49:58 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ public:
 	const std::string &getIp() const;
 	const std::string &getNickname() const;
 	const std::string &getUsername() const;
-	std::string getBuffer() const;
+	std::string &getBuffer();
 	bool isRegistered() const;
 	bool isOperator() const;
 

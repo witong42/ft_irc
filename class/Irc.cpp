@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 12:33:11 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/19 12:19:43 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -324,40 +324,58 @@ bool Irc::CmdKick(std::vector<String> argument, Server server)
 }
 bool Irc::CmdInvite(std::vector<String> argument, Server server)
 {
+	Client *inviter = server.findConnectedByfd(server.getClientFd());
+	std::string inviterNick = "*";
+	if (inviter && !inviter->getNickname().empty())
+		inviterNick = inviter->getNickname();
 
-	std::cout << "Invite called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
-	if (argument.size() != 3)
+	if (argument.size() < 3)
 	{
-
-		std::string error = "serveur 461 tonnick KICK :Not enough parameters\r\n";
+		std::string error = "461 " + inviterNick + " INVITE :Not enough parameters\r\n";
 		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		return false;
 	}
-	else
+
+	std::string targetNick = argument[1];
+	std::string channelName = argument[2];
+
+	Channel *channel = findChannel(channelName);
+	if (!channel)
 	{
-		Channel *channel = findChannel(argument[2]);
-		if (!channel)
-		{
-			std::string error = "serveur 403 tonnick " + argument[2] + " :No such channel\r\n";
-			send(server.getClientFd(), error.c_str(), error.length(), 0);
-			return false;
-		}
-		
-		Client *connectedUser = server.findConnectedByfd(server.getClientFd());
-		Client *invitedUser = server.findConnectedByNickname(argument[1]);
-		
-		if (!connectedUser || !invitedUser)
-		{
-			std::string error = "serveur 401 tonnick " + argument[1] + " :No such nick\r\n";
-			send(server.getClientFd(), error.c_str(), error.length(), 0);
-			return false;
-		}
-	
-		// channel->invite(invitedUser, argument[1]);
-		channel->invite(invitedUser);
-				
+		std::string error = "403 " + inviterNick + " " + channelName + " :No such channel\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		return false;
 	}
-	// Handle INVITE command
-	std::cout << "End INVITE command: " << argument[1] << server.getClientFd() << std::endl;
+
+	if (!channel->hasUser(inviter))
+	{
+		std::string error = "442 " + inviterNick + " " + channelName + " :You're not on that channel\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		return false;
+	}
+
+	Client *target = server.findConnectedByNickname(targetNick);
+	if (!target)
+	{
+		std::string error = "401 " + inviterNick + " " + targetNick + " :No such nick/channel\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		return false;
+	}
+
+	if (channel->hasUser(target))
+	{
+		std::string error = "443 " + inviterNick + " " + targetNick + " " + channelName + " :is already on channel\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		return false;
+	}
+
+	channel->invite(target);
+	std::string inviteMsg = ":" + inviterNick + " INVITE " + targetNick + " :" + channelName + "\r\n";
+	send(target->getFd(), inviteMsg.c_str(), inviteMsg.length(), 0);
+
+	// Send RPL_INVITING (341) to the inviter
+	std::string confirmMsg = "341 " + inviterNick + " " + targetNick + " " + channelName + "\r\n";
+	send(server.getClientFd(), confirmMsg.c_str(), confirmMsg.length(), 0);
 	return true;
 }
 bool Irc::CmdTopic(std::vector<String> argument, Server server)
