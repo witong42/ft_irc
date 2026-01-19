@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 12:28:45 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/19 10:10:09 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,15 +206,9 @@ bool Server::CheckPassword(String password, int fd)
 	if (password == _password)
 	{
 		// Here you would typically check the password against the server's password
-		std::cout << "Password accepted for fd: " << password;
-		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd_server << std::endl;
 		std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-
 		// On envoie la réponse au client
-
 		std::string codes[4] = {"001", "002", "003", "004"};
-		std::cout << "Sending welcome messages to fd: " << fd << std::endl;
-		std::cout << "Codes to send: ";
 		std::cout << std::endl;
 		if (!(*findConnectedByfd(_fd_client)).message(codes))
 		{
@@ -224,7 +218,12 @@ bool Server::CheckPassword(String password, int fd)
 
 		return false;
 	}
-	std::cerr << "Invalid PASS command format from fd: " << _fd_server << std::endl;
+	
+	std::string error = "464 " + ( _connected_clients.find(fd)->second)->getUsername() + " :Password incorrect\r\n";
+
+	send(fd, error.c_str(), error.length(), 0);
+	
+	close(_fd_client);
 	return true;
 }
 
