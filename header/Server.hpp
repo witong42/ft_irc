@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 12:28:09 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/20 23:18:23 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <queue>
 #include "../header/String.hpp"
 #include "../header/Client.hpp"
 #define MAX_EVENTS 10
@@ -45,6 +46,9 @@ private:
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
 	std::map<int, Client *> _connected_clients; // liste des clients connectés
+	std::vector<std::string> _messages_queue;	// file d'attente des messages à envoyer aux clients
+
+	std::map<int, std::queue<std::string> > _out_queues; // file d'attente des messages par client
 
 	bool check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
@@ -56,6 +60,7 @@ private:
 	bool wait();							// boucle principale du serveur
 	bool CleanUp();							// nettoie les ressources utilisées
 	bool AddClient(int fd, std::string ip); // ajoute un client à la liste des connectés
+	void sendPendingMessages(int fd);		// envoie les messages en attente à un client
 
 public:
 	Server(const char *port, String password);
@@ -67,7 +72,7 @@ public:
 			return "Invalid port number";
 		}
 	};
-	bool SendClientMessage(int fd_client, std::string *codes);
+	void addToQueue(int fd, const std::string &msg);
 	Client *findConnectedByfd(int idRecherche);
 	Client *findConnectedByNickname(String Nickname);
 	Client *findConnectedByUsername(String Username);

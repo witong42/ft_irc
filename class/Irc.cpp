@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/19 10:25:45 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/20 20:43:10 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,13 @@ bool Irc::CmdNick(std::vector<String> argument, Server server)
 	if (nick.empty() || nick.length() > 9 || !isalnum(nick[0]))
 	{
 		std::string error = "432 " + nick + " :Erroneous nickname\r\n";
+		send(server.getClientFd(), error.c_str(), error.length(), 0);
+		return false;
+	}
+	// Si l'utilisateur existe deja
+	else if (server.findConnectedByNickname(nick) != NULL)
+	{
+		std::string error = "433 " + nick + " :Nickname is already in use\r\n";
 		send(server.getClientFd(), error.c_str(), error.length(), 0);
 		return false;
 	}
@@ -133,7 +140,6 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 
 		std::cout << "Channel " << argument[1] << " not found. Creating new channel." << std::endl;
 		Channel *newChannel = new Channel(argument[1], NULL);
-
 		std::cout << "Created new channel: fd " << server.getClientFd() << std::endl;
 		std::cout << "Added user fd " << invitedUser->getFd() << std::endl;
 		newChannel->addUser(invitedUser);
@@ -141,7 +147,6 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 		// Assuming NULL for creator for now
 		this->_channels[argument[1]] = newChannel;
 	}
-
 	// Handle JOIN command
 	std::cout << "Handling JOIN command: " << argument[1] << server.getClientFd() << std::endl;
 	return true;
@@ -189,7 +194,6 @@ bool Irc::CmdMode(std::vector<String> argument, Server server)
 		{
 			modeArgs.push_back(std::string(argument[i]));
 		}
-
 		channel->mode(client, modes, modeArgs);
 	}
 	return true;
@@ -209,9 +213,6 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server server)
 	std::cout << "Message: " << "Message to channel " + argument[2] << std::endl;
 	std::cout << "Channel exists: " << (this->_channels.find(argument[1]) != this->_channels.end() ? "Yes" : "No") << std::endl;
 	std::cout << "number of chennel" << this->_channels.size();
-	// this->_channels[vector_buffer[1]]->broadcast("Message to channel " + vector_buffer[2]);
-	// send(server.getClientFd(), vector_buffer[2].c_str(), vector_buffer[2].length(), 0);
-
 	if (this->_channels.find(argument[1]) != this->_channels.end())
 	{
 		Client *sender = server.findConnectedByfd(server.getClientFd());
@@ -226,7 +227,6 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server server)
 		std::string error = "403 " + argument[1] + " :No such channel\r\n";
 		send(server.getClientFd(), error.c_str(), error.length(), 0);
 	}
-
 	return true;
 }
 
@@ -354,10 +354,8 @@ bool Irc::CmdInvite(std::vector<String> argument, Server server)
 			send(server.getClientFd(), error.c_str(), error.length(), 0);
 			return false;
 		}
-	
 		// channel->invite(invitedUser, argument[1]);
 		channel->invite(invitedUser);
-				
 	}
 	// Handle INVITE command
 	std::cout << "End INVITE command: " << argument[1] << server.getClientFd() << std::endl;

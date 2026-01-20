@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/19 13:53:07 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/20 23:20:15 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,7 +203,7 @@ bool Server::CheckPassword(String password, int fd)
 	if (password == _password)
 	{
 		// Here you would typically check the password against the server's password
-		std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+		//std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
 		// On envoie la réponse au client
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
@@ -212,14 +212,14 @@ bool Server::CheckPassword(String password, int fd)
 			std::cerr << "Erreur send()" << std::endl;
 			return true;
 		}
-
+		addToQueue(fd, ":Bienvenue sur ft_irc!");
 		return false;
 	}
-	
-	std::string error = "464 " + ( _connected_clients.find(fd)->second)->getUsername() + " :Password incorrect\r\n";
+
+	std::string error = "464 " + (_connected_clients.find(fd)->second)->getUsername() + " :Password incorrect\r\n";
 
 	send(fd, error.c_str(), error.length(), 0);
-	
+
 	close(_fd_client);
 	return true;
 }
@@ -251,20 +251,7 @@ Client *Server::findConnectedByUsername(String Find)
 	return (NULL);
 }
 
-bool Server::SendClientMessage(int fd_client, std::string *codes)
-{
-	std::string message = ":localhost  " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
-	for (size_t i = 1; i < codes->size(); ++i)
-	{
-		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
-	}
-	if (send(fd_client, message.c_str(), message.length(), 0) < 0)
-	{
-		std::cerr << "Erreur send()" << std::endl;
-		return false;
-	}
-	return true;
-}
+
 
 bool Server::CleanUp()
 {
@@ -286,6 +273,53 @@ bool Server::check_port(const char *port)
 	if (port_num < 1 || port_num > 65535)
 		return false;
 	return true;
+}
+
+
+void Server::addToQueue(int fd, const std::string& msg) {
+	std::cout << "<--------Queueing message to fd " << fd << ": " << msg << std::endl;
+	std::string irc_msg = std::string((this->findConnectedByfd(fd))->getNickname()) + msg + "\r\n";
+	this->_out_queues[fd].push(irc_msg);  // Empile FIFO
+	std::cout <<"<--------Queue size for fd " << fd << ": " << this->_out_queues[fd].size() << std::endl;
+}
+
+
+void Server::sendPendingMessages(int fd)
+{
+	std::cout << " ----->Sending pending messages to fd " << fd << std::endl;
+	std::queue<std::string> &q = this->_out_queues[fd];
+	if(q.empty())
+	{
+		std::cout << "++++++>No pending messages for fd " << fd << std::endl;
+	}
+	while (!q.empty())
+	{
+		const std::string &msg = q.front();
+		std::cout << "------->Sending message to fd " << fd << ": " << msg << std::endl;
+		int sent = send(fd, msg.data(), msg.size(), MSG_DONTWAIT);
+		if (sent <= 0)
+		{
+			// EAGAIN : repoll plus tard, ou erreur
+			if (errno != EAGAIN && errno != EWOULDBLOCK)
+			{
+				// Erreur fatale, close(fd)
+			}
+			break; // Partial ou erreur : garde le msg
+		}
+		if ((size_t)sent == msg.size())
+		{
+			q.pop(); // Tout envoyé, retire
+		}
+		else
+		{
+			// Partial : découpe string si besoin (avancé)
+			break;
+		}
+	}
+	if (q.empty())
+	{
+		_out_queues.erase(fd); // Nettoie si vide
+	}
 }
 
 bool Server::wait()
@@ -325,7 +359,6 @@ bool Server::wait()
 					}
 					continue;
 				}
-
 				// Afficher info client
 				char client_ip[INET_ADDRSTRLEN];
 
@@ -339,7 +372,7 @@ bool Server::wait()
 				socketUnblock();
 
 				// Ajouter le client à epoll
-				_ev.events = EPOLLIN | EPOLLOUT| EPOLLET; // Edge-triggered
+				_ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered
 				_ev.data.fd = _fd_client;
 				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &_ev) == -1)
 				{
@@ -376,24 +409,21 @@ bool Server::wait()
 					buffer[count] = '\0';
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
-
 					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
-			
 			if (events[i].events & EPOLLOUT)
 			{
 				// Gérer l'écriture si nécessaire
+				std::cout << "EPOLLOUT event for fd " << events[i].data.fd << std::endl;
+				sendPendingMessages(events[i].data.fd);
 				std::cout << "EPOLLOUT Ready to write to fd " << _fd_client << std::endl;
 			}
-			
 			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
 				close(_fd_client);
 			}
-
-
 		}
 	}
 	return true;
