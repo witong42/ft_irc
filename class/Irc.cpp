@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/20 20:43:10 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 10:31:30 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 	{
 		client->setUsername(argument[1]);
 	}
-	std::cout << "Handling USER command: " << argument[1] << " for fd: " << server.getClientFd() << std::endl;
+	std::cout << "Handling CmdUser101"<< argument[1] << " for fd: " << server.getClientFd() << std::endl;
 	// Send welcome if NICK was set
 	if (client && !client->getNickname().empty())
 	{
@@ -107,8 +107,10 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 		welcome += "003 " + client->getNickname() + " :This is a sample message for code 003\r\n";
 		send(server.getClientFd(), welcome.c_str(), welcome.length(), 0);
 		std::cout << "Sent welcome to fd: " << server.getClientFd() << std::endl;
+		server.addToQueue(server.getClientFd(), client->getNickname() + " :Bienvenue sur ft_irc!");
 	}
-	std::cout << "			Handling USER command: " << argument[1] << " for fd: " << server.getClientFd() << std::endl;
+	
+	std::cout << "Handling CmdUser 113 command: " << argument[1] << " for fd: " << server.getClientFd() << "("<< server.getQueuesSize() <<")" << std::endl;
 	return true;
 }
 
@@ -247,7 +249,10 @@ bool Irc::CmdPassw(std::vector<String> argument, Server server)
 	{
 		if (server.CheckPassword(argument[1], server.getClientFd()))
 		{
+			std::cout  << "Q--" << server.getQueuesSize() <<	std::endl;
 			std::cout << "Password accepted for fd: " << server.getClientFd() << std::endl;
+					
+
 			return true;
 		}
 		else
@@ -395,7 +400,7 @@ bool Irc::parseCommand(std::string buffer, Server server)
 
 	// Echo - renvoyer les données au client
 	// send(_fd_client, buffer, count, 0);
-	std::cout << "parseCommand  fd client" << server.getClientFd();
+	std::cout << "parseCommand  fd client" << server.getClientFd() <<"--"<< server.getQueuesSize() << std::endl;
 
 	// send(server.getClientFd(), buffer.c_str(), buffer.length(), 0);
 	return true;
@@ -423,12 +428,13 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
 	for (size_t i = 0; i < str.get_vector().size(); ++i)
 	{
-		std::cout << "Argument " << i << ": '" << str.get_vector()[i] << "'" << std::endl;
+		//std::cout << "Argument " << i << ": '" << str.get_vector()[i] << "'" << std::endl;
 	}
 	if (commandMap.find(cmd) != commandMap.end())
 	{
 		// str.pop_front();
 		return (this->*(commandMap[cmd]))(str.get_vector(), server); // Notez les parenthèses !
+		
 	}
 	else
 	{

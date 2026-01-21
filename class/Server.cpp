@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/20 23:20:15 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 12:18:11 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,12 +207,13 @@ bool Server::CheckPassword(String password, int fd)
 		// On envoie la réponse au client
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
+		addToQueue(fd, "jegirard :Bienvenue sur ft_srv!");
 		if (!(*findConnectedByfd(_fd_client)).message(codes))
 		{
 			std::cerr << "Erreur send()" << std::endl;
 			return true;
 		}
-		addToQueue(fd, ":Bienvenue sur ft_irc!");
+		std::cout <<"<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
 		return false;
 	}
 
@@ -275,53 +276,6 @@ bool Server::check_port(const char *port)
 	return true;
 }
 
-
-void Server::addToQueue(int fd, const std::string& msg) {
-	std::cout << "<--------Queueing message to fd " << fd << ": " << msg << std::endl;
-	std::string irc_msg = std::string((this->findConnectedByfd(fd))->getNickname()) + msg + "\r\n";
-	this->_out_queues[fd].push(irc_msg);  // Empile FIFO
-	std::cout <<"<--------Queue size for fd " << fd << ": " << this->_out_queues[fd].size() << std::endl;
-}
-
-
-void Server::sendPendingMessages(int fd)
-{
-	std::cout << " ----->Sending pending messages to fd " << fd << std::endl;
-	std::queue<std::string> &q = this->_out_queues[fd];
-	if(q.empty())
-	{
-		std::cout << "++++++>No pending messages for fd " << fd << std::endl;
-	}
-	while (!q.empty())
-	{
-		const std::string &msg = q.front();
-		std::cout << "------->Sending message to fd " << fd << ": " << msg << std::endl;
-		int sent = send(fd, msg.data(), msg.size(), MSG_DONTWAIT);
-		if (sent <= 0)
-		{
-			// EAGAIN : repoll plus tard, ou erreur
-			if (errno != EAGAIN && errno != EWOULDBLOCK)
-			{
-				// Erreur fatale, close(fd)
-			}
-			break; // Partial ou erreur : garde le msg
-		}
-		if ((size_t)sent == msg.size())
-		{
-			q.pop(); // Tout envoyé, retire
-		}
-		else
-		{
-			// Partial : découpe string si besoin (avancé)
-			break;
-		}
-	}
-	if (q.empty())
-	{
-		_out_queues.erase(fd); // Nettoie si vide
-	}
-}
-
 bool Server::wait()
 {
 
@@ -330,7 +284,8 @@ bool Server::wait()
 	Irc irc = Irc();
 	while (true)
 	{
-		std::cout << "316 Waiting for events...\n";
+		std::cout <<"<334 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
+		std::cout << "335 Waiting for events...\n";
 		// equivqalent de poll
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
 		std::cout << " Waiting  passing\n";
@@ -343,6 +298,7 @@ bool Server::wait()
 		// Traiter tous les événements
 		for (int i = 0; i < nfds; i++)
 		{
+		
 			// Nouvelle connexion sur le socket serveur
 			if (events[i].data.fd == getServerFd())
 			{
@@ -357,6 +313,7 @@ bool Server::wait()
 					{
 						std::cerr << "Erreur accept\n";
 					}
+					
 					continue;
 				}
 				// Afficher info client
@@ -409,15 +366,19 @@ bool Server::wait()
 					buffer[count] = '\0';
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
-					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
+					std::cout <<"<416 fd Q" << getClientFd() << " (" << getQueuesSize()<<")"<<std::endl;
+
+					std::cout << "420 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
 			if (events[i].events & EPOLLOUT)
 			{
 				// Gérer l'écriture si nécessaire
-				std::cout << "EPOLLOUT event for fd " << events[i].data.fd << std::endl;
-				sendPendingMessages(events[i].data.fd);
+				std::cout << "EPOLLOUT event for fd " << events[i].data.fd << " Q :" << getQueuesSize() << std::endl;
+				
+				//sendPendingMessages(events[i].data.fd);
+				sendPendingMessages(_fd_client);
 				std::cout << "EPOLLOUT Ready to write to fd " << _fd_client << std::endl;
 			}
 			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
@@ -425,6 +386,8 @@ bool Server::wait()
 				close(_fd_client);
 			}
 		}
+		std::cout <<"<431 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
+		std::cout << "----------------------------------------\n";
 	}
 	return true;
 }
@@ -441,3 +404,56 @@ bool Server::AddClient(int fd, std::string ip)
 
 	// Here you would typically create a new Client object and add it to the _connected vector
 }
+
+
+void Server::addToQueue(int fd, const std::string& msg) {
+	std::cout << "<--------Queueing message to fd " << fd << ": " << msg << std::endl;
+	std::string irc_msg = std::string((this->findConnectedByfd(fd))->getNickname()) + msg + "\r\n";
+	this->_out_queues[fd].push(irc_msg);  // Empile FIFO
+	std::cout <<"<--------Queue size for fd " << fd << ": " << this->_out_queues[fd].size() << std::endl;
+}
+
+
+void Server::sendPendingMessages(int fd)
+{
+	std::cout << ">--------> SENDING MESSAGES to fd " << fd << "(" << getQueuesSize() << ")" << std::endl;
+	std::cout << "<--------Queue size for fd " << fd << ": " << this->_out_queues[fd].size() << std::endl;
+	if(getQueuesSize() > 0){
+		std::cout << "There are pending messages to send." << std::endl;
+	}
+	std::queue<std::string> &q = this->_out_queues[fd];
+
+	while (!q.empty())
+	{
+		const std::string &msg = q.front();
+		std::cout << "------->Sending message to fd " << fd << ": " << msg << std::endl;
+		int sent = send(fd, msg.data(), msg.size(), MSG_DONTWAIT);
+		if (sent <= 0)
+		{
+			// EAGAIN : repoll plus tard, ou erreur
+			if (errno != EAGAIN && errno != EWOULDBLOCK)
+			{
+				// Erreur fatale, close(fd)
+			}
+			break; // Partial ou erreur : garde le msg
+		}
+		if ((size_t)sent == msg.size())
+		{
+			q.pop(); // Tout envoyé, retire
+		}
+		else
+		{
+			// Partial : découpe string si besoin (avancé)
+			break;
+		}
+	}
+	if (q.empty())
+	{
+		_out_queues.erase(fd); // Nettoie si vide
+	}
+}
+int Server::getQueuesSize()
+{
+	return this->_out_queues.size();
+}
+

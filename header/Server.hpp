@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/20 23:18:23 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 10:09:15 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ public:
 	int &getClientFd();
 	bool CheckPassword(String password, int fd);
 	void Run();
-
+	int getQueuesSize();
+	
 	void Start();
 };

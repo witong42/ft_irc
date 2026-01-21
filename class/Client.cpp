@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/13 10:51:55 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 08:53:18 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ void Client::reply(const std::string &msg)
 }
 bool Client::message(std::string *codes)
 {
-	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
+	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc client!\r\n";
 	for (size_t i = 1; i < codes->size(); ++i)
 	{
 		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
