@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 12:18:11 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 14:47:25 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,7 +207,7 @@ bool Server::CheckPassword(String password, int fd)
 		// On envoie la réponse au client
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
-		addToQueue(fd, "jegirard :Bienvenue sur ft_srv!");
+		addToQueue(fd, "Bienvenue sur ft_srv!");
 		if (!(*findConnectedByfd(_fd_client)).message(codes))
 		{
 			std::cerr << "Erreur send()" << std::endl;
@@ -366,6 +366,7 @@ bool Server::wait()
 					buffer[count] = '\0';
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
+					std::cout <<"<---369 ADD--Queue size for fd " << _fd_client << ": " << _out_queues[_fd_client].front() << std::endl;
 					std::cout <<"<416 fd Q" << getClientFd() << " (" << getQueuesSize()<<")"<<std::endl;
 
 					std::cout << "420 Received from fd " << _fd_client << ": " << buffer << std::endl;
@@ -409,24 +410,24 @@ bool Server::AddClient(int fd, std::string ip)
 void Server::addToQueue(int fd, const std::string& msg) {
 	std::cout << "<--------Queueing message to fd " << fd << ": " << msg << std::endl;
 	std::string irc_msg = std::string((this->findConnectedByfd(fd))->getNickname()) + msg + "\r\n";
-	this->_out_queues[fd].push(irc_msg);  // Empile FIFO
-	std::cout <<"<--------Queue size for fd " << fd << ": " << this->_out_queues[fd].size() << std::endl;
+	_out_queues[fd].push(irc_msg);  // Empile FIFO
+	std::cout <<"<--------Queue size for fd " << fd << ": " << _out_queues[fd].size() << std::endl;
+	std::cout <<"<---ADD--Queue size for fd " << fd << ": " << _out_queues[fd].front() << std::endl;
 }
 
 
 void Server::sendPendingMessages(int fd)
 {
 	std::cout << ">--------> SENDING MESSAGES to fd " << fd << "(" << getQueuesSize() << ")" << std::endl;
-	std::cout << "<--------Queue size for fd " << fd << ": " << this->_out_queues[fd].size() << std::endl;
-	if(getQueuesSize() > 0){
-		std::cout << "There are pending messages to send." << std::endl;
-	}
+	std::cout << ">-------->Queue size for fd " << fd << ": " << _out_queues[fd].size() << std::endl;
+
+	std::cout <<"e<---ok----Queue size for fd " << fd << ": " << _out_queues[fd].front() << std::endl;
 	std::queue<std::string> &q = this->_out_queues[fd];
 
 	while (!q.empty())
 	{
 		const std::string &msg = q.front();
-		std::cout << "------->Sending message to fd " << fd << ": " << msg << std::endl;
+		std::cout << "DATA    ------->Sending message to fd " << fd << ": " << msg <<msg.data()<< std::endl;
 		int sent = send(fd, msg.data(), msg.size(), MSG_DONTWAIT);
 		if (sent <= 0)
 		{

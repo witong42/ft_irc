@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 10:31:30 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 15:19:43 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ Channel *Irc::findChannel(String channel)
 	return (it != _channels.end()) ? it->second : NULL;
 }
 
-bool Irc::CmdNick(std::vector<String> argument, Server server)
+bool Irc::CmdNick(std::vector<String> argument, Server &server)
 
 {
 	if (argument.size() < 2) // Adjusted for index 1 being the nick
@@ -83,7 +83,7 @@ bool Irc::CmdNick(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::CmdUser(std::vector<String> argument, Server server)
+bool Irc::CmdUser(std::vector<String> argument, Server &server)
 {
 	std::cout << "			CmdUser called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
 	if (argument.size() < 5) // USER <username> <hostname> <servername> <realname>
@@ -107,14 +107,14 @@ bool Irc::CmdUser(std::vector<String> argument, Server server)
 		welcome += "003 " + client->getNickname() + " :This is a sample message for code 003\r\n";
 		send(server.getClientFd(), welcome.c_str(), welcome.length(), 0);
 		std::cout << "Sent welcome to fd: " << server.getClientFd() << std::endl;
-		server.addToQueue(server.getClientFd(), client->getNickname() + " :Bienvenue sur ft_irc!");
+		server.addToQueue(server.getClientFd(), " :Bienvenue sur ft_irc!");
 	}
 	
 	std::cout << "Handling CmdUser 113 command: " << argument[1] << " for fd: " << server.getClientFd() << "("<< server.getQueuesSize() <<")" << std::endl;
 	return true;
 }
 
-bool Irc::CmdJoin(std::vector<String> argument, Server server)
+bool Irc::CmdJoin(std::vector<String> argument, Server &server)
 {
 	std::cout << "CmdJoin called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
 
@@ -154,7 +154,7 @@ bool Irc::CmdJoin(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::CmdPart(std::vector<String> argument, Server server)
+bool Irc::CmdPart(std::vector<String> argument, Server &server)
 {
 	if (argument.size() < 1)
 	{
@@ -166,7 +166,7 @@ bool Irc::CmdPart(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::CmdMode(std::vector<String> argument, Server server)
+bool Irc::CmdMode(std::vector<String> argument, Server &server)
 {
 	if (argument.size() < 2)
 	{
@@ -201,7 +201,7 @@ bool Irc::CmdMode(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::CmdPrivmsg(std::vector<String> argument, Server server)
+bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 {
 	if (argument.size() < 3)
 	{
@@ -232,7 +232,7 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::CmdPassw(std::vector<String> argument, Server server)
+bool Irc::CmdPassw(std::vector<String> argument, Server &server)
 {
 	std::cout << "CmdPassw called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
 	if (argument.size() < 1)
@@ -271,7 +271,7 @@ bool Irc::CmdPassw(std::vector<String> argument, Server server)
 	return false;
 }
 
-bool Irc::CmdCap(std::vector<String> argument, Server server)
+bool Irc::CmdCap(std::vector<String> argument, Server &server)
 {
 	std::cout << "CmdCap called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
 	if (argument.size() > 1)
@@ -295,7 +295,7 @@ bool Irc::CmdCap(std::vector<String> argument, Server server)
 	}
 	return true;
 }
-bool Irc::CmdKick(std::vector<String> argument, Server server)
+bool Irc::CmdKick(std::vector<String> argument, Server &server)
 {
 	if (argument.size() < 3)
 	{
@@ -330,7 +330,7 @@ bool Irc::CmdKick(std::vector<String> argument, Server server)
 	std::cout << "Handling KICK command: " << argument[1] << server.getClientFd() << std::endl;
 	return true;
 }
-bool Irc::CmdInvite(std::vector<String> argument, Server server)
+bool Irc::CmdInvite(std::vector<String> argument, Server &server)
 {
 
 	std::cout << "Invite called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
@@ -366,7 +366,7 @@ bool Irc::CmdInvite(std::vector<String> argument, Server server)
 	std::cout << "End INVITE command: " << argument[1] << server.getClientFd() << std::endl;
 	return true;
 }
-bool Irc::CmdTopic(std::vector<String> argument, Server server)
+bool Irc::CmdTopic(std::vector<String> argument, Server &server)
 {
 	std::cout << "CmdTopic called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
 	if (argument.size() < 1)
@@ -379,7 +379,7 @@ bool Irc::CmdTopic(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::parseCommand(std::string buffer, Server server)
+bool Irc::parseCommand(std::string buffer, Server &server)
 {
 
 	// Command parsing implementation
@@ -406,7 +406,7 @@ bool Irc::parseCommand(std::string buffer, Server server)
 	return true;
 }
 
-bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
+bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server)
 {
 	std::cout << "parseSwitchCommand cmd: '" << cmd << "' buffer: '" << buffer << "'\n fd client: " << server.getClientFd() << std::endl;
 	String str(buffer);
@@ -414,7 +414,7 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	if (parts.size() == 0)
 		return true;
 	cmd = parts[0];
-	std::map<std::string, bool (Irc::*)(std::vector<String>, Server)> commandMap;
+	std::map<std::string, bool (Irc::*)(std::vector<String>, Server &)> commandMap;
 	commandMap["PASS"] = &Irc::CmdPassw;
 	commandMap["NICK"] = &Irc::CmdNick;
 	commandMap["USER"] = &Irc::CmdUser;
@@ -422,7 +422,7 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server server)
 	commandMap["PART"] = &Irc::CmdPart;
 	commandMap["MODE"] = &Irc::CmdMode;
 	commandMap["CAP"] = &Irc::CmdCap;
-	commandMap["KICK"] = &Irc::CmdKick;
+	commandMap["KICK"] = &Irc::CmdKick;	
 	commandMap["INVITE"] = &Irc::CmdInvite;
 	commandMap["TOPIC"] = &Irc::CmdTopic;
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
