@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 14:47:25 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 16:17:29 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -284,8 +284,7 @@ bool Server::wait()
 	Irc irc = Irc();
 	while (true)
 	{
-		std::cout <<"<334 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
-		std::cout << "335 Waiting for events...\n";
+
 		// equivqalent de poll
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
 		std::cout << " Waiting  passing\n";
@@ -426,7 +425,7 @@ void Server::sendPendingMessages(int fd)
 
 	while (!q.empty())
 	{
-		const std::string &msg = q.front();
+		std::string &msg = q.front();
 		std::cout << "DATA    ------->Sending message to fd " << fd << ": " << msg <<msg.data()<< std::endl;
 		int sent = send(fd, msg.data(), msg.size(), MSG_DONTWAIT);
 		if (sent <= 0)
