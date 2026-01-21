@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 16:17:29 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 19:22:40 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,11 +208,11 @@ bool Server::CheckPassword(String password, int fd)
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
 		addToQueue(fd, "Bienvenue sur ft_srv!");
-		if (!(*findConnectedByfd(_fd_client)).message(codes))
-		{
-			std::cerr << "Erreur send()" << std::endl;
-			return true;
-		}
+	//	if (!(*findConnectedByfd(_fd_client)).message(codes))
+	//	{
+	//		std::cerr << "Erreur send()" << std::endl;
+	//		return true;
+	//	}
 		std::cout <<"<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
 		return false;
 	}
@@ -321,9 +321,7 @@ bool Server::wait()
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				AddClient(_fd_client, client_ip);
 
-				std::cout << "Nouvelle connexion de " << client_ip
-						  << ":" << ntohs(client_addr.sin_port) << "\n";
-				std::cout << "Client fd: " << _fd_client << "\n";
+
 				// Rendre le socket client non-bloquant
 				socketUnblock();
 
@@ -355,7 +353,7 @@ bool Server::wait()
 				else if (count == 0)
 				{
 					// Client a fermé la connexion
-					std::cout << "Client déconnecté (fd: " << _fd_client << ")\n";
+
 					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
 					close(_fd_client);
 				}
@@ -365,40 +363,29 @@ bool Server::wait()
 					buffer[count] = '\0';
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
-					std::cout <<"<---369 ADD--Queue size for fd " << _fd_client << ": " << _out_queues[_fd_client].front() << std::endl;
-					std::cout <<"<416 fd Q" << getClientFd() << " (" << getQueuesSize()<<")"<<std::endl;
 
-					std::cout << "420 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
 			if (events[i].events & EPOLLOUT)
 			{
-				// Gérer l'écriture si nécessaire
-				std::cout << "EPOLLOUT event for fd " << events[i].data.fd << " Q :" << getQueuesSize() << std::endl;
-				
-				//sendPendingMessages(events[i].data.fd);
 				sendPendingMessages(_fd_client);
-				std::cout << "EPOLLOUT Ready to write to fd " << _fd_client << std::endl;
 			}
 			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
 				close(_fd_client);
 			}
 		}
-		std::cout <<"<431 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
-		std::cout << "----------------------------------------\n";
+
 	}
 	return true;
 }
 bool Server::AddClient(int fd, std::string ip)
 {
 	Client *newClient;
-	std::cout << "Adding client with fd: " << fd << " and IP: " << ip << std::endl;
 	newClient = new Client(fd, ip);
 	_connected_clients[fd] = newClient;
-	std::cout << "Client added. Current number of invited clients: " << _connected_clients.size() << std::endl;
-	std::cout << "Client fd: " << newClient->getFd() << std::endl;
+
 
 	return newClient->isRegistered();
 
@@ -407,26 +394,20 @@ bool Server::AddClient(int fd, std::string ip)
 
 
 void Server::addToQueue(int fd, const std::string& msg) {
-	std::cout << "<--------Queueing message to fd " << fd << ": " << msg << std::endl;
 	std::string irc_msg = std::string((this->findConnectedByfd(fd))->getNickname()) + msg + "\r\n";
 	_out_queues[fd].push(irc_msg);  // Empile FIFO
-	std::cout <<"<--------Queue size for fd " << fd << ": " << _out_queues[fd].size() << std::endl;
-	std::cout <<"<---ADD--Queue size for fd " << fd << ": " << _out_queues[fd].front() << std::endl;
+
 }
 
 
 void Server::sendPendingMessages(int fd)
 {
-	std::cout << ">--------> SENDING MESSAGES to fd " << fd << "(" << getQueuesSize() << ")" << std::endl;
-	std::cout << ">-------->Queue size for fd " << fd << ": " << _out_queues[fd].size() << std::endl;
 
-	std::cout <<"e<---ok----Queue size for fd " << fd << ": " << _out_queues[fd].front() << std::endl;
 	std::queue<std::string> &q = this->_out_queues[fd];
 
 	while (!q.empty())
 	{
 		std::string &msg = q.front();
-		std::cout << "DATA    ------->Sending message to fd " << fd << ": " << msg <<msg.data()<< std::endl;
 		int sent = send(fd, msg.data(), msg.size(), MSG_DONTWAIT);
 		if (sent <= 0)
 		{

@@ -6,12 +6,11 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/08 19:47:20 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 19:39:12 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-
 #include <string>
 #include <iostream>
 #include <sys/socket.h>
@@ -53,8 +52,8 @@ public:
 	bool isOperator() const;
 
 	// Methods
-	void appendBuffer(const std::string &chunk); // To store incoming data
-	void clearBuffer();							 // To wipe buffer after processing
-	void reply(const std::string &msg);			 // To write to the socket (_fd)
+	void appendBuffer(const std::string &chunk);		// To store incoming data
+	void clearBuffer();									// To wipe buffer after processing
+	void reply(const std::string &msg);  // To send reply to client
 	bool message(std::string *codes);
-};
+};											// bool message(std::string *codes);

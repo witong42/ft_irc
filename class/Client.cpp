@@ -6,11 +6,12 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/21 08:53:18 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 20:03:36 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/Client.hpp"
+
 
 Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _buffer(""), _isOperator(false), _isRegistered(false)
 {
@@ -132,3 +133,4 @@ bool Client::message(std::string *codes)
 	}
 	return true;
 }
+	
