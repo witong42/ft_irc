@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 10:09:15 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 19:00:22 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 #include <queue>
 #include "../header/String.hpp"
 #include "../header/Client.hpp"
+
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 512
 
