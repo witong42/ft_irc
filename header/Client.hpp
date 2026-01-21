@@ -6,15 +6,18 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/19 12:49:58 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/21 04:36:01 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
 
 #include <string>
 #include <iostream>
 #include <sys/socket.h>
+#include <cerrno>
+#include <unistd.h>
 
 class Client
 {
@@ -26,6 +29,7 @@ private:
 	std::string _username;
 
 	std::string _buffer;
+	std::string _sendBuffer;
 	bool _isOperator;
 	bool _isRegistered;
 
@@ -55,6 +59,8 @@ public:
 	// Methods
 	void appendBuffer(const std::string &chunk); // To store incoming data
 	void clearBuffer();							 // To wipe buffer after processing
-	void reply(const std::string &msg);			 // To write to the socket (_fd)
-	bool message(std::string *codes);
+	void reply(const std::string &msg);			 // To queue message to send buffer
+	void flush();								 // To write queued messages to socket
 };
+
+#endif
