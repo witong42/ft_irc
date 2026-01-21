@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 19:22:40 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 21:09:19 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -393,9 +393,9 @@ bool Server::AddClient(int fd, std::string ip)
 }
 
 
-void Server::addToQueue(int fd, const std::string& msg) {
-	std::string irc_msg = std::string((this->findConnectedByfd(fd))->getNickname()) + msg + "\r\n";
-	_out_queues[fd].push(irc_msg);  // Empile FIFO
+void Server::addToQueue(int fd, const std::string& msg) {	
+	std::string finalMsg = msg+"\r\n";
+	_out_queues[fd].push(finalMsg);  // Empile FIFO
 
 }
 
@@ -408,7 +408,9 @@ void Server::sendPendingMessages(int fd)
 	while (!q.empty())
 	{
 		std::string &msg = q.front();
-		int sent = send(fd, msg.data(), msg.size(), MSG_DONTWAIT);
+		std::cout << "Sending to len " << msg.size() << ": " << msg << std::endl; 
+		int sent = send(fd, msg.c_str(), msg.size(), 0);
+		
 		if (sent <= 0)
 		{
 			// EAGAIN : repoll plus tard, ou erreur
