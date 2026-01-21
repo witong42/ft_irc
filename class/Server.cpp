@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 12:28:45 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 06:06:19 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 #include "../header/Server.hpp"
 #include "Irc.hpp"
 #include "Client.hpp"
+#include "../header/Replies.hpp"
 
 // Example command to test: irssi
 // sev IRC
@@ -58,8 +59,16 @@ Server::Server(const char *port, String password)
 	{
 		throw std::invalid_argument("Invalid port number");
 	}
-	Server(std::atoi(port), password);
-	// Constructor implementation
+	int p = std::atoi(port);
+	if (p < 1 || p > 65535)
+	{
+		throw std::invalid_argument("Invalid port number");
+	}
+	_password = password;
+	std::memset(&_address, 0, sizeof(_address));
+	_address.sin_port = htons(p);
+	_address.sin_family = AF_INET;
+	_address.sin_addr.s_addr = INADDR_ANY;
 }
 
 Server::~Server()
@@ -85,7 +94,7 @@ void Server::Run()
 	{
 		throw std::runtime_error("Socket creation failed");
 	}
-	if (!socketUnblock())
+	if (!socketUnblock(_fd_server))
 	{
 		throw std::runtime_error("Setting socket to non-blocking failed");
 	}
@@ -135,13 +144,13 @@ bool Server::createSocket()
 	return true;
 }
 
-bool Server::socketUnblock()
+bool Server::socketUnblock(int fd)
 {
 	// Set socket to non-blocking implementation
-	int flags = fcntl(_fd_server, F_GETFL, 0);
+	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1)
 		return false;
-	if (fcntl(_fd_server, F_SETFL, flags | O_NONBLOCK) == -1)
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
 		return false;
 	return true;
 }
@@ -190,7 +199,7 @@ bool Server::AddSocket()
 	// Ajouter le socket serveur à epoll
 	_ev.events = EPOLLIN;	  // Surveiller les événements de lecture
 	_ev.data.fd = _fd_server; // Ajouter le socket serveur à epoll
-	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_server, &_ev) < -1)
+	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_server, &_ev) == -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
 		close(_fd_server);
@@ -202,30 +211,18 @@ bool Server::AddSocket()
 
 bool Server::CheckPassword(String password, int fd)
 {
-
 	if (password == _password)
 	{
-		// Here you would typically check the password against the server's password
-		std::cout << "Password accepted for fd: " << password;
-		std::cout << "Received PASS command with password: " << _password << " from fd: " << _fd_server << std::endl;
-		std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-
-		// On envoie la réponse au client
-
-		std::string codes[4] = {"001", "002", "003", "004"};
-		std::cout << "Sending welcome messages to fd: " << fd << std::endl;
-		std::cout << "Codes to send: ";
-		std::cout << std::endl;
-		if (!(*findConnectedByfd(_fd_client)).message(codes))
+		std::cout << "Password accepted for fd: " << fd << std::endl;
+		Client *client = findConnectedByfd(fd);
+		if (client)
 		{
-			std::cerr << "Erreur send()" << std::endl;
+			// client->setPasswordAccepted(true); // Flag removed
 			return true;
 		}
-
-		return false;
 	}
 	std::cerr << "Invalid PASS command format from fd: " << _fd_server << std::endl;
-	return true;
+	return false;
 }
 
 Client *Server::findConnectedByfd(int idRecherche)
@@ -255,20 +252,7 @@ Client *Server::findConnectedByUsername(String Find)
 	return (NULL);
 }
 
-bool Server::SendClientMessage(int fd_client, std::string *codes)
-{
-	std::string message = ":localhost  " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
-	for (size_t i = 1; i < codes->size(); ++i)
-	{
-		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
-	}
-	if (send(fd_client, message.c_str(), message.length(), 0) < 0)
-	{
-		std::cerr << "Erreur send()" << std::endl;
-		return false;
-	}
-	return true;
-}
+
 
 bool Server::CleanUp()
 {
@@ -303,7 +287,6 @@ bool Server::wait()
 		std::cout << "316 Waiting for events...\n";
 		// equivqalent de poll
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
-		std::cout << " Waiting  passing\n";
 		if (nfds < 0)
 		{
 			std::cerr << "Erreur epoll_wait\n";
@@ -340,7 +323,11 @@ bool Server::wait()
 						  << ":" << ntohs(client_addr.sin_port) << "\n";
 				std::cout << "Client fd: " << _fd_client << "\n";
 				// Rendre le socket client non-bloquant
-				socketUnblock();
+				if (!socketUnblock(_fd_client)) {
+					std::cerr << "Erreur socketUnblock client\n";
+					close(_fd_client);
+					continue;
+				}
 
 				// Ajouter le client à epoll
 				_ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered
@@ -381,7 +368,11 @@ bool Server::wait()
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
 
-					std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
+					Client *client = findConnectedByfd(_fd_client);
+					if (client)
+						client->flush();
+
+					// std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
@@ -392,8 +383,9 @@ bool Server::wait()
 
 			if (events[i].events & EPOLLOUT)
 			{
-				// Gérer l'écriture si nécessaire
-				std::cout << "Ready to write to fd " << _fd_client << std::endl;
+				Client *client = findConnectedByfd(events[i].data.fd);
+				if (client)
+					client->flush();
 			}
 		}
 	}

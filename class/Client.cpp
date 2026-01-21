@@ -3,22 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/13 10:51:55 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 06:04:55 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/Client.hpp"
 
-Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _buffer(""), _isOperator(false), _isRegistered(false)
+Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _buffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
 {
 
-	
+
 }
 
-Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _buffer(""), _isOperator(false), _isRegistered(false)
+Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _buffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
 {
 }
 
@@ -86,7 +86,7 @@ const std::string &Client::getUsername(void) const
 	return this->_username;
 }
 
-std::string Client::getBuffer() const
+std::string &Client::getBuffer()
 {
 	return this->_buffer;
 }
@@ -113,22 +113,33 @@ void Client::clearBuffer()
 
 void Client::reply(const std::string &msg)
 {
-	std::string finalString = msg + "\r\n";
-	std::cout << "Sending to client " << this->_fd << ": " << finalString;	
-	if (send(this->_fd, finalString.c_str(), finalString.length(), 0) == -1)
-		std::cerr << "Error: Failed to send message to client " << this->_fd << std::endl;
+	// 50MB Safety Limit
+	if (this->_sendBuffer.length() + msg.length() > 51200000)
+	{
+		std::cerr << "Error: Buffer Limit for client " << this->_fd << std::endl;
+		return;
+	}
+	this->_sendBuffer += msg + "\r\n";
 }
-bool Client::message(std::string *codes)
+
+void Client::flush()
 {
-	std::string message = ":localhost " + codes[0] + " jegirard : Welcome to the ft_irc server!\r\n";
-	for (size_t i = 1; i < codes->size(); ++i)
+	if (this->_sendBuffer.empty())
+		return;
+
+	std::cout << "Flushing to client " << this->_fd << ": " << this->_sendBuffer;
+	ssize_t bytesSent = send(this->_fd, this->_sendBuffer.c_str(), this->_sendBuffer.length(), 0);
+
+	if (bytesSent == -1)
 	{
-		message += ":localhost " + codes[i] + " jegirard : This is a sample message for code " + codes[i] + "\r\n";
+		if (errno != EAGAIN && errno != EWOULDBLOCK)
+			std::cerr << "Error: Failed to send message to client " << this->_fd << std::endl;
 	}
-	if (send(_fd, message.c_str(), message.length(), 0) < 0)
+	else
 	{
-		std::cerr << "Erreur send()" << std::endl;
-		return false;
+		if (static_cast<size_t>(bytesSent) >= this->_sendBuffer.length())
+			this->_sendBuffer.clear();
+		else
+			this->_sendBuffer = this->_sendBuffer.substr(bytesSent);
 	}
-	return true;
 }

@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/17 12:28:09 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 05:50:21 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef SERVER_HPP
+#define SERVER_HPP
+
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
@@ -48,7 +50,7 @@ private:
 
 	bool check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
-	bool socketUnblock();					// met le socket en non-bloquant
+	bool socketUnblock(int fd);				// met le socket en non-bloquant
 	bool IPv4bind();						// lie le socket à une adresse IPv4
 	bool listening();						// met le socket en écoute
 	bool AddSocket();						// ajoute le socket au epoll
@@ -67,7 +69,6 @@ public:
 			return "Invalid port number";
 		}
 	};
-	bool SendClientMessage(int fd_client, std::string *codes);
 	Client *findConnectedByfd(int idRecherche);
 	Client *findConnectedByNickname(String Nickname);
 	Client *findConnectedByUsername(String Username);
@@ -79,3 +80,5 @@ public:
 
 	void Start();
 };
+
+#endif
