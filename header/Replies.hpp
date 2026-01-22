@@ -13,6 +13,9 @@
 #ifndef REPLIES_HPP
 #define REPLIES_HPP
 
+#include <string>
+#include <sstream>
+
 // Welcome Replies
 // 001 - Sent upon successful registration
 #define RPL_WELCOME(nick, user, host) (":localhost 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + user + "@" + host)
@@ -112,5 +115,11 @@
 
 // 502 - Cannot change mode for other users
 #define ERR_USERSDONTMATCH(nick) (":localhost 502 " + nick + " :Cannot change mode for other users")
+
+// 315 - End of WHO list
+#define RPL_ENDOFWHO(nick, target) (":localhost 315 " + nick + " " + target + " :End of /WHO list")
+
+// 352 - WHO
+#define RPL_WHOREPLY(nick, user, host, server, nick_target, status, hopcount) (":localhost 352 " + nick + " " + user + " " + host + " " + server + " " + nick_target + " " + status + " " + const_cast<char*>(hopcount) + " :0 " + user)
 
 #endif

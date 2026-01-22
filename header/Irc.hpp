@@ -41,6 +41,10 @@ private:
 	bool CmdKick(std::vector<String> argument, Server &server);
 	bool CmdInvite(std::vector<String> argument, Server &server);
 	bool CmdTopic(std::vector<String> argument, Server &server);
+	bool CmdPing(std::vector<String> argument, Server &server);
+	bool CmdWho(std::vector<String> argument, Server &server);
+	bool CmdPong(std::vector<String> argument, Server &server);
+	bool CmdQuit(std::vector<String> argument, Server &server);
 	bool parseSwitchCommand(std::string cmd, std::string buffer, Server &server);
 	void setCurrentClient(Server &server);
 

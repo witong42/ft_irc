@@ -30,6 +30,7 @@ private:
 
 	std::string _buffer;
 	std::string _sendBuffer;
+	std::string _hostname;
 	bool _isOperator;
 	bool _isRegistered;
 
@@ -46,12 +47,15 @@ public:
 	void setUsername(const std::string &username);
 	void setRegistered(bool status);
 	void setOperator(bool status);
+	void setHostname(const std::string &hostname);
 
 	// Getters
 	int getFd() const;
 	const std::string &getIp() const;
+	const std::string &getHostname() const;
 	const std::string &getNickname() const;
 	const std::string &getUsername() const;
+	
 	std::string &getBuffer();
 	bool isRegistered() const;
 	bool isOperator() const;

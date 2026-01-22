@@ -46,7 +46,8 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 {
 	Client *client = server.findConnectedByfd(server.getClientFd());
 	std::string currentNick = client ? client->getNickname() : "*";
-	if (currentNick.empty()) currentNick = "*";
+	if (currentNick.empty())
+		currentNick = "*";
 
 	if (argument.size() < 2)
 	{
@@ -67,7 +68,7 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 		client->reply(ERR_NICKNAMEINUSE(currentNick, nick));
 		return false;
 	}
-  
+
 	if (client)
 	{
 		client->setNickname(nick);
@@ -75,7 +76,8 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 
 	if (client && !client->getNickname().empty() && !client->getUsername().empty())
 	{
-		if (!client->isRegistered()) {
+		if (!client->isRegistered())
+		{
 			client->setRegistered(true);
 			std::string user = client->getUsername();
 			std::string host = client->getIp();
@@ -93,11 +95,13 @@ bool Irc::CmdUser(std::vector<String> argument, Server &server)
 {
 	Client *client = server.findConnectedByfd(server.getClientFd());
 	std::string nick = client ? client->getNickname() : "*";
-	if (nick.empty()) nick = "*";
+	if (nick.empty())
+		nick = "*";
 
 	if (argument.size() < 5)
 	{
-		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "USER"));
+		if (client)
+			client->reply(ERR_NEEDMOREPARAMS(nick, "USER"));
 		return false;
 	}
 
@@ -113,7 +117,8 @@ bool Irc::CmdUser(std::vector<String> argument, Server &server)
 
 	if (client && !client->getNickname().empty() && !client->getUsername().empty())
 	{
-		if (!client->isRegistered()) {
+		if (!client->isRegistered())
+		{
 			client->setRegistered(true);
 			nick = client->getNickname();
 			std::string user = client->getUsername();
@@ -141,7 +146,8 @@ bool Irc::CmdJoin(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 2)
 	{
-		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "JOIN"));
+		if (client)
+			client->reply(ERR_NEEDMOREPARAMS(nick, "JOIN"));
 		return false;
 	}
 	while (!argument[1].empty() && !isalnum(argument[1][argument[1].size() - 1]) && argument[1][argument[1].size() - 1] != '#')
@@ -193,7 +199,8 @@ bool Irc::CmdPart(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 2)
 	{
-		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "PART"));
+		if (client)
+			client->reply(ERR_NEEDMOREPARAMS(nick, "PART"));
 		return false;
 	}
 
@@ -202,13 +209,15 @@ bool Irc::CmdPart(std::vector<String> argument, Server &server)
 
 	if (!channel)
 	{
-		if (client) client->reply(ERR_NOSUCHCHANNEL(nick, channelName));
+		if (client)
+			client->reply(ERR_NOSUCHCHANNEL(nick, channelName));
 		return false;
 	}
 
 	if (!channel->hasUser(client))
 	{
-		if (client) client->reply(ERR_NOTONCHANNEL(nick, channelName));
+		if (client)
+			client->reply(ERR_NOTONCHANNEL(nick, channelName));
 		return false;
 	}
 	std::string reason = "";
@@ -217,11 +226,13 @@ bool Irc::CmdPart(std::vector<String> argument, Server &server)
 		reason = argument[2];
 		for (size_t i = 3; i < argument.size(); i++)
 			reason += " " + argument[i];
-		if (!reason.empty() && reason[0] == ':') reason = reason.substr(1);
+		if (!reason.empty() && reason[0] == ':')
+			reason = reason.substr(1);
 	}
 
 	std::string msg = ":" + nick + "!" + client->getUsername() + "@" + client->getIp() + " PART " + channelName;
-	if (!reason.empty()) msg += " :" + reason;
+	if (!reason.empty())
+		msg += " :" + reason;
 
 	channel->broadcast(msg);
 	channel->removeUser(client);
@@ -247,7 +258,8 @@ bool Irc::CmdMode(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 2)
 	{
-		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "MODE"));
+		if (client)
+			client->reply(ERR_NEEDMOREPARAMS(nick, "MODE"));
 		return false;
 	}
 	std::string target = argument[1];
@@ -286,12 +298,14 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 2)
 	{
-		if (client) client->reply(ERR_NORECIPIENT(nick, "PRIVMSG"));
+		if (client)
+			client->reply(ERR_NORECIPIENT(nick, "PRIVMSG"));
 		return false;
 	}
 	if (argument.size() < 3)
 	{
-		if (client) client->reply(ERR_NOTEXTTOSEND(nick));
+		if (client)
+			client->reply(ERR_NOTEXTTOSEND(nick));
 		return false;
 	}
 	String message = String(argument);
@@ -319,7 +333,8 @@ bool Irc::CmdPassw(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 2)
 	{
-		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "PASS"));
+		if (client)
+			client->reply(ERR_NEEDMOREPARAMS(nick, "PASS"));
 		return false;
 	}
 
@@ -335,7 +350,8 @@ bool Irc::CmdPassw(std::vector<String> argument, Server &server)
 	}
 	else
 	{
-		if (client) client->reply(ERR_PASSWDMISMATCH(nick));
+		if (client)
+			client->reply(ERR_PASSWDMISMATCH(nick));
 		return false;
 	}
 }
@@ -377,7 +393,8 @@ bool Irc::CmdKick(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 3)
 	{
-		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "KICK"));
+		if (client)
+			client->reply(ERR_NEEDMOREPARAMS(nick, "KICK"));
 		return false;
 	}
 
@@ -440,7 +457,8 @@ bool Irc::CmdInvite(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 3)
 	{
-		if (inviter) inviter->reply(ERR_NEEDMOREPARAMS(inviterNick, "INVITE"));
+		if (inviter)
+			inviter->reply(ERR_NEEDMOREPARAMS(inviterNick, "INVITE"));
 		return false;
 	}
 
@@ -450,26 +468,30 @@ bool Irc::CmdInvite(std::vector<String> argument, Server &server)
 	Channel *channel = findChannel(channelName);
 	if (!channel)
 	{
-		if (inviter) inviter->reply(ERR_NOSUCHCHANNEL(inviterNick, channelName));
+		if (inviter)
+			inviter->reply(ERR_NOSUCHCHANNEL(inviterNick, channelName));
 		return false;
 	}
 
 	if (!channel->hasUser(inviter))
 	{
-		if (inviter) inviter->reply(ERR_NOTONCHANNEL(inviterNick, channelName));
+		if (inviter)
+			inviter->reply(ERR_NOTONCHANNEL(inviterNick, channelName));
 		return false;
 	}
 
 	Client *target = server.findConnectedByNickname(targetNick);
 	if (!target)
 	{
-		if (inviter) inviter->reply(ERR_NOSUCHNICK(inviterNick, targetNick));
+		if (inviter)
+			inviter->reply(ERR_NOSUCHNICK(inviterNick, targetNick));
 		return false;
 	}
 
 	if (channel->hasUser(target))
 	{
-		if (inviter) inviter->reply(ERR_USERONCHANNEL(inviterNick, targetNick, channelName));
+		if (inviter)
+			inviter->reply(ERR_USERONCHANNEL(inviterNick, targetNick, channelName));
 		return false;
 	}
 
@@ -497,7 +519,8 @@ bool Irc::CmdTopic(std::vector<String> argument, Server &server)
 
 	if (argument.size() < 2)
 	{
-		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "TOPIC"));
+		if (client)
+			client->reply(ERR_NEEDMOREPARAMS(nick, "TOPIC"));
 		return false;
 	}
 
@@ -542,15 +565,137 @@ bool Irc::CmdTopic(std::vector<String> argument, Server &server)
 		std::string topic = channel->getTopic();
 		if (topic.empty())
 		{
-			if (client) client->reply(RPL_NOTOPIC(nick, channelName));
+			if (client)
+				client->reply(RPL_NOTOPIC(nick, channelName));
 		}
 		else
 		{
-			if (client) client->reply(RPL_TOPIC(nick, channelName, topic));
+			if (client)
+				client->reply(RPL_TOPIC(nick, channelName, topic));
 		}
 	}
 	return true;
 }
+bool Irc::CmdPing(std::vector<String> argument, Server &server)
+{
+std::cout << "Received Ping command" << server.getServerName() << std::endl;
+
+	if (_curent_client && !_curent_client->isRegistered())
+	{
+		_curent_client->reply(ERR_NOTREGISTERED(_curent_nick));
+		return false;
+	}
+
+	if (argument.size() < 2)
+	{
+		if (_curent_client)
+			_curent_client->reply(ERR_NEEDMOREPARAMS(_curent_nick, "PING"));
+		return false;
+	}
+
+	std::string server1 = std::string(argument[1]);
+	std::string server2 = argument.size() >= 3 ? std::string(argument[2]) : "";
+
+	std::string response = "PONG " + server1;
+	if (!server2.empty())
+		response += " " + server2;
+
+	if (_curent_client)
+		_curent_client->reply(response);
+
+	return true;
+}
+bool Irc::CmdWho(std::vector<String> argument, Server &server)
+{
+
+
+	if (_curent_client && !_curent_client->isRegistered())
+	{
+		_curent_client->reply(ERR_NOTREGISTERED(_curent_nick));
+		return false;
+	}
+
+	if (argument.size() < 2)
+	{
+		if (_curent_client)
+			_curent_client->reply(ERR_NEEDMOREPARAMS(_curent_nick, "WHO"));
+		return false;
+	}
+
+	std::string target = argument[1];
+	Client *targetClient = server.findConnectedByNickname(target);
+	if (targetClient)
+	{//RPL_WHOREPLY(nick, user, host, server, nick_target, status, hopcount)
+//		std::string response = RPL_WHOREPLY(_curent_nick, targetClient->getUsername(), targetClient->getHostname(), targetClient->getIp(), this->_curent_nick, "H", 0);
+//		if (_curent_client)
+//			_curent_client->reply(response);
+	}
+	if (_curent_client)
+		_curent_client->reply(RPL_ENDOFWHO(_curent_nick, target));
+	return true;
+
+}
+bool Irc::CmdPong(std::vector<String> argument, Server &server)
+{
+	std::cout << "Received PONG command" << server.getServerName() << std::endl;
+
+	if (_curent_client && !_curent_client->isRegistered())
+	{
+		_curent_client->reply(ERR_NOTREGISTERED(_curent_nick));
+		return false;
+	}
+
+	if (argument.size() < 2)
+	{
+		if (_curent_client)
+			_curent_client->reply(ERR_NEEDMOREPARAMS(_curent_nick, "PONG"));
+		return false;
+	}
+
+	return true;
+}
+bool Irc::CmdQuit(std::vector<String> argument, Server &server)
+{
+	std::cout << "Received QUIT command" << server.getServerName() << std::endl;
+	if (_curent_client && !_curent_client->isRegistered())
+	{
+		_curent_client->reply(ERR_NOTREGISTERED(_curent_nick));
+		return false;
+	}
+
+	std::string reason = "Client Quit";
+	if (argument.size() >= 2)
+	{
+		reason = argument[1];
+		for (size_t i = 2; i < argument.size(); i++)
+			reason += " " + argument[i];
+		if (!reason.empty() && reason[0] == ':')
+			reason = reason.substr(1);
+	}
+
+	std::string quitMsg = ":" + _curent_nick + "!" + _curent_client->getUsername() + "@" + _curent_client->getIp() + " QUIT :" + reason;
+
+	// Broadcast the quit message to all channels the client is part of
+	for (std::map<String, Channel *>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+	{
+		Channel *channel = it->second;
+		if (channel->hasUser(_curent_client))
+		{
+			channel->broadcast(quitMsg, _curent_client);
+			channel->removeUser(_curent_client);
+			if (channel->getUserCount() == 0)
+			{
+				_channels.erase(it->first);
+				delete channel;
+				break;
+			}
+		}
+	}
+
+	return true;
+}
+
+
 
 bool Irc::parseCommand(std::string buffer, Server &server)
 {
@@ -593,9 +738,14 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server
 	commandMap["INVITE"] = &Irc::CmdInvite;
 	commandMap["TOPIC"] = &Irc::CmdTopic;
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
+	commandMap["PING"] = &Irc::CmdPing;
+	commandMap["PONG"] = &Irc::CmdPong;
+	commandMap["WHO"] = &Irc::CmdWho;
+	commandMap["QUIT"] = &Irc::CmdQuit;
+	
 	if (commandMap.find(cmd) != commandMap.end())
 	{
-    setCurrentClient(server);
+		setCurrentClient(server);
 		return (this->*(commandMap[cmd]))(str.get_vector(), server);
 	}
 	else
