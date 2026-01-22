@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 10:14:29 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 10:16:22 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ private:
 	void sendPendingMessages(int fd);		// envoie les messages en attente à un client
 
 public:
-	Server(char *port, String password);
+	Server(const char *port, String password);
 	~Server();
 	class InvalidPortException : public std::exception
 	{

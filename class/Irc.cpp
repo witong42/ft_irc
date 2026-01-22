@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 09:41:07 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 10:19:51 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -396,6 +396,11 @@ bool Irc::parseCommand(std::string buffer, Server &server)
 	}
 	return true;
 }
+void Irc::setCurrentClient(Server &server)
+{
+	this->_curent_client = server.findConnectedByfd(server.getClientFd());
+	this->_curent_nick = this->_curent_client ? this->_curent_client->getNickname() : "*";
+}
 
 bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server)
 {
@@ -419,8 +424,7 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
 	if (commandMap.find(cmd) != commandMap.end())
 	{
-		this->_curent_client = server.findConnectedByfd(server.getClientFd());
-		this->_curent_nick = _curent_client ? _curent_client->getNickname() : "*";
+		setCurrentClient(server);
 		return (this->*(commandMap[cmd]))(str.get_vector(), server); // Notez les parenthèses !
 	}
 	else

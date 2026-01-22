@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 10:14:05 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 10:16:15 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@
 // /connect localhost 6667 pwd123
 
 
-Server::Server(char *port_char, String password) : _password(password)
+Server::Server(const char *port_char, String password) : _password(password)
 {
 	int port = check_port(port_char);
 	// Initialisation de l'adresse

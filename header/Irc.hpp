@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 18:33:37 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 10:20:22 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ private:
 	bool CmdInvite(std::vector<String> argument, Server &server);
 	bool CmdTopic(std::vector<String> argument, Server &server);
 	bool parseSwitchCommand(std::string cmd, std::string buffer, Server &server);
+	void setCurrentClient(Server &server);
 
 public:
 	Irc();
