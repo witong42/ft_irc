@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 11:24:54 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 12:29:02 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,7 +270,6 @@ int Server::check_port(const char *port)
 
 bool Server::wait()
 {
-
 	// Boucle principale
 	events->events = EPOLLIN | EPOLLET; // Edge-triggered
 	Irc irc = Irc();
@@ -288,98 +287,123 @@ bool Server::wait()
 		// Traiter tous les événements
 		for (int i = 0; i < nfds; i++)
 		{
-		
+
 			// Nouvelle connexion sur le socket serveur
 			if (events[i].data.fd == getServerFd())
 			{
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
 
-				_fd_client = accept(getServerFd(), (struct sockaddr *)&client_addr, &client_len);
+				int new_client_fd = accept(getServerFd(), (struct sockaddr *)&client_addr, &client_len);
 
-				if (_fd_client == -1)
+				if (new_client_fd == -1)
 				{
 					if (errno != EAGAIN && errno != EWOULDBLOCK)
 					{
 						std::cerr << "Erreur accept\n";
 					}
-					
+
 					continue;
 				}
 				// Afficher info client
 				char client_ip[INET_ADDRSTRLEN];
 
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
-				AddClient(_fd_client, client_ip);
+				AddClient(new_client_fd, client_ip);
 
 
 				// Rendre le socket client non-bloquant
-				if (!socketUnblock(_fd_client)) {
+				if (!socketUnblock(new_client_fd)) {
 					std::cerr << "Erreur socketUnblock client\n";
-					close(_fd_client);
+					close(new_client_fd);
 					continue;
 				}
 
 				// Ajouter le client à epoll
 				_ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered
-				_ev.data.fd = _fd_client;
-				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_client, &_ev) == -1)
+				_ev.data.fd = new_client_fd;
+				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, new_client_fd, &_ev) == -1)
 				{
 					std::cerr << "Erreur ajout client à epoll\n";
-					close(_fd_client);
+					close(new_client_fd);
 				}
 			}
 			// Données disponibles sur un socket client
-			else if (events[i].events & EPOLLIN)
+			else
 			{
-				_fd_client = events[i].data.fd;
-				char buffer[BUFFER_SIZE];
-				ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
+				int client_fd = events[i].data.fd;
 
-				if (count == -1)
+				if (events[i].events & EPOLLIN)
 				{
-					if (errno != EAGAIN)
+					_fd_client = client_fd;
+					char buffer[BUFFER_SIZE];
+					ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
+
+					if (count == -1)
 					{
-						std::cerr << "Erreur recv\n";
+						if (errno != EAGAIN)
+						{
+							std::cerr << "Erreur recv\n";
+							epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
+							if (_connected_clients.find(_fd_client) != _connected_clients.end())
+							{
+								delete _connected_clients[_fd_client];
+								_connected_clients.erase(_fd_client);
+							}
+							close(_fd_client);
+						}
+					}
+					else if (count == 0)
+					{
+						// Client a fermé la connexion
+
 						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
+						if (_connected_clients.find(_fd_client) != _connected_clients.end())
+						{
+							delete _connected_clients[_fd_client];
+							_connected_clients.erase(_fd_client);
+						}
 						close(_fd_client);
 					}
-				}
-				else if (count == 0)
-				{
-					// Client a fermé la connexion
+					else
+					{
+						// Traiter les données reçues
+						buffer[count] = '\0';
+						// parseCommand(std::string(buffer), _fd_client);
+						irc.parseCommand(buffer, *this);
 
-					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
-					close(_fd_client);
-				}
-				else
-				{
-					// Traiter les données reçues
-					buffer[count] = '\0';
-					// parseCommand(std::string(buffer), _fd_client);
-					irc.parseCommand(buffer, *this);
+						Client *client = findConnectedByfd(_fd_client);
+						if (client)
+							client->flush();
 
-					Client *client = findConnectedByfd(_fd_client);
+						// std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
+						buffer[0] = 0;
+					}
+				}
+
+				if (events[i].events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
+				{
+					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, client_fd, NULL);
+					if (_connected_clients.find(client_fd) != _connected_clients.end())
+					{
+						delete _connected_clients[client_fd];
+						_connected_clients.erase(client_fd);
+					}
+					close(client_fd);
+				}
+				else if (events[i].events & EPOLLOUT)
+				{
+					Client *client = findConnectedByfd(client_fd);
 					if (client)
 						client->flush();
-
-					// std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
-					buffer[0] = 0;
 				}
 			}
-      if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
-			{
-				close(_fd_client);
-			}
-
-			if (events[i].events & EPOLLOUT)
-			{
-				Client *client = findConnectedByfd(events[i].data.fd);
-				if (client)
-					client->flush();
-			}
 		}
-
+		for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
+		{
+			if (it->second)
+				it->second->flush();
+		}
 	}
 	return true;
 }
@@ -391,5 +415,4 @@ bool Server::AddClient(int fd, std::string ip)
 	_connected_clients[fd] = newClient;
 	return newClient->isRegistered();
 }
-
 
