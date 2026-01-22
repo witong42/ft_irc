@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 10:14:19 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 11:16:54 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	try
 	{
 		std::cout << INTROC << "Starting IRC Server on port " << argv[1] << " with password " << argv[2] << DEFAULT << std::endl;
-		Server srv(std::atoi(argv[1]), String (argv[2]));
+		Server srv(argv[1], String (argv[2]));
 		srv.Run();
 	}
 	catch(const std::exception& e)
