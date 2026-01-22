@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 05:50:21 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/22 10:16:22 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,10 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <queue>
 #include "../header/String.hpp"
 #include "../header/Client.hpp"
+
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 512
 
@@ -47,8 +49,11 @@ private:
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
 	std::map<int, Client *> _connected_clients; // liste des clients connectés
+	std::vector<std::string> _messages_queue;	// file d'attente des messages à envoyer aux clients
 
-	bool check_port(const char *port);		// vérifie la validité du port
+	std::map<int, std::queue<std::string> > _out_queues; // file d'attente des messages par client
+
+	int check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
 	bool socketUnblock(int fd);				// met le socket en non-bloquant
 	bool IPv4bind();						// lie le socket à une adresse IPv4
@@ -58,6 +63,7 @@ private:
 	bool wait();							// boucle principale du serveur
 	bool CleanUp();							// nettoie les ressources utilisées
 	bool AddClient(int fd, std::string ip); // ajoute un client à la liste des connectés
+	void sendPendingMessages(int fd);		// envoie les messages en attente à un client
 
 public:
 	Server(const char *port, String password);
@@ -72,12 +78,13 @@ public:
 	Client *findConnectedByfd(int idRecherche);
 	Client *findConnectedByNickname(String Nickname);
 	Client *findConnectedByUsername(String Username);
-	Server(int port, String password);
+
 	int &getServerFd();
 	int &getClientFd();
 	bool CheckPassword(String password, int fd);
 	void Run();
-
+	int getQueuesSize();
+	
 	void Start();
 };
 

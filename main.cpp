@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 05:50:21 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/22 10:14:19 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,11 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "Server.hpp"
-#include "String.hpp"
-#include "Irc.hpp"
-#include "Client.hpp"
+
+#include "../header/Server.hpp"
+#include "../header/String.hpp"
+#include "../header/Client.hpp"
+ 
 
 
 #define DEFAULT "\033[0m"				// #fefcfcff

@@ -3,13 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2026/01/17 11:29:45 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/21 18:42:18 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
+#pragma once
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
