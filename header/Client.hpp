@@ -3,17 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/21 19:39:12 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/21 04:36:01 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
+
 #include <string>
 #include <iostream>
 #include <sys/socket.h>
+#include <cerrno>
+#include <unistd.h>
 
 class Client
 {
@@ -25,6 +29,7 @@ private:
 	std::string _username;
 
 	std::string _buffer;
+	std::string _sendBuffer;
 	bool _isOperator;
 	bool _isRegistered;
 
@@ -47,13 +52,15 @@ public:
 	const std::string &getIp() const;
 	const std::string &getNickname() const;
 	const std::string &getUsername() const;
-	std::string getBuffer() const;
+	std::string &getBuffer();
 	bool isRegistered() const;
 	bool isOperator() const;
 
 	// Methods
-	void appendBuffer(const std::string &chunk);		// To store incoming data
-	void clearBuffer();									// To wipe buffer after processing
-	void reply(const std::string &msg);  // To send reply to client
-	bool message(std::string *codes);
-};											// bool message(std::string *codes);
+	void appendBuffer(const std::string &chunk); // To store incoming data
+	void clearBuffer();							 // To wipe buffer after processing
+	void reply(const std::string &msg);			 // To queue message to send buffer
+	void flush();								 // To write queued messages to socket
+};
+
+#endif

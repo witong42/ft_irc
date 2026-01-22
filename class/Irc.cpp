@@ -27,9 +27,8 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "String.hpp"
-#include "Irc.hpp"
 #include "../header/String.hpp"
+#include "../header/Irc.hpp"
 #include "../header/Server.hpp"
 #include "../header/Client.hpp"
 #include "../header/Replies.hpp"
@@ -45,20 +44,23 @@ Channel *Irc::findChannel(String channel)
 
 bool Irc::CmdNick(std::vector<String> argument, Server &server)
 {
-	if (argument.size() < 2) // Adjusted for index 1 being the nick
-	{
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string currentNick = client ? client->getNickname() : "*";
+	if (currentNick.empty()) currentNick = "*";
 
-		std::string error = "431 :No nickname given\r\n";
-		server.addToQueue(server.getClientFd(), error);
+	if (argument.size() < 2)
+	{
+		if (client)
+			client->reply(ERR_NONICKNAMEGIVEN(currentNick));
 		return false;
 	}
-	// Basic nick validation (add more as needed)
+
 	String nick = argument[1];
 	if (nick.empty() || nick.length() > 9 || !isalnum(nick[0]))
 	{
-		std::string error = "432 " + nick + " :Erroneous nickname\r\n";
-
-		server.addToQueue(server.getClientFd(), error);
+			Client *client = server.findConnectedByfd(server.getClientFd());
+		if (client)
+			client->reply(ERR_ERRONEUSNICKNAME(currentNick, nick));
 		return false;
 	}
 	// Si l'utilisateur existe deja
@@ -68,121 +70,200 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 		server.addToQueue(server.getClientFd(), error);
 		return false;
 	}
-	// Set nick in client
-	// Client *client = server.close(_fd_epoll);
+  
 	Client *client = server.findConnectedByfd(server.getClientFd());
 	if (client)
 	{
 		client->setNickname(nick);
 	}
-	std::cout << "Handling NICK command: " << nick << " for fd: " << server.getClientFd() << std::endl;
-	// Send RPL_WELCOME if USER was already sent (simplified)
-	// For now, just log; full impl needs state tracking
+
+	if (client && !client->getNickname().empty() && !client->getUsername().empty())
+	{
+		if (!client->isRegistered()) {
+			client->setRegistered(true);
+			std::string user = client->getUsername();
+			std::string host = client->getIp();
+
+			client->reply(RPL_WELCOME(nick, user, host));
+			client->reply(RPL_YOURHOST(nick));
+			client->reply(RPL_CREATED(nick));
+			client->reply(RPL_MYINFO(nick));
+		}
+	}
 	return true;
 }
+
 bool Irc::CmdUser(std::vector<String> argument, Server &server)
 {
-	std::cout << "			CmdUser called with argument size: " << argument.size() << " for fd: " << server.getClientFd() << std::endl;
-	if (argument.size() < 5) // USER <username> <hostname> <servername> <realname>
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string nick = client ? client->getNickname() : "*";
+	if (nick.empty()) nick = "*";
+
+	if (argument.size() < 5)
 	{
-		std::string error = "461 USER :Not enough parameters\r\n";
-		server.addToQueue(server.getClientFd(), error);
+		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "USER"));
 		return false;
 	}
-	// Set username in client
-	Client *client = server.findConnectedByfd(server.getClientFd());
+
 	if (client)
 	{
+		if (client->isRegistered())
+		{
+			client->reply(ERR_ALREADYREGISTERED(nick));
+			return true;
+		}
 		client->setUsername(argument[1]);
 	}
-	std::cout << "Handling CmdUser101" << argument[1] << " for fd: " << server.getClientFd() << std::endl;
-	// Send welcome if NICK was set
-	if (client && !client->getNickname().empty())
+
+	if (client && !client->getNickname().empty() && !client->getUsername().empty())
 	{
+		if (!client->isRegistered()) {
+			client->setRegistered(true);
+			nick = client->getNickname();
+			std::string user = client->getUsername();
+			std::string host = client->getIp();
 
-		server.addToQueue(server.getClientFd(),RPL_WELCOME(client->getNickname(), client->getUsername(), client->getIp()));
-		server.addToQueue(server.getClientFd(),RPL_YOURHOST(client->getNickname()));
-		server.addToQueue(server.getClientFd(),RPL_CREATED(client->getNickname()));
-		server.addToQueue(server.getClientFd(),RPL_MYINFO(client->getNickname()));
-
+			client->reply(RPL_WELCOME(nick, user, host));
+			client->reply(RPL_YOURHOST(nick));
+			client->reply(RPL_CREATED(nick));
+			client->reply(RPL_MYINFO(nick));
+		}
 	}
-
-	std::cout << "Handling CmdUser 113 command: " << argument[1] << " for fd: " << server.getClientFd() << "(" << server.getQueuesSize() << ")" << std::endl;
 	return true;
 }
 
 bool Irc::CmdJoin(std::vector<String> argument, Server &server)
 {
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string nick = client ? client->getNickname() : "*";
+
+	if (client && !client->isRegistered())
+	{
+		client->reply(ERR_NOTREGISTERED(nick));
+		return false;
+	}
 
 	if (argument.size() < 2)
 	{
-		std::cerr << "Invalid JOIN command format from fd: " << server.getClientFd() << std::endl;
+		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "JOIN"));
 		return false;
 	}
 	while (!argument[1].empty() && !isalnum(argument[1][argument[1].size() - 1]) && argument[1][argument[1].size() - 1] != '#')
 	{
 		argument[1] = argument[1].substr(0, argument[1].size() - 1);
 	}
-	// Channel* channel = findChannel(argument[0]);
 
 	std::map<String, Channel *>::iterator it = _channels.find(argument[1]);
-	Client *invitedUser = server.findConnectedByfd(server.getClientFd());
 	if (it != this->_channels.end())
 	{
-
-		it->second->addUser(invitedUser);
+		it->second->addUser(client);
 	}
 	else
 	{
-
 		Channel *newChannel = new Channel(argument[1], NULL);
-
-		newChannel->addUser(invitedUser);
-		newChannel->addOperator(invitedUser);
-		// Assuming NULL for creator for now
+		newChannel->addUser(client);
+		newChannel->addOperator(client);
 		this->_channels[argument[1]] = newChannel;
 	}
-	// Handle JOIN command
+
+	Channel *channel = this->_channels[argument[1]];
+
+	std::string joinMsg = ":" + nick + "!" + client->getUsername() + "@" + client->getIp() + " JOIN :" + argument[1];
+	channel->broadcast(joinMsg);
+
+	std::string topic = channel->getTopic();
+	if (!topic.empty())
+		client->reply(RPL_TOPIC(nick, argument[1], topic));
+	else
+		client->reply(RPL_NOTOPIC(nick, argument[1]));
+
+	std::string userList = channel->getUserList();
+	client->reply(RPL_NAMREPLY(nick, argument[1], userList));
+	client->reply(RPL_ENDOFNAMES(nick, argument[1]));
 
 	return true;
 }
 
 bool Irc::CmdPart(std::vector<String> argument, Server &server)
 {
-	if (argument.size() < 1)
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string nick = client ? client->getNickname() : "*";
+
+	if (client && !client->isRegistered())
 	{
-		std::cerr << "Invalid PART command format from fd: " << server.getClientFd() << std::endl;
+		client->reply(ERR_NOTREGISTERED(nick));
 		return false;
 	}
-	// Handle PART command
-	std::cout << "Handling PART command: " << argument[1] << server.getClientFd() << std::endl;
+
+	if (argument.size() < 2)
+	{
+		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "PART"));
+		return false;
+	}
+
+	std::string channelName = argument[1];
+	Channel *channel = findChannel(channelName);
+
+	if (!channel)
+	{
+		if (client) client->reply(ERR_NOSUCHCHANNEL(nick, channelName));
+		return false;
+	}
+
+	if (!channel->hasUser(client))
+	{
+		if (client) client->reply(ERR_NOTONCHANNEL(nick, channelName));
+		return false;
+	}
+	std::string reason = "";
+	if (argument.size() > 2)
+	{
+		reason = argument[2];
+		for (size_t i = 3; i < argument.size(); i++)
+			reason += " " + argument[i];
+		if (!reason.empty() && reason[0] == ':') reason = reason.substr(1);
+	}
+
+	std::string msg = ":" + nick + "!" + client->getUsername() + "@" + client->getIp() + " PART " + channelName;
+	if (!reason.empty()) msg += " :" + reason;
+
+	channel->broadcast(msg);
+	channel->removeUser(client);
+
+	if (channel->getUserCount() == 0)
+	{
+		_channels.erase(channelName);
+		delete channel;
+	}
 	return true;
 }
 
 bool Irc::CmdMode(std::vector<String> argument, Server &server)
 {
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string nick = client ? client->getNickname() : "*";
+
+	if (client && !client->isRegistered())
+	{
+		client->reply(ERR_NOTREGISTERED(nick));
+		return false;
+	}
+
 	if (argument.size() < 2)
 	{
-		std::cerr << "Invalid MODE command format from fd: " << server.getServerFd() << std::endl;
+		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "MODE"));
 		return false;
 	}
 	std::string target = argument[1];
-	Client *client = server.findConnectedByfd(server.getClientFd()); // Assuming this method exists
 	if (!client)
-	{
-		std::cerr << "Client not found for fd: " << server.getClientFd() << std::endl;
 		return false;
-	}
 
 	if (target[0] == '#' || target[0] == '&')
 	{
 		Channel *channel = findChannel(target);
 		if (!channel)
 		{
-			// 403 ERR_NOSUCHCHANNEL
-			std::string error = "403 " + client->getNickname() + " " + target + " :No such channel\r\n";
-			//		client->reply("403 " + client->getNickname() + " " + target + " :No such channel");
-			server.addToQueue(server.getClientFd(), error);
+			client->reply(ERR_NOSUCHCHANNEL(nick, target));
 			return false;
 		}
 		std::string modes = (argument.size() > 2) ? std::string(argument[2]) : "";
@@ -198,186 +279,282 @@ bool Irc::CmdMode(std::vector<String> argument, Server &server)
 
 bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 {
-	if (argument.size() < 3)
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string nick = client ? client->getNickname() : "*";
+
+	if (client && !client->isRegistered())
 	{
-		std::cerr << "Invalid PRIVMSG command format from fd: " << server.getClientFd() << std::endl;
+		client->reply(ERR_NOTREGISTERED(nick));
 		return false;
 	}
-	// Handle PRIVMSG command
+
+	if (argument.size() < 2)
+	{
+		if (client) client->reply(ERR_NORECIPIENT(nick, "PRIVMSG"));
+		return false;
+	}
+	if (argument.size() < 3)
+	{
+		if (client) client->reply(ERR_NOTEXTTOSEND(nick));
+		return false;
+	}
+
+	std::string message = argument[2];
+	for (size_t i = 3; i < argument.size(); i++) message += " " + argument[i];
+
 	if (this->_channels.find(argument[1]) != this->_channels.end())
 	{
-		Client *sender = server.findConnectedByfd(server.getClientFd());
-		if (sender && !sender->getNickname().empty())
+		if (client && !client->getNickname().empty())
 		{
-			std::string msg = ":" + sender->getNickname() + " PRIVMSG " + argument[1] + " " + argument[2] + "\r\n";
-			this->_channels[argument[1]]->broadcast(msg, sender);
+			std::string msg = ":" + client->getNickname() + " PRIVMSG " + argument[1] + " " + message;
+			this->_channels[argument[1]]->broadcast(msg, client);
 		}
 	}
 	else
 	{
-		std::string error = "403 " + argument[1] + " :No such channel\r\n";
-		;
-		server.addToQueue(server.getClientFd(), error);
+		if (client)
+			client->reply(ERR_NOSUCHCHANNEL(nick, argument[1]));
 	}
 	return true;
 }
 
 bool Irc::CmdPassw(std::vector<String> argument, Server &server)
 {
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string nick = (client && !client->getNickname().empty()) ? client->getNickname() : "*";
 
-	if (argument.size() < 1)
+	if (argument.size() < 2)
 	{
-		// 461 <nick> CONNECT :Not enough parameters
-		std::string error = "461 " + argument[1] + " CONNECT :Not enough parametersr\n";
-		server.addToQueue(server.getClientFd(), error);
-		std::cout << error << std::endl;
+		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "PASS"));
 		return false;
 	}
 
-	if (argument[1] != "")
+	if (client && client->isRegistered())
 	{
-		if (server.CheckPassword(argument[1], server.getClientFd()))
-		{
-			std::cout << "Q--" << server.getQueuesSize() << std::endl;
-			std::cout << "Password accepted for fd: " << server.getClientFd() << std::endl;
-
-			return true;
-		}
-		else
-		{
-			std::cout << "Password rejected for fd: " << server.getClientFd() << std::endl;
-		}
+		client->reply(ERR_ALREADYREGISTERED(nick));
+		return false;
 	}
 
+	if (server.CheckPassword(argument[1], server.getClientFd()))
+	{
+		return true;
+	}
 	else
 	{
-		std::cerr << "Invalid PASS command format from fd: " << server.getClientFd() << std::endl;
+		if (client) client->reply(ERR_PASSWDMISMATCH(nick));
+		return false;
 	}
-	return false;
 }
 
 bool Irc::CmdCap(std::vector<String> argument, Server &server)
 {
+	Client *client = server.findConnectedByfd(server.getClientFd());
 
-	if (argument.size() > 1)
+	if (argument.size() > 1 && client)
 	{
 		if (argument[1] == "LS")
 		{
-			std::string response = "CAP * LS :\r\n";
-			server.addToQueue(server.getClientFd(), response);
+			std::string response = "CAP * LS :";
+			client->reply(response);
 		}
 		else if (argument[1] == "REQ")
 		{
-			std::string response = "CAP * NAK :" + (argument.size() > 2 ? argument[2] : String("")) + "\r\n";
-			server.addToQueue(server.getClientFd(), response);
+			std::string response = "CAP * NAK :" + (argument.size() > 2 ? argument[2] : String(""));
+			client->reply(response);
 		}
 		else if (argument[1] == "END")
 		{
-			// Terminate CAP negotiation
-			std::string response = "CAP * ACK :END\r\n";
-			server.addToQueue(server.getClientFd(), response);
+			std::string response = "CAP * ACK :END";
+			client->reply(response);
 		}
 	}
 	return true;
 }
 bool Irc::CmdKick(std::vector<String> argument, Server &server)
 {
+	Client *client = server.findConnectedByfd(server.getClientFd());
+	std::string nick = client ? client->getNickname() : "*";
+
+	if (client && !client->isRegistered())
+	{
+		client->reply(ERR_NOTREGISTERED(nick));
+		return false;
+	}
+
 	if (argument.size() < 3)
 	{
-		std::string error = "461 KICK :Not enough parameters\r\n";
-		server.addToQueue(server.getClientFd(), error);
+		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "KICK"));
 		return false;
 	}
-	Channel *channel = findChannel(argument[1]);
-	if (!channel)
-	{
-		std::string error = "403 " + argument[1] + " :No such channel\r\n";
-		// send(server.getClientFd(), error.c_str(), error.length(), 0);
-		server.addToQueue(server.getClientFd(), error);
-		return false;
-	}
-	Client *kicker = server.findConnectedByfd(server.getClientFd());
-	if (!kicker)
-		return false;
 
-	std::string reason = "";
+	std::string channelName = argument[1];
+	std::string targetNick = argument[2];
+	std::string reason = nick;
+
 	if (argument.size() > 3)
 	{
-		for (size_t i = 3; i < argument.size(); i++)
-		{
-			if (i > 3)
-				reason += " ";
-			reason += argument[i];
-		}
+		reason = argument[3];
+		for (size_t i = 4; i < argument.size(); i++)
+			reason += " " + argument[i];
 		if (!reason.empty() && reason[0] == ':')
 			reason = reason.substr(1);
 	}
-	channel->kick(kicker, argument[2], reason);
 
+	Channel *channel = findChannel(channelName);
+	if (!channel)
+	{
+		if (client)
+			client->reply(ERR_NOSUCHCHANNEL(nick, channelName));
+		return false;
+	}
+
+	if (!channel->hasUser(client))
+	{
+		if (client)
+			client->reply(ERR_NOTONCHANNEL(nick, channelName));
+		return false;
+	}
+
+	if (!channel->isOperator(client))
+	{
+		if (client)
+			client->reply(ERR_CHANOPRIVSNEEDED(nick, channelName));
+		return false;
+	}
+
+	Client *target = server.findConnectedByNickname(targetNick);
+	if (!target || !channel->hasUser(target))
+	{
+		if (client)
+			client->reply(ERR_USERNOTINCHANNEL(nick, targetNick, channelName));
+		return false;
+	}
+	channel->kick(client, targetNick, reason);
 	return true;
 }
-bool Irc::CmdInvite(std::vector<String> argument, Server &server)
+
+bool Irc::CmdInvite(std::vector<String> argument, Server server)
 {
+	Client *inviter = server.findConnectedByfd(server.getClientFd());
+	std::string inviterNick = (inviter && !inviter->getNickname().empty()) ? inviter->getNickname() : "*";
 
-	if (argument.size() != 3)
+	if (inviter && !inviter->isRegistered())
 	{
-
-		std::string error = "serveur 461 tonnick KICK :Not enough parameters\r\n";
-		// send(server.getClientFd(), error.c_str(), error.length(), 0);
-		server.addToQueue(server.getClientFd(), error);
+		inviter->reply(ERR_NOTREGISTERED(inviterNick));
+		return false;
 	}
-	else
+
+	if (argument.size() < 3)
 	{
-		Channel *channel = findChannel(argument[2]);
-		if (!channel)
-		{
-			std::string error = "serveur 403 tonnick " + argument[2] + " :No such channel\r\n";
-			// send(server.getClientFd(), error.c_str(), error.length(), 0);
-			server.addToQueue(server.getClientFd(), error);
-			return false;
-		}
-
-		Client *connectedUser = server.findConnectedByfd(server.getClientFd());
-		Client *invitedUser = server.findConnectedByNickname(argument[1]);
-
-		if (!connectedUser || !invitedUser)
-		{
-			std::string error = "serveur 401 tonnick " + argument[1] + " :No such nick\r\n";
-			// send(server.getClientFd(), error.c_str(), error.length(), 0);
-			server.addToQueue(server.getClientFd(), error);
-			return false;
-		}
-		// channel->invite(invitedUser, argument[1]);
-		channel->invite(invitedUser);
+		if (inviter) inviter->reply(ERR_NEEDMOREPARAMS(inviterNick, "INVITE"));
+		return false;
 	}
-	// Handle INVITE command
+
+	std::string targetNick = argument[1];
+	std::string channelName = argument[2];
+
+	Channel *channel = findChannel(channelName);
+	if (!channel)
+	{
+		if (inviter) inviter->reply(ERR_NOSUCHCHANNEL(inviterNick, channelName));
+		return false;
+	}
+
+	if (!channel->hasUser(inviter))
+	{
+		if (inviter) inviter->reply(ERR_NOTONCHANNEL(inviterNick, channelName));
+		return false;
+	}
+
+	Client *target = server.findConnectedByNickname(targetNick);
+	if (!target)
+	{
+		if (inviter) inviter->reply(ERR_NOSUCHNICK(inviterNick, targetNick));
+		return false;
+	}
+
+	if (channel->hasUser(target))
+	{
+		if (inviter) inviter->reply(ERR_USERONCHANNEL(inviterNick, targetNick, channelName));
+		return false;
+	}
+
+	channel->invite(target);
+	std::string inviteMsg = ":" + inviterNick + " INVITE " + targetNick + " :" + channelName;
+	if (target)
+		target->reply(inviteMsg);
+
+	if (inviter)
+		inviter->reply(RPL_INVITING(inviterNick, channelName, targetNick));
 
 	return true;
 }
-bool Irc::CmdTopic(std::vector<String> argument, Server &server)
+
+bool Irc::CmdTopic(std::vector<String> argument, Server server)
 {
 	Client *client = server.findConnectedByfd(server.getClientFd());
 	std::string nick = client ? client->getNickname() : "*";
+
 	if (client && !client->isRegistered())
 	{
-		std::string error = "451 " + nick + " :You have not registered\r\n";
-		server.addToQueue(server.getClientFd(), error);
+		client->reply(ERR_NOTREGISTERED(nick));
 		return false;
 	}
-	{
-		std::cerr << "Client not found for fd: " << server.getClientFd() << std::endl;
-		return false;
-	}
+
 	if (argument.size() < 2)
 	{
-		// std::string error = "Invalid TOPIC command format from fd: " + std::to_string(server.getClientFd()) + "\r\n";
-		//	server.addToQueue(server.getClientFd(), error);
+		if (client) client->reply(ERR_NEEDMOREPARAMS(nick, "TOPIC"));
 		return false;
 	}
-	// Handle PART command
-	// std::cout << "Handling TOPIC command: " << argument[1] << server.getClientFd() << std::endl;
-	// server.addToQueue(server.getClientFd(), error);
 
+	std::string channelName = argument[1];
+	Channel *channel = findChannel(channelName);
+	if (!channel)
+	{
+		if (client)
+			client->reply(ERR_NOSUCHCHANNEL(nick, channelName));
+		return false;
+	}
+
+	if (argument.size() >= 3)
+	{
+		if (!channel->hasUser(client))
+		{
+			if (client)
+				client->reply(ERR_NOTONCHANNEL(nick, channelName));
+			return false;
+		}
+
+		if (channel->isTopicRestricted() && !channel->isOperator(client))
+		{
+			if (client)
+				client->reply(ERR_CHANOPRIVSNEEDED(nick, channelName));
+			return false;
+		}
+
+		std::string newTopic = argument[2];
+		for (size_t i = 3; i < argument.size(); i++)
+			newTopic += " " + argument[i];
+		if (!newTopic.empty() && newTopic[0] == ':')
+			newTopic = newTopic.substr(1);
+
+		channel->setTopic(newTopic);
+
+		std::string msg = ":" + nick + " TOPIC " + channelName + " :" + newTopic;
+		channel->broadcast(msg, NULL);
+	}
+	else
+	{
+		std::string topic = channel->getTopic();
+		if (topic.empty())
+		{
+			if (client) client->reply(RPL_NOTOPIC(nick, channelName));
+		}
+		else
+		{
+			if (client) client->reply(RPL_TOPIC(nick, channelName, topic));
+		}
+	}
 	return true;
 }
 
@@ -396,6 +573,7 @@ bool Irc::parseCommand(std::string buffer, Server &server)
 	}
 	return true;
 }
+
 void Irc::setCurrentClient(Server &server)
 {
 	this->_curent_client = server.findConnectedByfd(server.getClientFd());
@@ -404,7 +582,6 @@ void Irc::setCurrentClient(Server &server)
 
 bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server)
 {
-
 	String str(buffer);
 	std::vector<String> parts = str.split(" ");
 	if (parts.size() == 0)
@@ -424,13 +601,12 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server
 	commandMap["PRIVMSG"] = &Irc::CmdPrivmsg;
 	if (commandMap.find(cmd) != commandMap.end())
 	{
-		setCurrentClient(server);
-		return (this->*(commandMap[cmd]))(str.get_vector(), server); // Notez les parenthèses !
+    setCurrentClient(server);
+		return (this->*(commandMap[cmd]))(str.get_vector(), server);
 	}
 	else
 	{
-		std::string error = "Commande non reconnue: " + cmd + "\n";
-		server.addToQueue(server.getClientFd(), error);
+		std::cerr << "Command not recognized: " << cmd << std::endl;
 	}
 	return true;
 }

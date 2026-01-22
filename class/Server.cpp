@@ -33,6 +33,7 @@
 #include "../header/Server.hpp"
 #include "Irc.hpp"
 #include "Client.hpp"
+#include "../header/Replies.hpp"
 
 // Example command to test: irssi
 // sev IRC
@@ -73,7 +74,7 @@ void Server::Run()
 	{
 		throw std::runtime_error("Socket creation failed");
 	}
-	if (!socketUnblock())
+	if (!socketUnblock(_fd_server))
 	{
 		throw std::runtime_error("Setting socket to non-blocking failed");
 	}
@@ -123,10 +124,13 @@ bool Server::createSocket()
 	return true;
 }
 
-bool Server::socketUnblock()
+bool Server::socketUnblock(int fd)
 {
 	// Set socket to non-blocking implementation
-	if (fcntl(_fd_server, F_SETFL, O_NONBLOCK) == -1)
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1)
+		return false;
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
 		return false;
 	return true;
 }
@@ -175,7 +179,7 @@ bool Server::AddSocket()
 	// Ajouter le socket serveur à epoll
 	_ev.events = EPOLLIN;	  // Surveiller les événements de lecture
 	_ev.data.fd = _fd_server; // Ajouter le socket serveur à epoll
-	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_server, &_ev) < -1)
+	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_server, &_ev) == -1)
 	{
 		std::cerr << "Erreur epoll_ctl\n";
 		close(_fd_server);
@@ -187,7 +191,6 @@ bool Server::AddSocket()
 
 bool Server::CheckPassword(String password, int fd)
 {
-
 	if (password == _password)
 	{
 		// Here you would typically check the password against the server's password
@@ -276,7 +279,6 @@ bool Server::wait()
 
 		// Equivqalent de poll
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
-		std::cout << " Waiting  passing\n";
 		if (nfds < 0)
 		{
 			std::cerr << "Erreur epoll_wait\n";
@@ -312,7 +314,11 @@ bool Server::wait()
 
 
 				// Rendre le socket client non-bloquant
-				socketUnblock();
+				if (!socketUnblock(_fd_client)) {
+					std::cerr << "Erreur socketUnblock client\n";
+					close(_fd_client);
+					continue;
+				}
 
 				// Ajouter le client à epoll
 				_ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered
@@ -353,79 +359,37 @@ bool Server::wait()
 					// parseCommand(std::string(buffer), _fd_client);
 					irc.parseCommand(buffer, *this);
 
+					Client *client = findConnectedByfd(_fd_client);
+					if (client)
+						client->flush();
+
+					// std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 					buffer[0] = 0;
 				}
 			}
-			if (events[i].events & EPOLLOUT)
-			{
-				sendPendingMessages(_fd_client);
-			}
-			if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
+      if (events->events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 			{
 				close(_fd_client);
+			}
+
+			if (events[i].events & EPOLLOUT)
+			{
+				Client *client = findConnectedByfd(events[i].data.fd);
+				if (client)
+					client->flush();
 			}
 		}
 
 	}
 	return true;
 }
+
 bool Server::AddClient(int fd, std::string ip)
 {
 	Client *newClient;
 	newClient = new Client(fd, ip);
 	_connected_clients[fd] = newClient;
-
-
 	return newClient->isRegistered();
-
-	// Here you would typically create a new Client object and add it to the _connected vector
 }
 
-
-void Server::addToQueue(int fd, const std::string& msg) {	
-	std::string finalMsg = msg+"\r\n";
-	_out_queues[fd].push(finalMsg);  // Empile FIFO
-
-}
-
-
-void Server::sendPendingMessages(int fd)
-{
-
-	std::queue<std::string> &q = this->_out_queues[fd];
-
-	while (!q.empty())
-	{
-		std::string &msg = q.front();
-		std::cout << "Sending to len " << msg.size() << ": " << msg << std::endl; 
-		int sent = send(fd, msg.c_str(), msg.size(), 0);
-		
-		if (sent <= 0)
-		{
-			// EAGAIN : repoll plus tard, ou erreur
-			if (errno != EAGAIN && errno != EWOULDBLOCK)
-			{
-				// Erreur fatale, close(fd)
-			}
-			break; // Partial ou erreur : garde le msg
-		}
-		if ((size_t)sent == msg.size())
-		{
-			q.pop(); // Tout envoyé, retire
-		}
-		else
-		{
-			// Partial : découpe string si besoin (avancé)
-			break;
-		}
-	}
-	if (q.empty())
-	{
-		_out_queues.erase(fd); // Nettoie si vide
-	}
-}
-int Server::getQueuesSize()
-{
-	return this->_out_queues.size();
-}
 
