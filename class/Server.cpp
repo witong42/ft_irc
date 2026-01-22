@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 10:16:15 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 11:24:54 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,7 @@ bool Server::CheckPassword(String password, int fd)
 		// On envoie la réponse au client
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
-		addToQueue(fd, "Bienvenue sur ft_srv!");
+		// addToQueue(fd, "Bienvenue sur ft_srv!");
 	//	if (!(*findConnectedByfd(_fd_client)).message(codes))
 	//	{
 	//		std::cerr << "Erreur send()" << std::endl;

@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 10:19:51 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 11:23:27 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,20 +58,16 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 	String nick = argument[1];
 	if (nick.empty() || nick.length() > 9 || !isalnum(nick[0]))
 	{
-			Client *client = server.findConnectedByfd(server.getClientFd());
-		if (client)
-			client->reply(ERR_ERRONEUSNICKNAME(currentNick, nick));
+		client->reply(ERR_ERRONEUSNICKNAME(currentNick, nick));
 		return false;
 	}
 	// Si l'utilisateur existe deja
 	else if (server.findConnectedByNickname(nick) != NULL)
 	{
-		std::string error = "433 " + nick + " :Nickname is already in use\r\n";
-		server.addToQueue(server.getClientFd(), error);
+		client->reply(ERR_NICKNAMEINUSE(currentNick, nick));
 		return false;
 	}
   
-	Client *client = server.findConnectedByfd(server.getClientFd());
 	if (client)
 	{
 		client->setNickname(nick);
@@ -433,7 +429,7 @@ bool Irc::CmdKick(std::vector<String> argument, Server &server)
 	return true;
 }
 
-bool Irc::CmdInvite(std::vector<String> argument, Server server)
+bool Irc::CmdInvite(std::vector<String> argument, Server &server)
 {
 	Client *inviter = server.findConnectedByfd(server.getClientFd());
 	std::string inviterNick = (inviter && !inviter->getNickname().empty()) ? inviter->getNickname() : "*";
@@ -490,7 +486,7 @@ bool Irc::CmdInvite(std::vector<String> argument, Server server)
 	return true;
 }
 
-bool Irc::CmdTopic(std::vector<String> argument, Server server)
+bool Irc::CmdTopic(std::vector<String> argument, Server &server)
 {
 	Client *client = server.findConnectedByfd(server.getClientFd());
 	std::string nick = client ? client->getNickname() : "*";
