@@ -24,6 +24,7 @@ public:
 	String();
 	String(std::string str);
 	String(const String &other);
+	String(std::vector<String> vec,std::string delimiter =" ");
 	std::string join();
 	std::vector<String> get_vector();
 	std::vector<String> split(const std::string &delimiter);

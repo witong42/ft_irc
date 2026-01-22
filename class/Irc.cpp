@@ -294,22 +294,22 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 		if (client) client->reply(ERR_NOTEXTTOSEND(nick));
 		return false;
 	}
+	String channel = argument[1];
 
-	std::string message = argument[2];
-	for (size_t i = 3; i < argument.size(); i++) message += " " + argument[i];
-
-	if (this->_channels.find(argument[1]) != this->_channels.end())
+	
+	String message = String(argument);
+	if (this->_channels.find(channel) != this->_channels.end())
 	{
 		if (client && !client->getNickname().empty())
 		{
-			std::string msg = ":" + client->getNickname() + " PRIVMSG " + argument[1] + " " + message;
-			this->_channels[argument[1]]->broadcast(msg, client);
+			std::string msg = ":" + client->getNickname() + " PRIVMSG " + message;
+			this->_channels[channel]->broadcast(msg, client);
 		}
 	}
 	else
 	{
 		if (client)
-			client->reply(ERR_NOSUCHCHANNEL(nick, argument[1]));
+			client->reply(ERR_NOSUCHCHANNEL(nick, channel));
 	}
 	return true;
 }

@@ -18,6 +18,10 @@
 String ::String(std::string str) : std::string(str) {};
 String ::String() : std::string() {};
 String ::String(const String &other) : std::string(other) {};
+String ::String(std::vector<String> vec,std::string delimiter) : _delimiter(delimiter)
+{
+	_vector = vec;
+}
 
 std::vector<String> String ::split(const std::string &delimiter)
 {
@@ -54,6 +58,7 @@ std::string String ::join()
 	
 	return _str;
 }
+
 std::vector<String> String ::get_vector()
 {
 
