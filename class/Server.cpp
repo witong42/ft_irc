@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 21:09:19 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 10:14:05 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,27 +38,15 @@
 // sev IRC
 // /connect localhost 6667 pwd123
 
-Server::Server(int port, String password)
+
+Server::Server(char *port_char, String password) : _password(password)
 {
-	if (port < 1 || port > 65535)
-	{
-		throw std::invalid_argument("Invalid port number");
-	}
-	_password = password;
+	int port = check_port(port_char);
 	// Initialisation de l'adresse
 	std::memset(&_address, 0, sizeof(_address));
 	_address.sin_port = htons(port);
 	_address.sin_family = AF_INET;
 	_address.sin_addr.s_addr = INADDR_ANY;
-	// Constructor implementation
-}
-Server::Server(const char *port, String password)
-{
-	if (!check_port(port))
-	{
-		throw std::invalid_argument("Invalid port number");
-	}
-	Server(std::atoi(port), password);
 	// Constructor implementation
 }
 
@@ -262,30 +250,31 @@ bool Server::CleanUp()
 	return 0;
 }
 
-bool Server::check_port(const char *port)
+int Server::check_port(const char *port)
 {
 	int len = std::strlen(port);
 	for (int i = 0; i < len; i++)
 	{
 		if (!isdigit(port[i]))
-			return false;
+			throw std::invalid_argument("Invalid port number");
+
 	}
 	int port_num = std::atoi(port);
 	if (port_num < 1 || port_num > 65535)
-		return false;
-	return true;
+		throw std::invalid_argument("Invalid port number");
+	return port_num;
 }
 
 bool Server::wait()
 {
 
-	// 6. Boucle principale
+	// Boucle principale
 	events->events = EPOLLIN | EPOLLET; // Edge-triggered
 	Irc irc = Irc();
 	while (true)
 	{
 
-		// equivqalent de poll
+		// Equivqalent de poll
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
 		std::cout << " Waiting  passing\n";
 		if (nfds < 0)

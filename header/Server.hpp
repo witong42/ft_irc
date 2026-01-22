@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/21 19:00:22 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/22 10:14:29 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ private:
 
 	std::map<int, std::queue<std::string> > _out_queues; // file d'attente des messages par client
 
-	bool check_port(const char *port);		// vérifie la validité du port
+	int check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
 	bool socketUnblock();					// met le socket en non-bloquant
 	bool IPv4bind();						// lie le socket à une adresse IPv4
@@ -64,7 +64,7 @@ private:
 	void sendPendingMessages(int fd);		// envoie les messages en attente à un client
 
 public:
-	Server(const char *port, String password);
+	Server(char *port, String password);
 	~Server();
 	class InvalidPortException : public std::exception
 	{
@@ -77,7 +77,7 @@ public:
 	Client *findConnectedByfd(int idRecherche);
 	Client *findConnectedByNickname(String Nickname);
 	Client *findConnectedByUsername(String Username);
-	Server(int port, String password);
+
 	int &getServerFd();
 	int &getClientFd();
 	bool CheckPassword(String password, int fd);
