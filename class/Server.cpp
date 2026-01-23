@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 15:16:31 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 16:15:42 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,23 @@ Server::Server(const char *port_char, String password) : _password(password)
 Server::~Server()
 {
 	// Destructor implementation
+	std::cout << "Cleaning up server resources..." << std::endl;
+	
+	for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
+	{
+		if (it->second)
+			delete it->second;
+		if (it->first)
+			close(it->first);	
+	}
+	_connected_clients.clear();
+	for (_ev.data.fd = 0; _ev.data.fd < MAX_EVENTS; ++_ev.data.fd)
+	{
+		close(_ev.data.fd);
+	}
+	close(_fd_epoll);
+	close(_fd_server);
+	std::cout << "Server resources cleaned up." << std::endl;
 }
 void Server::Start()
 {
