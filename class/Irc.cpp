@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 11:23:27 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 10:26:53 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -625,10 +625,10 @@ bool Irc::CmdWho(std::vector<String> argument, Server &server)
 	std::string target = argument[1];
 	Client *targetClient = server.findConnectedByNickname(target);
 	if (targetClient)
-	{//RPL_WHOREPLY(nick, user, host, server, nick_target, status, hopcount)
-//		std::string response = RPL_WHOREPLY(_curent_nick, targetClient->getUsername(), targetClient->getHostname(), targetClient->getIp(), this->_curent_nick, "H", 0);
-//		if (_curent_client)
-//			_curent_client->reply(response);
+	{// RPL_WHOREPLY(nick, user, host, server, nick_target, status, hopcount)
+		std::string response = RPL_WHOREPLY(_curent_nick, targetClient->getUsername(), targetClient->getIp(), server.getServerName(), this->_curent_nick, "H", "0");
+		if (_curent_client)
+			_curent_client->reply(response);
 	}
 	if (_curent_client)
 		_curent_client->reply(RPL_ENDOFWHO(_curent_nick, target));

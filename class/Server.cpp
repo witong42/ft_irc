@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 12:29:02 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/23 10:52:52 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@
 #include "Client.hpp"
 #include "../header/Replies.hpp"
 
+
 // Example command to test: irssi
 // sev IRC
 // /connect localhost 6667 pwd123
@@ -48,6 +49,8 @@ Server::Server(const char *port_char, String password) : _password(password)
 	_address.sin_port = htons(port);
 	_address.sin_family = AF_INET;
 	_address.sin_addr.s_addr = INADDR_ANY;
+	gethostname((char *)_SERVER_NAME.c_str(), 256);
+
 	// Constructor implementation
 }
 
