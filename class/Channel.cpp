@@ -6,12 +6,13 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/17 12:05:30 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/23 12:34:25 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/Channel.hpp"
 #include "../header/Client.hpp"
+#include "../header/Replies.hpp"
 
 Channel::Channel() : _name(""), _topic(""), _isInviteOnly(false), _isTopicRestricted(false), _key(""), _limit("")
 {
@@ -181,14 +182,14 @@ void Channel::kick(Client *kicker, const std::string &targetNick, const std::str
 {
 	if (!this->isOperator(kicker))
 	{
-		kicker->reply("482 " + kicker->getNickname() + " " + this->_name + " :You're not channel operator");
+		kicker->reply(ERR_CHANOPRIVSNEEDED(kicker->getNickname(), this->_name));
 		return;
 	}
 
 	Client *target = findUserByNickname(targetNick);
 	if (!target)
 	{
-		kicker->reply("441 " + kicker->getNickname() + " " + targetNick + " " + this->_name + " :They aren't on that channel");
+		kicker->reply(ERR_USERNOTINCHANNEL(kicker->getNickname(), targetNick, this->_name));
 		return;
 	}
 
@@ -216,13 +217,13 @@ Client *Channel::findUserByNickname(const std::string &nickname)
 	return NULL;
 }
 
-void	Channel::broadcast(const std::string &msg)
+void Channel::broadcast(const std::string &msg)
 {
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
 		it->first->reply(msg);
 }
 
-void	Channel::broadcast(const std::string &msg, Client *excludeUser)
+void Channel::broadcast(const std::string &msg, Client *excludeUser)
 {
 	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
 	{
@@ -304,23 +305,33 @@ void Channel::processModeChar(char c, ModeContext &ctx, Client *user)
 		return;
 	}
 
+	if (std::string("itklo").find(c) != std::string::npos)
+	{
+		if (!checkOperatorPrivileges(user))
+			return;
+	}
+
 	bool success = false;
 	switch (c)
 	{
-		case 'i': success = handleModeI(ctx);
-			break;
-		case 't': success = handleModeT(ctx);
-			break;
-		case 'k': success = handleModeK(ctx);
-			break;
-		case 'l': success = handleModeL(ctx);
-			break;
-		case 'o': success = handleModeO(ctx);
-			break;
-		default:
-			// RFC 2812: 472 ERR_UNKNOWNMODE
-			user->reply("472 " + user->getNickname() + " " + c + " :is unknown mode char to me");
-			break;
+	case 'i':
+		success = handleModeI(ctx);
+		break;
+	case 't':
+		success = handleModeT(ctx);
+		break;
+	case 'k':
+		success = handleModeK(ctx);
+		break;
+	case 'l':
+		success = handleModeL(ctx);
+		break;
+	case 'o':
+		success = handleModeO(ctx);
+		break;
+	default:
+		user->reply(ERR_UNKNOWNMODE(user->getNickname(), std::string(1, c), this->_name));
+		break;
 	}
 
 	if (success)
@@ -346,27 +357,25 @@ void Channel::sendChannelModes(Client *user)
 		modeStr += "t";
 	if (hasKey())
 		modeStr += "k";
-	if (hasLimit()) {
+	if (hasLimit())
+	{
 		modeStr += "l";
 		argsStr += " " + getLimit();
 	}
-
-	// 324 RPL_CHANNELMODEIS
-	user->reply("324 " + user->getNickname() + " " + this->_name + " " + modeStr + argsStr);
+	user->reply(RPL_CHANNELMODEIS(user->getNickname(), this->_name, modeStr + argsStr));
 }
 
 bool Channel::checkOperatorPrivileges(Client *user)
 {
 	if (!isOperator(user))
 	{
-		// 482 ERR_CHANOPRIVSNEEDED
-		user->reply("482 " + user->getNickname() + " " + this->_name + " :You're not channel operator");
+		user->reply(ERR_CHANOPRIVSNEEDED(user->getNickname(), this->_name));
 		return false;
 	}
 	return true;
 }
 
-void	Channel::mode(Client *user, const std::string &modes, const std::vector<std::string> &args)
+void Channel::mode(Client *user, const std::string &modes, const std::vector<std::string> &args)
 {
 	// RFC 2812: If no modes given, return current modes (RPL_CHANNELMODEIS)
 	if (modes.empty())
@@ -374,9 +383,7 @@ void	Channel::mode(Client *user, const std::string &modes, const std::vector<std
 		sendChannelModes(user);
 		return;
 	}
-	// RFC 2812: Check for Operator Privileges
-	if (!checkOperatorPrivileges(user))
-		return;
+
 	ModeContext ctx(args);
 	for (size_t i = 0; i < modes.length(); i++)
 	{

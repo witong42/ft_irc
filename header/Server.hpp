@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 10:16:22 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 10:40:00 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ public:
 	bool CheckPassword(String password, int fd);
 	void Run();
 	int getQueuesSize();
-	
+
 	void Start();
 };
 

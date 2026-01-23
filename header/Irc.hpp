@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 10:20:22 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 12:43:08 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "../header/Channel.hpp"
 #include "../header/Client.hpp"
 #include <map>
-#
 #include <string>
 
 class Irc
@@ -25,9 +24,9 @@ class Irc
 private:
 	std::map<String, Channel *> _channels;
 	std::map<int, Client *> _clients;
-	Client *_curent_client;
-	std::string _curent_nick; 
-	
+	Client *_current_client;
+	std::string _current_nick;
+
 
 	Channel *findChannel(String channel);
 	bool CmdNick(std::vector<String> argument, Server &server);
@@ -36,7 +35,7 @@ private:
 	bool CmdPart(std::vector<String> argument, Server &server);
 	bool CmdMode(std::vector<String> argument, Server &server);
 	bool CmdPrivmsg(std::vector<String> argument, Server &server);
-	bool CmdPassw(std::vector<String> argument, Server &server);
+	bool CmdPass(std::vector<String> argument, Server &server);
 	bool CmdCap(std::vector<String> argument, Server &server);
 	bool CmdKick(std::vector<String> argument, Server &server);
 	bool CmdInvite(std::vector<String> argument, Server &server);

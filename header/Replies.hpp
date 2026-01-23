@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Replies.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:00:00 by witong            #+#    #+#             */
-/*   Updated: 2026/01/23 10:17:33 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 10:59:57 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@
 #define ERR_CHANNELISFULL(nick, channel) (":localhost 471 " + nick + " " + channel + " :Cannot join channel (+l)")
 
 // 472 - Unknown mode char
-#define ERR_UNKNOWNMODE(nick, char_mode) (":localhost 472 " + nick + " " + char_mode + " :is unknown mode char to me for " + channel)
+#define ERR_UNKNOWNMODE(nick, char_mode, channel) (":localhost 472 " + nick + " " + char_mode + " :is unknown mode char to me for " + channel)
 
 // 473 - Invite only channel (+i)
 #define ERR_INVITEONLYCHAN(nick, channel) (":localhost 473 " + nick + " " + channel + " :Cannot join channel (+i)")
