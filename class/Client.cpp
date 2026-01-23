@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/21 06:04:55 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/23 12:30:06 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,8 +122,7 @@ void Client::clearBuffer()
 
 void Client::reply(const std::string &msg)
 {
-	// 50MB Safety Limit
-	if (this->_sendBuffer.length() + msg.length() > 51200000)
+	if (this->_sendBuffer.length() + msg.length() > 100000)
 	{
 		std::cerr << "Error: Buffer Limit for client " << this->_fd << std::endl;
 		return;

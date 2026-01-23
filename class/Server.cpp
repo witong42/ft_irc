@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 10:52:52 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 10:58:44 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@
 // Example command to test: irssi
 // sev IRC
 // /connect localhost 6667 pwd123
-
 
 Server::Server(const char *port_char, String password) : _password(password)
 {
@@ -201,17 +200,17 @@ bool Server::CheckPassword(String password, int fd)
 	if (password == _password)
 	{
 		// Here you would typically check the password against the server's password
-		//std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
+		// std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
 		// On envoie la réponse au client
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
 		// addToQueue(fd, "Bienvenue sur ft_srv!");
-	//	if (!(*findConnectedByfd(_fd_client)).message(codes))
-	//	{
-	//		std::cerr << "Erreur send()" << std::endl;
-	//		return true;
-	//	}
-		std::cout <<"<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
+		//	if (!(*findConnectedByfd(_fd_client)).message(codes))
+		//	{
+		//		std::cerr << "Erreur send()" << std::endl;
+		//		return true;
+		//	}
+		std::cout << "<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
 		return false;
 	}
 
@@ -219,7 +218,7 @@ bool Server::CheckPassword(String password, int fd)
 
 	send(fd, error.c_str(), error.length(), 0);
 
-	close(_fd_client);
+	close(fd);
 	return true;
 }
 
@@ -250,8 +249,6 @@ Client *Server::findConnectedByUsername(String Find)
 	return (NULL);
 }
 
-
-
 bool Server::CleanUp()
 {
 	// Nettoyage
@@ -267,7 +264,6 @@ int Server::check_port(const char *port)
 	{
 		if (!isdigit(port[i]))
 			throw std::invalid_argument("Invalid port number");
-
 	}
 	int port_num = std::atoi(port);
 	if (port_num < 1 || port_num > 65535)
@@ -318,9 +314,9 @@ bool Server::wait()
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				AddClient(new_client_fd, client_ip);
 
-
 				// Rendre le socket client non-bloquant
-				if (!socketUnblock(new_client_fd)) {
+				if (!socketUnblock(new_client_fd))
+				{
 					std::cerr << "Erreur socketUnblock client\n";
 					close(new_client_fd);
 					continue;
@@ -338,69 +334,68 @@ bool Server::wait()
 			// Données disponibles sur un socket client
 			else
 			{
-				int client_fd = events[i].data.fd;
+				int event_fd = events[i].data.fd;
+				_fd_client = event_fd; // Sync member variable for methods using getClientFd()
 
 				if (events[i].events & EPOLLIN)
 				{
-					_fd_client = client_fd;
 					char buffer[BUFFER_SIZE];
-					ssize_t count = recv(_fd_client, buffer, sizeof(buffer) - 1, 0);
+					ssize_t count = recv(event_fd, buffer, sizeof(buffer) - 1, 0);
 
 					if (count == -1)
 					{
 						if (errno != EAGAIN)
 						{
 							std::cerr << "Erreur recv\n";
-							epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
-							if (_connected_clients.find(_fd_client) != _connected_clients.end())
+							epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
+							if (_connected_clients.find(event_fd) != _connected_clients.end())
 							{
-								delete _connected_clients[_fd_client];
-								_connected_clients.erase(_fd_client);
+								delete _connected_clients[event_fd];
+								_connected_clients.erase(event_fd);
 							}
-							close(_fd_client);
+							close(event_fd);
 						}
 					}
 					else if (count == 0)
 					{
 						// Client a fermé la connexion
 
-						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, _fd_client, NULL);
-						if (_connected_clients.find(_fd_client) != _connected_clients.end())
+						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
+						if (_connected_clients.find(event_fd) != _connected_clients.end())
 						{
-							delete _connected_clients[_fd_client];
-							_connected_clients.erase(_fd_client);
+							delete _connected_clients[event_fd];
+							_connected_clients.erase(event_fd);
 						}
-						close(_fd_client);
+						close(event_fd);
 					}
 					else
 					{
 						// Traiter les données reçues
 						buffer[count] = '\0';
-						// parseCommand(std::string(buffer), _fd_client);
+						// parseCommand calls methods that might use _fd_client via *this
 						irc.parseCommand(buffer, *this);
 
-						Client *client = findConnectedByfd(_fd_client);
+						Client *client = findConnectedByfd(event_fd);
 						if (client)
 							client->flush();
 
-						// std::cout << "392 Received from fd " << _fd_client << ": " << buffer << std::endl;
 						buffer[0] = 0;
 					}
 				}
 
 				if (events[i].events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
 				{
-					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, client_fd, NULL);
-					if (_connected_clients.find(client_fd) != _connected_clients.end())
+					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
+					if (_connected_clients.find(event_fd) != _connected_clients.end())
 					{
-						delete _connected_clients[client_fd];
-						_connected_clients.erase(client_fd);
+						delete _connected_clients[event_fd];
+						_connected_clients.erase(event_fd);
 					}
-					close(client_fd);
+					close(event_fd);
 				}
 				else if (events[i].events & EPOLLOUT)
 				{
-					Client *client = findConnectedByfd(client_fd);
+					Client *client = findConnectedByfd(event_fd);
 					if (client)
 						client->flush();
 				}
@@ -422,4 +417,3 @@ bool Server::AddClient(int fd, std::string ip)
 	_connected_clients[fd] = newClient;
 	return newClient->isRegistered();
 }
-
