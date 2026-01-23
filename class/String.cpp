@@ -18,6 +18,10 @@
 String ::String(std::string str) : std::string(str) {};
 String ::String() : std::string() {};
 String ::String(const String &other) : std::string(other) {};
+String ::String(std::vector<String> vec, std::string delimiter) : _delimiter(delimiter)
+{
+	_vector = vec;
+}
 
 std::vector<String> String ::split(const std::string &delimiter)
 {
@@ -41,7 +45,6 @@ String String::getNpos(size_t pos)
 std::string String ::join()
 {
 	std::string _str;
-	
 
 	for (size_t i = 0; i < this->_vector.size(); ++i)
 	{
@@ -51,9 +54,10 @@ std::string String ::join()
 			_str += _delimiter;
 		}
 	}
-	
+
 	return _str;
 }
+
 std::vector<String> String ::get_vector()
 {
 
@@ -61,11 +65,7 @@ std::vector<String> String ::get_vector()
 }
 std::vector<String> String ::pop_front(size_t n)
 {
-	//size_t i = 0;
-	std::cout << "Before pop_front, joined string: " << *this << std::endl;
-	std::cout << "n: " << n << std::endl;
-	std::cout << "_vector.size 0: " << this->_vector.size() << std::endl;
-	if (n > this->size())
+	if (n > this->_vector.size())
 		return this->_vector;
 	std::vector<String> popped_elements;
 	for (size_t i = 0; i < n; ++i)
@@ -76,18 +76,8 @@ std::vector<String> String ::pop_front(size_t n)
 	{
 		this->_vector[i - n] = this->_vector[i];
 	}
-	//std::cout << "_vector.size: " << this->_vector.size() << std::endl;
-		_vector.erase(_vector.begin(), _vector.begin() + n);
-
-	for (size_t j = 0; j < _vector.size(); ++j)
-	{
-//		std::cout << "Popped _vector[" << j << "]: " << _vector[j] << std::endl;
-	}
-	//std::cout << "_vector.size a: " << this->_vector.size() << std::endl;
+	this->_vector.resize(this->_vector.size() - n);
 	this->join();
-	//std::cout << "_vector.size b: " << this->_vector.size() << std::endl;
-	//std::cout << "Popped elements: " << this->_vector.size() << std::endl;
-	//std::cout << "After pop_front, joined string: " << *this << std::endl;
 	return popped_elements;
 }
 std::vector<String> String ::pop_back(size_t n)
@@ -95,7 +85,6 @@ std::vector<String> String ::pop_back(size_t n)
 	std::vector<String> popped_elements;
 	if (n > _vector.size())
 		n = _vector.size();
-
 	for (size_t i = 0; i < n; ++i)
 	{
 		popped_elements.push_back(_vector[_vector.size() - n + i]);

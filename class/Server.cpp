@@ -68,6 +68,10 @@ int &Server::getClientFd()
 {
 	return _fd_client;
 }
+String Server::getServerName()
+{
+	return _SERVER_NAME;
+}
 void Server::Run()
 {
 	if (!createSocket())

@@ -78,7 +78,7 @@ public:
 	Client *findConnectedByfd(int idRecherche);
 	Client *findConnectedByNickname(String Nickname);
 	Client *findConnectedByUsername(String Username);
-
+	String getServerName();
 	int &getServerFd();
 	int &getClientFd();
 	bool CheckPassword(String password, int fd);

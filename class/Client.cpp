@@ -38,6 +38,7 @@ Client &Client::operator=(const Client &rhs)
 		_buffer = rhs._buffer;
 		_isOperator = rhs._isOperator;
 		_isRegistered = rhs._isRegistered;
+		_hostname = rhs._hostname;
 	}
 	return *this;
 }
@@ -64,6 +65,14 @@ void Client::setRegistered(bool status)
 void Client::setOperator(bool status)
 {
 	this->_isOperator = status;
+}
+void Client::setHostname(const std::string &hostname)
+{
+	this->_hostname = hostname;
+}
+const std::string &Client::getHostname() const
+{
+	return this->_hostname;
 }
 
 int Client::getFd() const
