@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/22 11:16:54 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 13:21:54 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "../header/Server.hpp"
 #include "../header/String.hpp"
 #include "../header/Client.hpp"
+#include <csignal>
  
 
 
@@ -40,12 +41,16 @@ int main(int argc, char *argv[])
 	}
 	try
 	{
-		std::cout << INTROC << "Starting IRC Server on port " << argv[1] << " with password " << argv[2] << DEFAULT << std::endl;
 		Server srv(argv[1], String (argv[2]));
+		signal(SIGINT, Server::Stop);
+		signal(SIGQUIT, Server::Stop);
+		std::cout << INTROC << "Starting IRC Server on port " << argv[1] << " with password " << argv[2] << DEFAULT << std::endl;
+		
 		srv.Run();
 	}
 	catch(const std::exception& e)
 	{
+		Server::Stop(0);
 		std::cerr << RED << "Error: " << e.what() << DEFAULT << '\n';
 		return 1;
 	}

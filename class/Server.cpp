@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 10:58:44 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/23 13:43:45 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,12 @@
 #include "Client.hpp"
 #include "../header/Replies.hpp"
 
-
 // Example command to test: irssi
 // sev IRC
 // /connect localhost 6667 pwd123
+
+
+
 
 Server::Server(const char *port_char, String password) : _password(password)
 {
@@ -48,8 +50,10 @@ Server::Server(const char *port_char, String password) : _password(password)
 	_address.sin_port = htons(port);
 	_address.sin_family = AF_INET;
 	_address.sin_addr.s_addr = INADDR_ANY;
-	gethostname((char *)_SERVER_NAME.c_str(), 256);
-
+	char hostname[256];
+	gethostname(hostname, sizeof(hostname));
+	_server_name = String(hostname);
+	std::cout << "Server name: " << _server_name << std::endl;
 	// Constructor implementation
 }
 
@@ -72,10 +76,11 @@ int &Server::getClientFd()
 }
 String Server::getServerName()
 {
-	return _SERVER_NAME;
+	return _server_name;
 }
 void Server::Run()
 {
+	Server::_running = true;
 	if (!createSocket())
 	{
 		throw std::runtime_error("Socket creation failed");
@@ -174,7 +179,7 @@ bool Server::createPoll()
 	if (_fd_epoll == -1)
 	{
 		std::cerr << "Erreur epoll_create1\n";
-		close(_fd_server);
+		close(getServerFd());
 		return false;
 	}
 	return true;
@@ -205,12 +210,13 @@ bool Server::CheckPassword(String password, int fd)
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
 		// addToQueue(fd, "Bienvenue sur ft_srv!");
-		//	if (!(*findConnectedByfd(_fd_client)).message(codes))
-		//	{
-		//		std::cerr << "Erreur send()" << std::endl;
-		//		return true;
-		//	}
-		std::cout << "<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
+	//	if (!(*findConnectedByfd(_fd_client)).message(codes))
+	//	{
+	//		std::cerr << "Erreur send()" << std::endl;
+	//		return true;
+	//	}
+
+///	std::cout <<"<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
 		return false;
 	}
 
@@ -225,7 +231,6 @@ bool Server::CheckPassword(String password, int fd)
 Client *Server::findConnectedByfd(int idRecherche)
 {
 	std::map<int, Client *>::iterator it = _connected_clients.find(idRecherche);
-
 	return (it != _connected_clients.end()) ? it->second : NULL;
 }
 
@@ -248,13 +253,29 @@ Client *Server::findConnectedByUsername(String Find)
 	}
 	return (NULL);
 }
-
-bool Server::CleanUp()
+void Server::Stop(int signum)
 {
-	// Nettoyage
-	close(_fd_server);
+	(void)signum;
+	std::cout << "\nStopping server..." << std::endl;
+//	Server::_running = false;	
+
+}
+
+
+bool  Server::CleanUp()
+{
+	// Nettoyage des ressources utilisées
+	Server::_running = false;
+	for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
+	{
+		if (it->second)
+			delete it->second;
+	}
+	_connected_clients.clear();
+	close(_ev.data.fd);
 	close(_fd_epoll);
-	return 0;
+	close(getServerFd());
+	return true;
 }
 
 int Server::check_port(const char *port)
@@ -276,7 +297,8 @@ bool Server::wait()
 	// Boucle principale
 	events->events = EPOLLIN | EPOLLET; // Edge-triggered
 	Irc irc = Irc();
-	while (true)
+	
+	while (Server::_running)
 	{
 
 		// Equivqalent de poll
@@ -407,6 +429,7 @@ bool Server::wait()
 				it->second->flush();
 		}
 	}
+	
 	return true;
 }
 
