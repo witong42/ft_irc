@@ -14,7 +14,7 @@ OBJ_DIR = bin/obj
 
 # Fichiers sources
 SRCS = $(FUNCTION_DIR)/main.cpp
-CLASS_List = Channel Client Irc Server String 
+CLASS_List = Channel Client Irc Server String CmdNick CmdUser CmdJoin CmdPart CmdMode CmdPrivmsg CmdPass CmdCap CmdKick CmdInvite CmdTopic CmdPing CmdWho CmdPong CmdQuit 
 SRCS2 = $(patsubst %,$(CLASS_DIR)/%.cpp,$(CLASS_List))
 
 # Fichiers objets

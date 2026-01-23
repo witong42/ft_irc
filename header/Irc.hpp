@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 11:22:17 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/23 12:43:08 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "../header/Channel.hpp"
 #include "../header/Client.hpp"
 #include <map>
-#
 #include <string>
 
 class Irc
@@ -36,7 +35,7 @@ private:
 	bool CmdPart(std::vector<String> argument, Server &server);
 	bool CmdMode(std::vector<String> argument, Server &server);
 	bool CmdPrivmsg(std::vector<String> argument, Server &server);
-	bool CmdPassw(std::vector<String> argument, Server &server);
+	bool CmdPass(std::vector<String> argument, Server &server);
 	bool CmdCap(std::vector<String> argument, Server &server);
 	bool CmdKick(std::vector<String> argument, Server &server);
 	bool CmdInvite(std::vector<String> argument, Server &server);
