@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 13:43:45 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/23 15:16:31 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@
 // /connect localhost 6667 pwd123
 
 
-
+bool Server::_running = true;
 
 Server::Server(const char *port_char, String password) : _password(password)
 {
@@ -257,7 +257,7 @@ void Server::Stop(int signum)
 {
 	(void)signum;
 	std::cout << "\nStopping server..." << std::endl;
-//	Server::_running = false;	
+	Server::_running = false;	
 
 }
 
@@ -275,6 +275,7 @@ bool  Server::CleanUp()
 	close(_ev.data.fd);
 	close(_fd_epoll);
 	close(getServerFd());
+	std::cout << "Server cleaned up and closed." << std::endl;
 	return true;
 }
 
@@ -429,7 +430,7 @@ bool Server::wait()
 				it->second->flush();
 		}
 	}
-	
+	std::cout << "Exiting main server loop." << std::endl;
 	return true;
 }
 
