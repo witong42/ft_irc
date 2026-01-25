@@ -3,16 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   String.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/22 17:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2025/12/23 13:47:53 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/25 20:52:45 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef STRING_HPP
+#define STRING_HPP
+
 #include <string>
 #include <vector>
+
 class String : public std::string
 {
 private:
@@ -33,3 +36,5 @@ public:
 	std::vector<String> pop_back(size_t n=1);
 	~String();
 };
+
+#endif

@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 10:58:44 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/25 20:59:43 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,10 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "String.hpp"
+#include "../header/String.hpp"
 #include "../header/Server.hpp"
-#include "Irc.hpp"
-#include "Client.hpp"
+#include "../header/Irc.hpp"
+#include "../header/Client.hpp"
 #include "../header/Replies.hpp"
 
 

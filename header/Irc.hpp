@@ -6,11 +6,13 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 12:43:08 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/25 20:59:43 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef IRC_HPP
+#define IRC_HPP
+
 #include <vector>
 #include "../header/String.hpp"
 #include "../header/Server.hpp"
@@ -52,3 +54,5 @@ public:
 	~Irc();
 	bool parseCommand(std::string buffer, Server &server);
 };
+
+#endif
