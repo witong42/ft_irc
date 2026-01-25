@@ -18,9 +18,9 @@
 #include <cstdlib>
 
 
-#include "../header/Server.hpp"
-#include "../header/String.hpp"
-#include "../header/Client.hpp"
+#include "header/Server.hpp"
+#include "header/String.hpp"
+#include "header/Client.hpp"
  
 
 
