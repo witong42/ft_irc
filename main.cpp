@@ -3,27 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 10:02:16 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 15:20:18 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/25 21:44:46 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-
-
 
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-
-
+#include <csignal>
 #include "../header/Server.hpp"
 #include "../header/String.hpp"
 #include "../header/Client.hpp"
-#include <csignal>
- 
-
 
 #define DEFAULT "\033[0m"				// #fefcfcff
 #define GREEN "\033[0;38;2;121;200;88m" // #3da10eff
@@ -42,11 +35,11 @@ int main(int argc, char *argv[])
 	Server srv(argv[1], String (argv[2]));
 	try
 	{
-		
+
 		signal(SIGINT, Server::Stop);
 		signal(SIGQUIT, Server::Stop);
 		std::cout << INTROC << "Starting IRC Server on port " << argv[1] << " with password " << argv[2] << DEFAULT << std::endl;
-		
+
 		srv.Run();
 	}
 	catch(const std::exception& e)

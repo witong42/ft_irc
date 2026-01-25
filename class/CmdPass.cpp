@@ -9,11 +9,8 @@
 bool Irc::CmdPass(std::vector<String> argument, Server &server)
 {
 	(void)server;
-	if (argument.size() < 2)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "PASS"));
+	if (!checkParams(argument.size(), 2, "PASS"))
 		return false;
-	}
 
 	if (_current_client->isRegistered())
 	{

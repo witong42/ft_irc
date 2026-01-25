@@ -9,11 +9,8 @@
 bool Irc::CmdUser(std::vector<String> argument, Server &server)
 {
 	(void)server;
-	if (argument.size() < 5)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "USER"));
+	if (!checkParams(argument.size(), 5, "USER"))
 		return false;
-	}
 
 	if (_current_client->isRegistered())
 	{

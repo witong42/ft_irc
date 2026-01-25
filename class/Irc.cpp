@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 15:34:54 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/25 21:45:02 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ Irc::~Irc() {
 	for (; it != _channels.end(); ++it)
 	{
 		delete it->second;
-	}	
+	}
 }
 
 Channel *Irc::findChannel(String channel)
@@ -109,4 +109,82 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server
 		std::cerr << "Command not recognized: " << cmd << std::endl;
 	}
 	return true;
+}
+
+void Irc::disconnectClient(Client *client, std::string reason)
+{
+	std::string quitMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getIp() + " QUIT :" + reason;
+	std::map<String, Channel *>::iterator it = _channels.begin();
+	while (it != _channels.end())
+	{
+		Channel *channel = it->second;
+		if (channel->hasUser(client))
+		{
+			channel->broadcast(quitMsg, client);
+			channel->removeUser(client);
+			if (channel->getUserCount() == 0)
+			{
+				delete channel;
+				_channels.erase(it++);
+				continue;
+			}
+		}
+		it++;
+	}
+}
+
+std::string Irc::extractMessage(const std::vector<String> &argument, size_t start)
+{
+	std::string message = "";
+	if (argument.size() > start)
+	{
+		message = argument[start];
+		for (size_t i = start + 1; i < argument.size(); i++)
+			message += " " + argument[i];
+		if (!message.empty() && message[0] == ':')
+			message = message.substr(1);
+	}
+	return message;
+}
+
+bool Irc::checkRegistered()
+{
+	if (!_current_client->isRegistered())
+	{
+		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+		return false;
+	}
+	return true;
+}
+
+bool Irc::checkParams(size_t count, size_t min, std::string cmdName)
+{
+	if (count < min)
+	{
+		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, cmdName));
+		return false;
+	}
+	return true;
+}
+
+Channel *Irc::getChannelOrError(std::string name)
+{
+	Channel *channel = findChannel(name);
+	if (!channel)
+	{
+		_current_client->reply(ERR_NOSUCHCHANNEL(_current_nick, name));
+		return NULL;
+	}
+	return channel;
+}
+
+Client *Irc::getClientOrError(Server &server, std::string nick)
+{
+	Client *target = server.findConnectedByNickname(nick);
+	if (!target)
+	{
+		_current_client->reply(ERR_NOSUCHNICK(_current_nick, nick));
+		return NULL;
+	}
+	return target;
 }

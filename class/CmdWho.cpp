@@ -8,17 +8,11 @@
 
 bool Irc::CmdWho(std::vector<String> argument, Server &server)
 {
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
-	if (argument.size() < 2)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "WHO"));
+	if (!checkParams(argument.size(), 2, "WHO"))
 		return false;
-	}
 
 	std::string target = argument[1];
 	Client *targetClient = server.findConnectedByNickname(target);

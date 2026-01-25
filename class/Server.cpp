@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 16:15:42 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/25 21:45:19 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,10 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include "String.hpp"
+#include "../header/String.hpp"
 #include "../header/Server.hpp"
-#include "Irc.hpp"
-#include "Client.hpp"
+#include "../header/Irc.hpp"
+#include "../header/Client.hpp"
 #include "../header/Replies.hpp"
 
 // Example command to test: irssi
@@ -61,13 +61,13 @@ Server::~Server()
 {
 	// Destructor implementation
 	std::cout << "Cleaning up server resources..." << std::endl;
-	
+
 	for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
 	{
 		if (it->second)
 			delete it->second;
 		if (it->first)
-			close(it->first);	
+			close(it->first);
 	}
 	_connected_clients.clear();
 	for (_ev.data.fd = 0; _ev.data.fd < MAX_EVENTS; ++_ev.data.fd)
@@ -274,7 +274,7 @@ void Server::Stop(int signum)
 {
 	(void)signum;
 	std::cout << "\nStopping server..." << std::endl;
-	Server::_running = false;	
+	Server::_running = false;
 
 }
 
@@ -315,7 +315,7 @@ bool Server::wait()
 	// Boucle principale
 	events->events = EPOLLIN | EPOLLET; // Edge-triggered
 	Irc irc = Irc();
-	
+
 	while (Server::_running)
 	{
 
@@ -390,6 +390,7 @@ bool Server::wait()
 							epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
 							if (_connected_clients.find(event_fd) != _connected_clients.end())
 							{
+								irc.disconnectClient(_connected_clients[event_fd], "Connection reset by peer");
 								delete _connected_clients[event_fd];
 								_connected_clients.erase(event_fd);
 							}
@@ -403,6 +404,7 @@ bool Server::wait()
 						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
 						if (_connected_clients.find(event_fd) != _connected_clients.end())
 						{
+							irc.disconnectClient(_connected_clients[event_fd], "Connection closed");
 							delete _connected_clients[event_fd];
 							_connected_clients.erase(event_fd);
 						}
@@ -428,6 +430,7 @@ bool Server::wait()
 					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
 					if (_connected_clients.find(event_fd) != _connected_clients.end())
 					{
+						irc.disconnectClient(_connected_clients[event_fd], "Unexpected disconnection");
 						delete _connected_clients[event_fd];
 						_connected_clients.erase(event_fd);
 					}

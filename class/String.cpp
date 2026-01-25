@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   String.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 18:50:54 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/07 12:33:15 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/25 20:52:56 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include <vector>
-#include "../header/String.hpp"
 #include <iostream>
+#include "../header/String.hpp"
+
 
 String ::String(std::string str) : std::string(str) {};
 String ::String() : std::string() {};
