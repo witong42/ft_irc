@@ -10,17 +10,11 @@
 bool Irc::CmdJoin(std::vector<String> argument, Server &server)
 {
 	(void)server;
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
-	if (argument.size() < 2)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "JOIN"));
+	if (!checkParams(argument.size(), 2, "JOIN"))
 		return false;
-	}
 
 	std::string channelName = argument[1];
 

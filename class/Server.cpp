@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/25 20:59:43 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/25 21:29:32 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -350,6 +350,7 @@ bool Server::wait()
 							epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
 							if (_connected_clients.find(event_fd) != _connected_clients.end())
 							{
+								irc.disconnectClient(_connected_clients[event_fd], "Connection reset by peer");
 								delete _connected_clients[event_fd];
 								_connected_clients.erase(event_fd);
 							}
@@ -363,6 +364,7 @@ bool Server::wait()
 						epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
 						if (_connected_clients.find(event_fd) != _connected_clients.end())
 						{
+							irc.disconnectClient(_connected_clients[event_fd], "Connection closed");
 							delete _connected_clients[event_fd];
 							_connected_clients.erase(event_fd);
 						}
@@ -388,6 +390,7 @@ bool Server::wait()
 					epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, event_fd, NULL);
 					if (_connected_clients.find(event_fd) != _connected_clients.end())
 					{
+						irc.disconnectClient(_connected_clients[event_fd], "Unexpected disconnection");
 						delete _connected_clients[event_fd];
 						_connected_clients.erase(event_fd);
 					}

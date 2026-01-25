@@ -9,11 +9,8 @@
 bool Irc::CmdTopic(std::vector<String> argument, Server &server)
 {
 	(void)server;
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
 	if (argument.size() < 2)
 	{
@@ -37,11 +34,7 @@ bool Irc::CmdTopic(std::vector<String> argument, Server &server)
 			return false;
 		}
 
-		std::string newTopic = argument[2];
-		for (size_t i = 3; i < argument.size(); i++)
-			newTopic += " " + argument[i];
-		if (!newTopic.empty() && newTopic[0] == ':')
-			newTopic = newTopic.substr(1);
+		std::string newTopic = extractMessage(argument, 2);
 
 		channel->setTopic(newTopic);
 
