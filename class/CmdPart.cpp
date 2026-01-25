@@ -10,11 +10,8 @@
 bool Irc::CmdPart(std::vector<String> argument, Server &server)
 {
 	(void)server;
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
 	if (argument.size() < 2)
 	{
@@ -35,15 +32,7 @@ bool Irc::CmdPart(std::vector<String> argument, Server &server)
 		_current_client->reply(ERR_NOTONCHANNEL(_current_nick, channelName));
 		return false;
 	}
-	std::string reason = "";
-	if (argument.size() > 2)
-	{
-		reason = argument[2];
-		for (size_t i = 3; i < argument.size(); i++)
-			reason += " " + argument[i];
-		if (!reason.empty() && reason[0] == ':')
-			reason = reason.substr(1);
-	}
+	std::string reason = extractMessage(argument, 2);
 
 	std::string msg = ":" + _current_nick + "!" + _current_client->getUsername() + "@" + _current_client->getIp() + " PART " + channelName;
 	if (!reason.empty())

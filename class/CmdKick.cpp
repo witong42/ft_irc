@@ -8,28 +8,19 @@
 
 bool Irc::CmdKick(std::vector<String> argument, Server &server)
 {
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
-	if (argument.size() < 3)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "KICK"));
+	if (!checkParams(argument.size(), 3, "KICK"))
 		return false;
-	}
 
 	std::string channelName = argument[1];
 	std::string targetNick = argument[2];
 	std::string reason = _current_nick;
 
-	Channel *channel = findChannel(channelName);
+	Channel *channel = getChannelOrError(channelName);
 	if (!channel)
-	{
-		_current_client->reply(ERR_NOSUCHCHANNEL(_current_nick, channelName));
 		return false;
-	}
 
 	if (!channel->hasUser(_current_client))
 	{

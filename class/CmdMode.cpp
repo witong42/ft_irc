@@ -9,17 +9,11 @@
 bool Irc::CmdMode(std::vector<String> argument, Server &server)
 {
 	(void)server;
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
-	if (argument.size() < 2)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "MODE"));
+	if (!checkParams(argument.size(), 2, "MODE"))
 		return false;
-	}
 	std::string target = argument[1];
 
 	Channel *channel = findChannel(target);

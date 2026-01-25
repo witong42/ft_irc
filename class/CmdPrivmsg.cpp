@@ -10,30 +10,22 @@
 bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 {
 	(void)server;
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
-	if (argument.size() < 2)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "PRIVMSG"));
+	if (!checkParams(argument.size(), 2, "PRIVMSG"))
 		return false;
-	}
-	String message = String(argument);
-	std::vector<String> header = message.pop_front(2);
-	if (this->_channels.find(header[1]) != this->_channels.end())
+
+	std::string target = argument[1];
+	Channel *channel = getChannelOrError(target);
+	if (!channel)
+		return false; // Error already sent by getChannelOrError
+
+	if (!_current_client->getNickname().empty())
 	{
-		if (!_current_client->getNickname().empty())
-		{
-			std::string msg = ":" + _current_nick + " PRIVMSG " + header[1] + " " + message.join();
-			this->_channels[header[1]]->broadcast(msg, _current_client);
-		}
-	}
-	else
-	{
-		_current_client->reply(ERR_NOSUCHCHANNEL(_current_nick, header[1]));
+		std::string message = extractMessage(argument, 2);
+		std::string msg = ":" + _current_nick + " PRIVMSG " + target + " :" + message;
+		channel->broadcast(msg, _current_client);
 	}
 	return true;
 }

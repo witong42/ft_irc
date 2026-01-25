@@ -8,34 +8,22 @@
 
 bool Irc::CmdInvite(std::vector<String> argument, Server &server)
 {
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
-	if (argument.size() < 3)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "INVITE"));
+	if (!checkParams(argument.size(), 3, "INVITE"))
 		return false;
-	}
 
 	std::string targetNick = argument[1];
 	std::string channelName = argument[2];
 
-	Channel *channel = findChannel(channelName);
+	Channel *channel = getChannelOrError(channelName);
 	if (!channel)
-	{
-		_current_client->reply(ERR_NOSUCHCHANNEL(_current_nick, channelName));
 		return false;
-	}
 
-	Client *target = server.findConnectedByNickname(targetNick);
+	Client *target = getClientOrError(server, targetNick);
 	if (!target)
-	{
-		_current_client->reply(ERR_NOSUCHNICK(_current_nick, targetNick));
 		return false;
-	}
 
 	if (channel->hasUser(target))
 	{

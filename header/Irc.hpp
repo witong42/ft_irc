@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/25 20:59:43 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/25 21:33:45 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,12 @@ public:
 	Irc();
 	~Irc();
 	bool parseCommand(std::string buffer, Server &server);
+	void disconnectClient(Client *client, std::string reason);
+	std::string extractMessage(const std::vector<String> &argument, size_t start);
+	bool checkRegistered();
+	bool checkParams(size_t count, size_t min, std::string cmdName);
+	Channel *getChannelOrError(std::string name);
+	Client *getClientOrError(Server &server, std::string nick);
 };
 
 #endif
