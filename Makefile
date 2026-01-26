@@ -2,7 +2,7 @@
 NAME = ircserv
 CXX = c++
 CXXFLAGS = -g -O0 -Wall -Wextra -Werror -std=c++98
-LDFLAGS = 
+LDFLAGS =
 
 # Répertoires
 HEADER_DIR = header
@@ -14,7 +14,10 @@ OBJ_DIR = bin/obj
 
 # Fichiers sources
 SRCS = $(FUNCTION_DIR)/main.cpp
-CLASS_List = Channel Client Irc Server String CmdNick CmdUser CmdJoin CmdPart CmdMode CmdPrivmsg CmdPass CmdCap CmdKick CmdInvite CmdTopic CmdPing CmdWho CmdPong CmdQuit 
+CLASS_List = Channel Client Irc Server String IrcCmdNick IrcCmdUser \
+			IrcCmdJoin IrcCmdPart IrcCmdMode IrcCmdPrivmsg IrcCmdPass \
+			IrcCmdCap IrcCmdKick IrcCmdInvite IrcCmdTopic IrcCmdPing \
+			IrcCmdWho IrcCmdPong IrcCmdQuit
 SRCS2 = $(patsubst %,$(CLASS_DIR)/%.cpp,$(CLASS_List))
 
 # Fichiers objets

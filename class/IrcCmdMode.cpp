@@ -16,7 +16,7 @@ bool Irc::CmdMode(std::vector<String> argument, Server &server)
 		return false;
 	std::string target = argument[1];
 
-	Channel *channel = findChannel(target);
+	Channel *channel = getChannelOrError(target);
 	if (channel)
 	{
 		std::string modes = "";
