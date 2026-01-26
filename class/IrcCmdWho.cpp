@@ -8,13 +8,54 @@
 
 bool Irc::CmdWho(std::vector<String> argument, Server &server)
 {
-	if (!checkRegistered())
-		return false;
+
 
 	if (!checkParams(argument.size(), 2, "WHO"))
 		return false;
 
 	std::string target = argument[1];
+	std::cout << "Processing WHO command for target: " << target << std::endl;
+	if( target == "*")
+	{
+		// List all connected clients
+		
+		for (std::map<int, Client *>::iterator it = server.getConnectedClients().begin(); it != server.getConnectedClients().end(); ++it )
+		{
+			Client *client = it->second;
+			std::string response = RPL_WHOREPLY(_current_nick, client->getUsername(), client->getIp(), server.getServerName(), client->getNickname(), "H", "0");
+			_current_client->reply(response);
+		}
+		_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
+		return true;
+	}
+	if(target.empty())
+	{
+		_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
+		return true;
+	}
+	std::cout << "Target for WHO target[0] : " << target[0] << std::endl;
+	if (target[0] == '#')
+	{
+		// Target is a channel
+		std::cout << "Processing WHO for channel: " << target << std::endl;
+		Channel *channel = findChannel(target);
+		if (!channel)
+		{
+			_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
+			return true;
+		}
+		std::map<Client *, bool>  users = channel->getUsers();
+		for (std::map<Client *, bool>::iterator it = users.begin(); it != users.end(); ++it)
+		{
+			Client *client = it->first;
+			std::string response = RPL_WHOREPLY(_current_nick, client->getUsername(), client->getIp(), server.getServerName(), client->getNickname(), "H", "0");
+			_current_client->reply(response);
+		}
+		_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
+		return true;
+	}
+	if (!checkRegistered())
+		return false;
 	Client *targetClient = server.findConnectedByNickname(target);
 	if (targetClient)
 	{

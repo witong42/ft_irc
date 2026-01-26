@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 15:13:01 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/26 14:10:21 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ public:
 	void Start();
 	static void Stop(int signum);
 	void Close();
+	std::map<int, Client *> &getConnectedClients();
+	
 	
 };
 

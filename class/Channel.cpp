@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/26 12:25:12 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 14:15:11 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -421,4 +421,8 @@ void Channel::mode(Client *user, const std::string &modes, const std::vector<std
 	}
 	if (!ctx.appliedModes.empty())
 		broadcast(":" + user->getNickname() + " MODE " + this->_name + " " + ctx.appliedModes + ctx.appliedArgs);
+}
+std::map<Client *, bool> &Channel::getUsers()
+{
+	return this->_users;
 }

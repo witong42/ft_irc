@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 13:48:38 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/26 14:10:37 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -442,4 +442,9 @@ bool Server::AddClient(int fd, std::string ip)
 	newClient = new Client(fd, ip);
 	_connected_clients[fd] = newClient;
 	return newClient->isRegistered();
+}
+
+std::map<int, Client *> &Server::getConnectedClients()
+{
+	return _connected_clients;
 }
