@@ -10,17 +10,11 @@ bool Irc::CmdPing(std::vector<String> argument, Server &server)
 {
 	std::cout << "Received Ping command" << server.getServerName() << std::endl;
 
-	if (!_current_client->isRegistered())
-	{
-		_current_client->reply(ERR_NOTREGISTERED(_current_nick));
+	if (!checkRegistered())
 		return false;
-	}
 
-	if (argument.size() < 2)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "PING"));
+	if (!checkParams(argument.size(), 2, "PING"))
 		return false;
-	}
 
 	std::string server1 = std::string(argument[1]);
 	std::string server2 = argument.size() >= 3 ? std::string(argument[2]) : "";
