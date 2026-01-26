@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/25 21:45:02 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 13:39:19 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,12 @@ Irc::~Irc() {
 	{
 		delete it->second;
 	}
+	_channels.clear();
+	for (std::map<int, Client *>::iterator itc = _clients.begin(); itc != _clients.end(); ++itc)
+	{
+		delete itc->second;
+	}
+	_clients.clear();
 }
 
 Channel *Irc::findChannel(String channel)
@@ -52,6 +58,7 @@ bool Irc::parseCommand(std::string buffer, Server &server)
 {
 	String str(buffer);
 	std::vector<String> parts = str.split("\r\n");
+	std::cout << "Received command size: " << parts.size() << std::endl;
 	for (size_t i = 0; i < parts.size(); ++i)
 	{
 		if (parts[i].empty())
