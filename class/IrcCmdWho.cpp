@@ -8,13 +8,26 @@
 
 bool Irc::CmdWho(std::vector<String> argument, Server &server)
 {
-
+	if (!checkRegistered())
+		return false;
 
 	if (!checkParams(argument.size(), 2, "WHO"))
 		return false;
-	if (!checkRegistered())
-		return false;
+
 	std::string target = argument[1];
+	Client *targetClient = server.findConnectedByNickname(target);
+	if (targetClient)
+	{
+		std::string response = RPL_WHOREPLY(_current_nick, targetClient->getUsername(), targetClient->getIp(), server.getServerName(), this->_current_nick, "H", "0");
+		_current_client->reply(response);
+	}
+	//_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
+	//return true;
+
+
+
+
+	
 	std::cout << "Processing WHO command for target: " << target << std::endl;
 	if(target.empty())
 	{
@@ -59,7 +72,7 @@ bool Irc::CmdWho(std::vector<String> argument, Server &server)
 		return true;
 	}
 	std::cout << "Processing WHO for user: " << target << std::endl;
-	Client *targetClient = server.findConnectedByNickname(target);
+	//Client *targetClient = server.findConnectedByNickname(target);
 	if (targetClient)
 	{
 		std::string response = RPL_WHOREPLY(_current_nick, targetClient->getUsername(), targetClient->getIp(), server.getServerName(), this->_current_nick, "H", "0");
