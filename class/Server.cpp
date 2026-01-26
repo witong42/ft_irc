@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 09:31:35 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/26 10:42:36 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,6 @@ void Server::Run()
 	{
 		throw std::runtime_error("Server wait loop failed");
 	}
-	CleanUp();
 }
 
 bool Server::createSocket()
@@ -315,18 +314,16 @@ bool Server::wait()
 	// Boucle principale
 	events->events = EPOLLIN | EPOLLET; // Edge-triggered
 	Irc irc = Irc();
-
 	while (Server::_running)
 	{
-
 		// Equivqalent de poll
 		int nfds = epoll_wait(_fd_epoll, events, MAX_EVENTS, -1);
 		if (nfds < 0)
 		{
-			std::cerr << "Erreur epoll_wait\n";
+			if (_running == true)
+				std::cerr << "Erreur epoll_wait\n";
 			break;
 		}
-
 		// Traiter tous les événements
 		for (int i = 0; i < nfds; i++)
 		{
