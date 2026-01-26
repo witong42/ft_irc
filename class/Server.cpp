@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 10:11:55 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 13:48:38 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@
 // Example command to test: irssi
 // sev IRC
 // /connect localhost 6667 pwd123
-
 
 bool Server::_running = true;
 
@@ -74,8 +73,11 @@ Server::~Server()
 	{
 		close(_ev.data.fd);
 	}
-	close(_fd_epoll);
-	close(_fd_server);
+	if (IPv4bind())
+	{
+		close(_fd_epoll);
+		close(_fd_server);
+	}
 	std::cout << "Server resources cleaned up." << std::endl;
 }
 void Server::Start()
@@ -219,27 +221,7 @@ bool Server::AddSocket()
 bool Server::CheckPassword(String password, int fd)
 {
 	if (password == _password)
-	{
-		// Here you would typically check the password against the server's password
-		// std::string reply = ":localhost 001 jegirard : Welcome to the ft_irc server!\r\n";
-		// On envoie la réponse au client
-		std::string codes[4] = {"001", "002", "003", "004"};
-		std::cout << std::endl;
-		// addToQueue(fd, "Bienvenue sur ft_srv!");
-	//	if (!(*findConnectedByfd(_fd_client)).message(codes))
-	//	{
-	//		std::cerr << "Erreur send()" << std::endl;
-	//		return true;
-	//	}
-
-///	std::cout <<"<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
 		return false;
-	}
-
-	std::string error = "464 " + (_connected_clients.find(fd)->second)->getUsername() + " :Password incorrect\r\n";
-
-	send(fd, error.c_str(), error.length(), 0);
-
 	close(fd);
 	return true;
 }
@@ -274,11 +256,9 @@ void Server::Stop(int signum)
 	(void)signum;
 	std::cout << "\nStopping server..." << std::endl;
 	Server::_running = false;
-
 }
 
-
-bool  Server::CleanUp()
+bool Server::CleanUp()
 {
 	// Nettoyage des ressources utilisées
 	Server::_running = false;
@@ -288,6 +268,8 @@ bool  Server::CleanUp()
 			delete it->second;
 	}
 	_connected_clients.clear();
+	if (!IPv4bind())
+		return false;
 	close(_ev.data.fd);
 	close(_fd_epoll);
 	close(getServerFd());
@@ -332,21 +314,17 @@ bool Server::wait()
 			{
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
-
 				int new_client_fd = accept(getServerFd(), (struct sockaddr *)&client_addr, &client_len);
-
 				if (new_client_fd == -1)
 				{
 					if (errno != EAGAIN && errno != EWOULDBLOCK)
 					{
 						std::cerr << "Erreur accept\n";
 					}
-
 					continue;
 				}
 				// Afficher info client
 				char client_ip[INET_ADDRSTRLEN];
-
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				AddClient(new_client_fd, client_ip);
 
@@ -376,7 +354,9 @@ bool Server::wait()
 				if (events[i].events & EPOLLIN)
 				{
 					char buffer[BUFFER_SIZE];
+					
 					ssize_t count = recv(event_fd, buffer, sizeof(buffer) - 1, 0);
+					
 
 					if (count == -1)
 					{
@@ -410,14 +390,20 @@ bool Server::wait()
 					{
 						// Traiter les données reçues
 						buffer[count] = '\0';
-						// parseCommand calls methods that might use _fd_client via *this
-						irc.parseCommand(buffer, *this);
-
 						Client *client = findConnectedByfd(event_fd);
 						if (client)
+						{
+							client->appendBuffer(buffer);
+							std::string &clientBuffer = client->getBuffer();
+							size_t pos;
+							while ((pos = clientBuffer.find('\n')) != std::string::npos)
+							{
+								std::string line = clientBuffer.substr(0, pos + 1);
+								irc.parseCommand(line, *this);
+								clientBuffer.erase(0, pos + 1);
+							}
 							client->flush();
-
-						buffer[0] = 0;
+						}
 					}
 				}
 
