@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 10:42:36 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/26 11:28:44 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@
 // Example command to test: irssi
 // sev IRC
 // /connect localhost 6667 pwd123
-
 
 bool Server::_running = true;
 
@@ -74,8 +73,11 @@ Server::~Server()
 	{
 		close(_ev.data.fd);
 	}
-	close(_fd_epoll);
-	close(_fd_server);
+	if (IPv4bind())
+	{
+		close(_fd_epoll);
+		close(_fd_server);
+	}
 	std::cout << "Server resources cleaned up." << std::endl;
 }
 void Server::Start()
@@ -226,13 +228,13 @@ bool Server::CheckPassword(String password, int fd)
 		std::string codes[4] = {"001", "002", "003", "004"};
 		std::cout << std::endl;
 		// addToQueue(fd, "Bienvenue sur ft_srv!");
-	//	if (!(*findConnectedByfd(_fd_client)).message(codes))
-	//	{
-	//		std::cerr << "Erreur send()" << std::endl;
-	//		return true;
-	//	}
+		//	if (!(*findConnectedByfd(_fd_client)).message(codes))
+		//	{
+		//		std::cerr << "Erreur send()" << std::endl;
+		//		return true;
+		//	}
 
-///	std::cout <<"<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
+		///	std::cout <<"<216 fd Q" << getClientFd() << ": " << this->_out_queues[getClientFd()].size() << std::endl;
 		return false;
 	}
 
@@ -274,11 +276,9 @@ void Server::Stop(int signum)
 	(void)signum;
 	std::cout << "\nStopping server..." << std::endl;
 	Server::_running = false;
-
 }
 
-
-bool  Server::CleanUp()
+bool Server::CleanUp()
 {
 	// Nettoyage des ressources utilisées
 	Server::_running = false;
@@ -288,6 +288,8 @@ bool  Server::CleanUp()
 			delete it->second;
 	}
 	_connected_clients.clear();
+	if (!IPv4bind())
+		return false;
 	close(_ev.data.fd);
 	close(_fd_epoll);
 	close(getServerFd());

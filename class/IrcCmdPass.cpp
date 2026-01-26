@@ -18,12 +18,12 @@ bool Irc::CmdPass(std::vector<String> argument, Server &server)
 	}
 	if (server.CheckPassword(argument[1], _current_client->getFd()))
 	{
-		_current_client->reply("001 " + _current_nick + " :Welcome to the IRC Network\r\n");
+		_current_client->reply(RPL_WELCOME(_current_nick, _current_client->getUsername(), _current_client->getHostname()) + "\r\n");
 		_current_client->setRegistered(true);
 	}
 	else
 	{
-		_current_client->reply("464 " + _current_nick + " :Password incorrect\r\n");
+		_current_client->reply(ERR_PASSWDMISMATCH(_current_nick) + "\r\n");
 		return false;
 	}
 	return true;
