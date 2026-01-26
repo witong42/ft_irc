@@ -13,19 +13,13 @@ bool Irc::CmdPart(std::vector<String> argument, Server &server)
 	if (!checkRegistered())
 		return false;
 
-	if (argument.size() < 2)
-	{
-		_current_client->reply(ERR_NEEDMOREPARAMS(_current_nick, "PART"));
+	if (!checkParams(argument.size(), 2, "PART"))
 		return false;
-	}
 
 	std::string channelName = argument[1];
-	Channel *channel = findChannel(channelName);
+	Channel *channel = getChannelOrError(channelName);
 	if (!channel)
-	{
-		_current_client->reply(ERR_NOSUCHCHANNEL(_current_nick, channelName));
 		return false;
-	}
 
 	if (!channel->hasUser(_current_client))
 	{
