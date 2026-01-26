@@ -14,9 +14,10 @@ bool Irc::CmdMode(std::vector<String> argument, Server &server)
 
 	if (!checkParams(argument.size(), 2, "MODE"))
 		return false;
+
 	std::string target = argument[1];
 
-	Channel *channel = getChannelOrError(target);
+	Channel *channel = findChannel(target);
 	if (channel)
 	{
 		std::string modes = "";
@@ -24,10 +25,14 @@ bool Irc::CmdMode(std::vector<String> argument, Server &server)
 			modes = argument[2];
 		std::vector<std::string> modeArgs;
 		for (size_t i = 3; i < argument.size(); i++)
-		{
 			modeArgs.push_back(std::string(argument[i]));
-		}
 		channel->mode(_current_client, modes, modeArgs);
+		return true;
 	}
-	return true;
+
+	if (target == _current_nick)
+		return true;
+
+	_current_client->reply(ERR_NOSUCHCHANNEL(_current_nick, target));
+	return false;
 }

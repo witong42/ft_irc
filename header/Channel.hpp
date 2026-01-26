@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2026/01/25 20:52:27 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 11:09:06 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ class Channel
 		bool	hasKey() const;
 		bool	hasLimit() const;
 		bool	hasUser(Client *user) const;
+		bool	hasInvite(Client *user) const;
 
 		// Mode operations
 		void	addOperator(Client *user); // MODE
@@ -101,6 +102,7 @@ class Channel
 		// Actions
 		void	addUser(Client *user); // JOIN
 		void	removeUser(Client *user); // PART / QUIT / KICK
+		void	removeInvite(Client *user); // JOIN
 		void	invite(Client *user); // INVITE
 		void	kick(Client *kicker, const std::string &targetNick, const std::string &reason); // KICK
 		void	changeTopic(Client *user, std::string topic); // TOPIC
