@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/23 12:34:25 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 12:25:12 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,10 @@ Channel::Channel() : _name(""), _topic(""), _isInviteOnly(false), _isTopicRestri
 Channel::Channel(const std::string &name, Client *creator) : _name(name), _topic(""), _isInviteOnly(false), _isTopicRestricted(false), _key(""), _limit("")
 {
 	if (creator)
+	{
+		addUser(creator);
 		addOperator(creator);
+	}
 }
 
 Channel::Channel(const Channel &other)
@@ -150,6 +153,14 @@ bool Channel::hasUser(Client *user) const
 	return false;
 }
 
+bool Channel::hasInvite(Client *user) const
+{
+	for (std::vector<Client *>::const_iterator it = _invited.begin(); it != _invited.end(); ++it)
+		if (*it == user)
+			return true;
+	return false;
+}
+
 void Channel::addOperator(Client *user)
 {
 	this->_users[user] = true;
@@ -164,12 +175,25 @@ void Channel::removeOperator(Client *user)
 void Channel::addUser(Client *user)
 {
 	this->_users[user] = false;
+	removeInvite(user);
 }
 
 void Channel::removeUser(Client *user)
 {
 	if (this->_users.find(user) != this->_users.end())
 		this->_users.erase(user);
+}
+
+void Channel::removeInvite(Client *user)
+{
+	for (std::vector<Client *>::iterator it = _invited.begin(); it != _invited.end(); ++it)
+	{
+		if (*it == user)
+		{
+			_invited.erase(it);
+			return;
+		}
+	}
 }
 
 void Channel::invite(Client *user)
@@ -180,6 +204,8 @@ void Channel::invite(Client *user)
 
 void Channel::kick(Client *kicker, const std::string &targetNick, const std::string &reason)
 {
+	if (!kicker)
+		return;
 	if (!this->isOperator(kicker))
 	{
 		kicker->reply(ERR_CHANOPRIVSNEEDED(kicker->getNickname(), this->_name));
@@ -348,6 +374,8 @@ void Channel::processModeChar(char c, ModeContext &ctx, Client *user)
 
 void Channel::sendChannelModes(Client *user)
 {
+	if (!user)
+		return;
 	std::string modeStr = "+";
 	std::string argsStr = "";
 
@@ -377,6 +405,8 @@ bool Channel::checkOperatorPrivileges(Client *user)
 
 void Channel::mode(Client *user, const std::string &modes, const std::vector<std::string> &args)
 {
+	if (!user)
+		return;
 	// RFC 2812: If no modes given, return current modes (RPL_CHANNELMODEIS)
 	if (modes.empty())
 	{
