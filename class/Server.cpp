@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 16:15:42 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/26 08:58:40 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -330,15 +330,12 @@ bool Server::wait()
 		// Traiter tous les événements
 		for (int i = 0; i < nfds; i++)
 		{
-
 			// Nouvelle connexion sur le socket serveur
 			if (events[i].data.fd == getServerFd())
 			{
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
-
 				int new_client_fd = accept(getServerFd(), (struct sockaddr *)&client_addr, &client_len);
-
 				if (new_client_fd == -1)
 				{
 					if (errno != EAGAIN && errno != EWOULDBLOCK)
@@ -350,7 +347,6 @@ bool Server::wait()
 				}
 				// Afficher info client
 				char client_ip[INET_ADDRSTRLEN];
-
 				inet_ntop(_address.sin_family, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
 				AddClient(new_client_fd, client_ip);
 
