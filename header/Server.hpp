@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/23 10:40:00 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/23 15:13:01 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,19 +39,20 @@ class Server
 {
 private:
 	int _fd_server; // fichier de descripteur du socket
-	// int _fd_client; // fichier de descripteur du socket client
+
 	int _fd_epoll; // descripteur epoll
 	int _fd_client;
 	//	Client _client;
 	String _password; // mot de passe du serveur
-	String _SERVER_NAME;
+	String _server_name;
+	static bool _running;
 
 	struct epoll_event _ev, events[MAX_EVENTS];
 	struct sockaddr_in _address;
 	std::map<int, Client *> _connected_clients; // liste des clients connectés
 	std::vector<std::string> _messages_queue;	// file d'attente des messages à envoyer aux clients
 
-	std::map<int, std::queue<std::string> > _out_queues; // file d'attente des messages par client
+	//std::map<int, std::queue<std::string>> _out_queues; // file d'attente des messages par client
 
 	int check_port(const char *port);		// vérifie la validité du port
 	bool createSocket();					// crée le socket
@@ -61,13 +62,12 @@ private:
 	bool AddSocket();						// ajoute le socket au epoll
 	bool createPoll();						// crée le descripteur epoll
 	bool wait();							// boucle principale du serveur
-	bool CleanUp();							// nettoie les ressources utilisées
 	bool AddClient(int fd, std::string ip); // ajoute un client à la liste des connectés
 	void sendPendingMessages(int fd);		// envoie les messages en attente à un client
-
 public:
 	Server(const char *port, String password);
 	~Server();
+	
 	class InvalidPortException : public std::exception
 	{
 		virtual const char *what() const throw()
@@ -75,6 +75,8 @@ public:
 			return "Invalid port number";
 		}
 	};
+	void Run();
+	bool CleanUp();							// nettoie les ressources utilisées
 	Client *findConnectedByfd(int idRecherche);
 	Client *findConnectedByNickname(String Nickname);
 	Client *findConnectedByUsername(String Username);
@@ -82,10 +84,11 @@ public:
 	int &getServerFd();
 	int &getClientFd();
 	bool CheckPassword(String password, int fd);
-	void Run();
 	int getQueuesSize();
-
 	void Start();
+	static void Stop(int signum);
+	void Close();
+	
 };
 
 #endif

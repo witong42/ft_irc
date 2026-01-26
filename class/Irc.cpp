@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/25 21:29:32 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/25 21:45:02 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,13 @@
 #include "../header/Replies.hpp"
 
 Irc::Irc() {}
-Irc::~Irc() {}
+Irc::~Irc() {
+	std::map<String, Channel *>::iterator it = _channels.begin();
+	for (; it != _channels.end(); ++it)
+	{
+		delete it->second;
+	}
+}
 
 Channel *Irc::findChannel(String channel)
 {
