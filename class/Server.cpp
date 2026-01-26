@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 13:48:38 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/26 20:25:44 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,9 +354,9 @@ bool Server::wait()
 				if (events[i].events & EPOLLIN)
 				{
 					char buffer[BUFFER_SIZE];
-					
+
 					ssize_t count = recv(event_fd, buffer, sizeof(buffer) - 1, 0);
-					
+
 
 					if (count == -1)
 					{

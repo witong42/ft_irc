@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/21 04:36:01 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 20:25:44 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ public:
 	const std::string &getHostname() const;
 	const std::string &getNickname() const;
 	const std::string &getUsername() const;
-	
+
 	std::string &getBuffer();
 	bool isRegistered() const;
 	bool isOperator() const;
