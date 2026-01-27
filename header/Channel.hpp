@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
 /*   Updated: 2026/01/26 20:57:01 by witong           ###   ########.fr       */
@@ -110,6 +110,7 @@ class Channel
 		void	broadcast(const std::string &msg); // PRIVMSG / NOTICE
 		void	broadcast(const std::string &msg, Client *excludeUser); // PRIVMSG / NOTICE
 		void	mode(Client *user, const std::string &modes, const std::vector<std::string> &args); // MODE
+		std::map<Client *, bool> &getUsers(); // Get users map
 };
 
 #endif

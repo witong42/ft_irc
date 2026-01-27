@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/27 08:30:59 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 14:10:37 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -409,6 +409,11 @@ Client *Server::findConnectedByfd(int idRecherche)
 	return (it != _connected_clients.end()) ? it->second : NULL;
 }
 
+std::map<int, Client *> &Server::getConnectedClients()
+{
+	return _connected_clients;
+}
+
 Client *Server::findConnectedByNickname(String Nickname)
 {
 	for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
@@ -428,11 +433,6 @@ Client *Server::findConnectedByUsername(String Find)
 	}
 	return (NULL);
 }
-
-// int &Server::getClientFd()
-// {
-// 	return _fd_client;
-// }
 
 int &Server::getClientFd()
 {

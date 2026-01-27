@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/27 08:07:54 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/26 14:10:21 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,7 @@ class Server
 		Client *findConnectedByfd(int idRecherche);
 		Client *findConnectedByNickname(String Nickname);
 		Client *findConnectedByUsername(String Username);
+    std::map<int, Client *> &getConnectedClients();
 		int &getServerFd();
 		int &getClientFd();
 		bool checkPassword(String password, int fd);
