@@ -6,11 +6,16 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/23 12:30:06 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/27 08:33:14 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <unistd.h>
+#include <iostream>
+#include <sys/socket.h>
+#include <cerrno>
 #include "../header/Client.hpp"
+#include "../header/Logger.hpp"
 
 Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _buffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
 {
@@ -45,7 +50,13 @@ Client &Client::operator=(const Client &rhs)
 
 Client::~Client()
 {
+	if (_fd != -1)
+	{
+		close(_fd);
+		_fd = -1;
+	}
 }
+
 
 void Client::setNickname(const std::string &nickname)
 {
@@ -124,9 +135,10 @@ void Client::reply(const std::string &msg)
 {
 	if (this->_sendBuffer.length() + msg.length() > 100000)
 	{
-		std::cerr << "Error: Buffer Limit for client " << this->_fd << std::endl;
+		Logger::error("Buffer Limit for client " + this->_nickname);
 		return;
 	}
+	Logger::debug("Sending to " + _nickname + ": " + msg);
 	this->_sendBuffer += msg + "\r\n";
 }
 
@@ -135,19 +147,29 @@ void Client::flush()
 	if (this->_sendBuffer.empty())
 		return;
 
-	std::cout << "Flushing to client " << this->_fd << ": " << this->_sendBuffer;
-	ssize_t bytesSent = send(this->_fd, this->_sendBuffer.c_str(), this->_sendBuffer.length(), 0);
+	while (!this->_sendBuffer.empty())
+	{
+		ssize_t bytesSent = send(this->_fd, this->_sendBuffer.c_str(), this->_sendBuffer.length(), 0);
 
-	if (bytesSent == -1)
-	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
-			std::cerr << "Error: Failed to send message to client " << this->_fd << std::endl;
-	}
-	else
-	{
-		if (static_cast<size_t>(bytesSent) >= this->_sendBuffer.length())
-			this->_sendBuffer.clear();
+		if (bytesSent == -1)
+		{
+			if (errno != EAGAIN && errno != EWOULDBLOCK)
+			{
+				Logger::error("Failed to send message to client " + this->_nickname);
+			}
+			break;
+		}
 		else
-			this->_sendBuffer = this->_sendBuffer.substr(bytesSent);
+		{
+			if (static_cast<size_t>(bytesSent) >= this->_sendBuffer.length())
+				this->_sendBuffer.clear();
+			else
+				this->_sendBuffer = this->_sendBuffer.substr(bytesSent);
+		}
 	}
+}
+
+bool Client::hasPendingWrites() const
+{
+	return !this->_sendBuffer.empty();
 }

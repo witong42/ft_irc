@@ -37,8 +37,7 @@ bool Irc::CmdPart(std::vector<String> argument, Server &server)
 
 	if (channel->getUserCount() == 0)
 	{
-		_channels.erase(channelName);
-		delete channel;
+		removeChannel(channelName);
 	}
 	return true;
 }

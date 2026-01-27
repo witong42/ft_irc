@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/22 17:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/25 20:52:45 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/27 08:28:03 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ private:
 	// std::string _str;
 	std::string _delimiter;
 	std::vector<String> _vector;
-	/* data */
 public:
 	String();
 	String(std::string str);

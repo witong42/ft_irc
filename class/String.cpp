@@ -6,13 +6,12 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 18:50:54 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/25 20:52:56 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/27 08:30:59 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <string>
-#include <vector>
 #include <iostream>
+#include <sstream>
 #include "../header/String.hpp"
 
 
@@ -35,7 +34,8 @@ std::vector<String> String ::split(const std::string &delimiter)
 		start = end + _delimiter.length();
 		end = std::string::find(_delimiter, start);
 	}
-	_vector.push_back(std::string::substr(start, end));
+	if (start < std::string::length())
+		_vector.push_back(std::string::substr(start, end));
 	return _vector;
 }
 String String::getNpos(size_t pos)
