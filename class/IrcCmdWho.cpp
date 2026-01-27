@@ -16,7 +16,6 @@ bool Irc::CmdWho(std::vector<String> argument, Server &server)
 	Client *targetClient = server.findConnectedByNickname(target);
 	if (targetClient)
 	{
-
 		std::string response = RPL_WHOREPLY(targetClient->getNickname(), targetClient->getUsername(), targetClient->getIp(), server.getServerName(), this->_current_nick, "H", "0");
 		_current_client->reply(response);
 		_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
