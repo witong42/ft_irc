@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/26 20:25:44 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/27 07:58:35 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ public:
 	void setRegistered(bool status);
 	void setOperator(bool status);
 	void setHostname(const std::string &hostname);
+
+	bool hasPendingWrites() const;
 
 	// Getters
 	int getFd() const;

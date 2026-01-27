@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/25 21:33:45 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/27 07:10:33 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,8 @@ class Irc
 {
 private:
 	std::map<String, Channel *> _channels;
-	std::map<int, Client *> _clients;
 	Client *_current_client;
 	std::string _current_nick;
-
 
 	Channel *findChannel(String channel);
 	bool CmdNick(std::vector<String> argument, Server &server);
@@ -46,19 +44,26 @@ private:
 	bool CmdWho(std::vector<String> argument, Server &server);
 	bool CmdPong(std::vector<String> argument, Server &server);
 	bool CmdQuit(std::vector<String> argument, Server &server);
-	bool parseSwitchCommand(std::string cmd, std::string buffer, Server &server);
+	bool parseSwitchCommand(std::string buffer, Server &server);
 	void setCurrentClient(Server &server);
 
 public:
 	Irc();
 	~Irc();
 	bool parseCommand(std::string buffer, Server &server);
-	void disconnectClient(Client *client, std::string reason);
-	std::string extractMessage(const std::vector<String> &argument, size_t start);
+
+	// Actions
+	void ircDisconnectClient(Client *client, std::string reason);
+	void removeChannel(std::string name);
+
+	// Checks & Getters
 	bool checkRegistered();
 	bool checkParams(size_t count, size_t min, std::string cmdName);
 	Channel *getChannelOrError(std::string name);
 	Client *getClientOrError(Server &server, std::string nick);
+
+	// Utils
+	std::string extractMessage(const std::vector<String> &argument, size_t start);
 };
 
 #endif
