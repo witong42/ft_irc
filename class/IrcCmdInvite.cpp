@@ -21,6 +21,18 @@ bool Irc::CmdInvite(std::vector<String> argument, Server &server)
 	if (!channel)
 		return false;
 
+	if (!channel->hasUser(_current_client))
+	{
+		_current_client->reply(ERR_NOTONCHANNEL(_current_nick, channelName));
+		return false;
+	}
+
+	if (channel->isInviteOnly() && !channel->isOperator(_current_client))
+	{
+		_current_client->reply(ERR_CHANOPRIVSNEEDED(_current_nick, channelName));
+		return false;
+	}
+
 	Client *target = getClientOrError(server, targetNick);
 	if (!target)
 		return false;

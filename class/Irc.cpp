@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/27 08:30:59 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/27 08:59:18 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,17 +77,14 @@ bool Irc::parseSwitchCommand(std::string buffer, Server &server)
 	commandMap["WHO"] = &Irc::CmdWho;
 	commandMap["QUIT"] = &Irc::CmdQuit;
 
+	setCurrentClient(server);
+	if (!_current_client)
+		return false;
+
 	if (commandMap.find(cmd) != commandMap.end())
-	{
-		setCurrentClient(server);
-		if (!_current_client)
-			return false;
 		return (this->*(commandMap[cmd]))(str.get_vector(), server);
-	}
 	else
-	{
-		std::cerr << "Command not recognized: " << cmd << std::endl;
-	}
+		_current_client->reply(ERR_UNKNOWNCOMMAND(_current_nick, cmd));
 	return true;
 }
 
