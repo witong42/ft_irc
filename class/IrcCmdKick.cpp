@@ -40,6 +40,6 @@ bool Irc::CmdKick(std::vector<String> argument, Server &server)
 		_current_client->reply(ERR_USERNOTINCHANNEL(_current_nick, targetNick, channelName));
 		return false;
 	}
-	channel->kick(_current_client, targetNick, reason);
+	channel->kick(_current_client, target, reason);
 	return true;
 }

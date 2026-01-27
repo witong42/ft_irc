@@ -14,7 +14,7 @@ OBJ_DIR = bin/obj
 
 # Fichiers sources
 SRCS = $(FUNCTION_DIR)/main.cpp
-CLASS_List = Channel Client Irc Server String IrcCmdNick IrcCmdUser \
+CLASS_List = Channel Client Irc Server String Logger IrcCmdNick IrcCmdUser \
 			IrcCmdJoin IrcCmdPart IrcCmdMode IrcCmdPrivmsg IrcCmdPass \
 			IrcCmdCap IrcCmdKick IrcCmdInvite IrcCmdTopic IrcCmdPing \
 			IrcCmdWho IrcCmdPong IrcCmdQuit

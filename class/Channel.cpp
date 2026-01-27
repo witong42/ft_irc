@@ -202,9 +202,9 @@ void Channel::invite(Client *user)
 		this->_invited.push_back(user);
 }
 
-void Channel::kick(Client *kicker, const std::string &targetNick, const std::string &reason)
+void Channel::kick(Client *kicker, Client *target, const std::string &reason)
 {
-	if (!kicker)
+	if (!kicker || !target)
 		return;
 	if (!this->isOperator(kicker))
 	{
@@ -212,14 +212,13 @@ void Channel::kick(Client *kicker, const std::string &targetNick, const std::str
 		return;
 	}
 
-	Client *target = findUserByNickname(targetNick);
-	if (!target)
+	if (!hasUser(target))
 	{
-		kicker->reply(ERR_USERNOTINCHANNEL(kicker->getNickname(), targetNick, this->_name));
+		kicker->reply(ERR_USERNOTINCHANNEL(kicker->getNickname(), target->getNickname(), this->_name));
 		return;
 	}
 
-	std::string msg = ":" + kicker->getNickname() + " KICK " + this->_name + " " + targetNick;
+	std::string msg = ":" + kicker->getNickname() + " KICK " + this->_name + " " + target->getNickname();
 	if (!reason.empty())
 		msg += " :" + reason;
 
@@ -231,16 +230,6 @@ void Channel::changeTopic(Client *user, std::string topic)
 {
 	if (!this->isTopicRestricted() || this->isOperator(user))
 		this->_topic = topic;
-}
-
-Client *Channel::findUserByNickname(const std::string &nickname)
-{
-	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); it++)
-	{
-		if (it->first->getNickname() == nickname)
-			return it->first;
-	}
-	return NULL;
 }
 
 void Channel::broadcast(const std::string &msg)
@@ -306,7 +295,15 @@ bool Channel::handleModeO(ModeContext &ctx)
 		return false;
 
 	std::string nick = ctx.args[ctx.argIdx++];
-	Client *target = findUserByNickname(nick);
+	Client *target = NULL;
+	for (std::map<Client *, bool>::iterator it = _users.begin(); it != _users.end(); ++it)
+	{
+		if (it->first->getNickname() == nick)
+		{
+			target = it->first;
+			break;
+		}
+	}
 
 	if (target)
 	{
@@ -407,7 +404,7 @@ void Channel::mode(Client *user, const std::string &modes, const std::vector<std
 {
 	if (!user)
 		return;
-	// RFC 2812: If no modes given, return current modes (RPL_CHANNELMODEIS)
+
 	if (modes.empty())
 	{
 		sendChannelModes(user);
@@ -422,6 +419,7 @@ void Channel::mode(Client *user, const std::string &modes, const std::vector<std
 	if (!ctx.appliedModes.empty())
 		broadcast(":" + user->getNickname() + " MODE " + this->_name + " " + ctx.appliedModes + ctx.appliedArgs);
 }
+
 std::map<Client *, bool> &Channel::getUsers()
 {
 	return this->_users;

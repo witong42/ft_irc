@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 13:39:19 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/27 08:59:18 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,20 +32,18 @@
 #include "../header/Server.hpp"
 #include "../header/Client.hpp"
 #include "../header/Replies.hpp"
+#include "../header/Logger.hpp"
 
 Irc::Irc() {}
-Irc::~Irc() {
+
+Irc::~Irc()
+{
 	std::map<String, Channel *>::iterator it = _channels.begin();
 	for (; it != _channels.end(); ++it)
 	{
 		delete it->second;
 	}
 	_channels.clear();
-	for (std::map<int, Client *>::iterator itc = _clients.begin(); itc != _clients.end(); ++itc)
-	{
-		delete itc->second;
-	}
-	_clients.clear();
 }
 
 Channel *Irc::findChannel(String channel)
@@ -54,39 +52,14 @@ Channel *Irc::findChannel(String channel)
 	return (it != _channels.end()) ? it->second : NULL;
 }
 
-bool Irc::parseCommand(std::string buffer, Server &server)
+bool Irc::parseSwitchCommand(std::string buffer, Server &server)
 {
-	String str(buffer);
-	std::vector<String> parts = str.split("\r\n");
-	std::cout << "Received command size: " << parts.size() << std::endl;
-	for (size_t i = 0; i < parts.size(); ++i)
-	{
-		if (parts[i].empty())
-			continue;
-		std::istringstream lineStream(parts[i]);
-		std::string lineCmd;
-		std::getline(lineStream, lineCmd, ' ');
-		parseSwitchCommand(lineCmd, parts[i], server);
-	}
-	return true;
-}
-
-void Irc::setCurrentClient(Server &server)
-{
-	this->_current_client = server.findConnectedByfd(server.getClientFd());
-	if (this->_current_client && !this->_current_client->getNickname().empty())
-		this->_current_nick = this->_current_client->getNickname();
-	else
-		this->_current_nick = "*";
-}
-
-bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server)
-{
+	Logger::debug("Received: " + buffer);
 	String str(buffer);
 	std::vector<String> parts = str.split(" ");
 	if (parts.size() == 0)
 		return true;
-	cmd = parts[0];
+	std::string cmd = parts[0];
 	std::map<std::string, bool (Irc::*)(std::vector<String>, Server &)> commandMap;
 	commandMap["PASS"] = &Irc::CmdPass;
 	commandMap["NICK"] = &Irc::CmdNick;
@@ -104,21 +77,40 @@ bool Irc::parseSwitchCommand(std::string cmd, std::string buffer, Server &server
 	commandMap["WHO"] = &Irc::CmdWho;
 	commandMap["QUIT"] = &Irc::CmdQuit;
 
+	setCurrentClient(server);
+	if (!_current_client)
+		return false;
+
 	if (commandMap.find(cmd) != commandMap.end())
-	{
-		setCurrentClient(server);
-		if (!_current_client)
-			return false;
 		return (this->*(commandMap[cmd]))(str.get_vector(), server);
-	}
 	else
+		_current_client->reply(ERR_UNKNOWNCOMMAND(_current_nick, cmd));
+	return true;
+}
+
+void Irc::setCurrentClient(Server &server)
+{
+	this->_current_client = server.findConnectedByfd(server.getClientFd());
+	if (this->_current_client && !this->_current_client->getNickname().empty())
+		this->_current_nick = this->_current_client->getNickname();
+	else
+		this->_current_nick = "*";
+}
+
+bool Irc::parseCommand(std::string buffer, Server &server)
+{
+	String str(buffer);
+	std::vector<String> parts = str.split("\r\n");
+	for (size_t i = 0; i < parts.size(); ++i)
 	{
-		std::cerr << "Command not recognized: " << cmd << std::endl;
+		if (parts[i].empty())
+			continue;
+		parseSwitchCommand(parts[i], server);
 	}
 	return true;
 }
 
-void Irc::disconnectClient(Client *client, std::string reason)
+void Irc::ircDisconnectClient(Client *client, std::string reason)
 {
 	std::string quitMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getIp() + " QUIT :" + reason;
 	std::map<String, Channel *>::iterator it = _channels.begin();
@@ -131,12 +123,23 @@ void Irc::disconnectClient(Client *client, std::string reason)
 			channel->removeUser(client);
 			if (channel->getUserCount() == 0)
 			{
-				delete channel;
-				_channels.erase(it++);
+				std::string name = it->first;
+				removeChannel(name);
+				it = _channels.begin();
 				continue;
 			}
 		}
 		it++;
+	}
+}
+
+void Irc::removeChannel(std::string name)
+{
+	std::map<String, Channel *>::iterator it = _channels.find(name);
+	if (it != _channels.end())
+	{
+		delete it->second;
+		_channels.erase(it);
 	}
 }
 

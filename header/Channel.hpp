@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:52:56 by witong            #+#    #+#             */
-/*   Updated: 2026/01/26 14:14:32 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/26 20:57:01 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,13 +62,13 @@ class Channel
 
 		void sendChannelModes(Client *user);
 		bool checkOperatorPrivileges(Client *user);
+		Channel(const Channel &other);
+		Channel &operator=(const Channel &rhs);
 
 	public:
 		// Canonical Form
 		Channel();
 		Channel(const std::string &name, Client *creator);
-		Channel(const Channel &other);
-		Channel &operator=(const Channel &rhs);
 		~Channel();
 
 		// Setters
@@ -104,10 +104,8 @@ class Channel
 		void	removeUser(Client *user); // PART / QUIT / KICK
 		void	removeInvite(Client *user); // JOIN
 		void	invite(Client *user); // INVITE
-		void	kick(Client *kicker, const std::string &targetNick, const std::string &reason); // KICK
+		void	kick(Client *kicker, Client *target, const std::string &reason); // KICK
 		void	changeTopic(Client *user, std::string topic); // TOPIC
-
-		Client	*findUserByNickname(const std::string &nickname);
 
 		void	broadcast(const std::string &msg); // PRIVMSG / NOTICE
 		void	broadcast(const std::string &msg, Client *excludeUser); // PRIVMSG / NOTICE
