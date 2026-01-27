@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 14:10:37 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/27 12:48:20 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,12 +351,15 @@ bool Server::wait()
 								clientBuffer.erase(0, pos + 1);
 							}
 
-							// If we have data to write, enable EPOLLOUT
-							if (client->hasPendingWrites())
+							// EPOLLOUT for all clients with pending writes
+							for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
 							{
-								_ev.events = EPOLLIN | EPOLLOUT;
-								_ev.data.fd = event_fd;
-								epoll_ctl(_fd_epoll, EPOLL_CTL_MOD, event_fd, &_ev);
+								if (it->second->hasPendingWrites())
+								{
+									_ev.events = EPOLLIN | EPOLLOUT;
+									_ev.data.fd = it->second->getFd();
+									epoll_ctl(_fd_epoll, EPOLL_CTL_MOD, it->second->getFd(), &_ev);
+								}
 							}
 						}
 					}
