@@ -74,7 +74,7 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 		}
 		return true;
 	}
-	else if (target[0] != '#')
+	else if (target[0] != '#' || target[0] != '&')
 	{
 		Client *targetClient = getClientOrError(server, target);
 		if (!targetClient)
