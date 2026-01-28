@@ -29,7 +29,7 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 					_current_client->reply(ERR_NOSUCHNICK(_current_nick, singleTarget));
 					return false;
 				}
-				if (singleTarget[0] == '#')
+				if (singleTarget[0] == '#' || singleTarget[0] == '&')
 				{
 					Channel *channel = getChannelOrError(singleTarget);
 					if (!channel)
