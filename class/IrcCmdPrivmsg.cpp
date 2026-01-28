@@ -61,7 +61,7 @@ bool Irc::CmdPrivmsg(std::vector<String> argument, Server &server)
 		return false;
 	}
 
-	if (target[0] == '#')
+	if (target[0] == '#' || target[0] == '&')
 	{
 		Channel *channel = getChannelOrError(target);
 		if (!channel)
