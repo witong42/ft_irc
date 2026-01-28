@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/26 14:10:21 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/28 10:43:34 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ class Server
     std::map<int, Client *> &getConnectedClients();
 		int &getServerFd();
 		int &getClientFd();
-		bool checkPassword(String password, int fd);
+		bool checkPassword(String password, Client &client);
 		String getServerName();
 };
 

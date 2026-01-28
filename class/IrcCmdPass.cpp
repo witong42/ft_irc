@@ -16,7 +16,7 @@ bool Irc::CmdPass(std::vector<String> argument, Server &server)
 		_current_client->reply(ERR_ALREADYREGISTERED(_current_nick));
 		return false;
 	}
-	if (server.checkPassword(argument[1], _current_client->getFd()))
+	if (server.checkPassword(argument[1], *_current_client))
 	{
 		_current_client->reply(RPL_WELCOME(_current_nick, _current_client->getUsername(), _current_client->getHostname()) + "\r\n");
 		_current_client->setRegistered(true);
