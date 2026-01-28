@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/27 12:48:20 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/28 12:30:56 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,6 +328,11 @@ bool Server::wait()
 					ssize_t count = recv(event_fd, buffer, sizeof(buffer) - 1, 0);
 					if (count == -1)
 					{
+						if (errno == EAGAIN || errno == EWOULDBLOCK)
+						{
+							// no data available right now; just continue
+							continue;
+						}
 						std::cerr << "Error recv" << std::endl;
 						serverDisconnectClient(event_fd, irc, "Connection error");
 					}
@@ -341,14 +346,22 @@ bool Server::wait()
 						Client *client = findConnectedByfd(event_fd);
 						if (client)
 						{
-							client->appendBuffer(buffer);
-							std::string &clientBuffer = client->getBuffer();
-							size_t pos;
-							while ((pos = clientBuffer.find('\n')) != std::string::npos)
+							client->appendReadBuffer(buffer);
+							std::string &clientBuffer = client->getReadBuffer();
+
+							// To refactor
+							if (clientBuffer.size() > BUFFER_SIZE)
 							{
-								std::string line = clientBuffer.substr(0, pos + 1);
-								irc.parseCommand(line, *this);
-								clientBuffer.erase(0, pos + 1);
+								clientBuffer.erase(0, clientBuffer.size() - BUFFER_SIZE);
+								std::cerr << "Read buffer truncated for fd " << event_fd << std::endl;
+							}
+
+							size_t pos;
+							while ((pos = clientBuffer.find('\r\n')) != std::string::npos)
+							{
+								std::string line = clientBuffer.substr(0, pos);
+								irc.switchCommand(line, *this);
+								clientBuffer.erase(0, pos + 2);
 							}
 
 							// EPOLLOUT for all clients with pending writes

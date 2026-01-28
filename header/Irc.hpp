@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/27 07:10:33 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/28 10:04:21 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,13 +44,13 @@ private:
 	bool CmdWho(std::vector<String> argument, Server &server);
 	bool CmdPong(std::vector<String> argument, Server &server);
 	bool CmdQuit(std::vector<String> argument, Server &server);
-	bool parseSwitchCommand(std::string buffer, Server &server);
 	void setCurrentClient(Server &server);
 
 public:
 	Irc();
 	~Irc();
-	bool parseCommand(std::string buffer, Server &server);
+	bool switchCommand(std::string buffer, Server &server);
+	// bool parseCommand(std::string buffer, Server &server);
 
 	// Actions
 	void ircDisconnectClient(Client *client, std::string reason);

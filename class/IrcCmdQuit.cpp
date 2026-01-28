@@ -9,8 +9,7 @@
 
 bool Irc::CmdQuit(std::vector<String> argument, Server &server)
 {
-	std::cout << "Received QUIT command" << server.getServerName() << std::endl;
-
+	(void)server;
 	if (!checkRegistered())
 		return false;
 
