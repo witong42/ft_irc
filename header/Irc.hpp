@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:42 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/28 11:07:25 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/29 10:29:56 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ private:
 	bool CmdWho(std::vector<String> argument, Server &server);
 	bool CmdPong(std::vector<String> argument, Server &server);
 	bool CmdQuit(std::vector<String> argument, Server &server);
-	bool TryRegisterClient(Client &client);
+	bool TryRegisterClient(Server &server);
 	void setCurrentClient(Server &server);
 
 public:

@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:00:00 by witong            #+#    #+#             */
-/*   Updated: 2026/01/23 10:59:57 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/29 10:16:14 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,16 @@
 
 // Welcome Replies
 // 001 - Sent upon successful registration
-#define RPL_WELCOME(nick, user, host) (":localhost 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + user + "@" + host)
+#define RPL_WELCOME(nick, user, host, servername) (":" + servername + " 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + user + "@" + host)
 
 // 002 - Part of typical registration burst
-#define RPL_YOURHOST(nick) (":localhost 002 " + nick + " :Your host is localhost, running version 1.0")
+#define RPL_YOURHOST(nick, servername) (":" + servername + " 002 " + nick + " :Your host is " + servername + ", running version 1.0")
 
 // 003 - Part of typical registration burst
-#define RPL_CREATED(nick) (":localhost 003 " + nick + " :This server was created Jan 2026")
+#define RPL_CREATED(nick, servername) (":" + servername + " 003 " + nick + " :This server was created Jan 2026")
 
 // 004 - Part of typical registration burst (servername version user_modes channel_modes)
-#define RPL_MYINFO(nick) (":localhost 004 " + nick + " localhost 1.0 o t")
+#define RPL_MYINFO(nick, servername) (":" + servername + " 004 " + nick + " " + servername + " 1.0  itklo")
 
 // Commands Replies
 // 324 - Response to MODE command when no arguments are given (viewing mode)

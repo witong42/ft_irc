@@ -1,4 +1,4 @@
-/connect localhost pwd123
+/connect localhost 6667 pwd123
 
 /join #foobar                    ; join channel #foobar.
 
