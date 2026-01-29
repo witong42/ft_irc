@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/23 11:33:56 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/27 08:59:18 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/28 10:02:36 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ Channel *Irc::findChannel(String channel)
 	return (it != _channels.end()) ? it->second : NULL;
 }
 
-bool Irc::parseSwitchCommand(std::string buffer, Server &server)
+bool Irc::switchCommand(std::string buffer, Server &server)
 {
 	Logger::debug("Received: " + buffer);
 	String str(buffer);
@@ -97,18 +97,18 @@ void Irc::setCurrentClient(Server &server)
 		this->_current_nick = "*";
 }
 
-bool Irc::parseCommand(std::string buffer, Server &server)
-{
-	String str(buffer);
-	std::vector<String> parts = str.split("\r\n");
-	for (size_t i = 0; i < parts.size(); ++i)
-	{
-		if (parts[i].empty())
-			continue;
-		parseSwitchCommand(parts[i], server);
-	}
-	return true;
-}
+// bool Irc::parseCommand(std::string buffer, Server &server)
+// {
+// 	String str(buffer);
+// 	std::vector<String> parts = str.split("\r\n");
+// 	for (size_t i = 0; i < parts.size(); ++i)
+// 	{
+// 		if (parts[i].empty())
+// 			continue;
+// 		parseSwitchCommand(parts[i], server);
+// 	}
+// 	return true;
+// }
 
 void Irc::ircDisconnectClient(Client *client, std::string reason)
 {

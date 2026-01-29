@@ -44,14 +44,14 @@ private:
 	bool CmdWho(std::vector<String> argument, Server &server);
 	bool CmdPong(std::vector<String> argument, Server &server);
 	bool CmdQuit(std::vector<String> argument, Server &server);
-	bool parseSwitchCommand(std::string buffer, Server &server);
 	bool TryRegisterClient(Client &client);
 	void setCurrentClient(Server &server);
 
 public:
 	Irc();
 	~Irc();
-	bool parseCommand(std::string buffer, Server &server);
+	bool switchCommand(std::string buffer, Server &server);
+	// bool parseCommand(std::string buffer, Server &server);
 
 	// Actions
 	void ircDisconnectClient(Client *client, std::string reason);

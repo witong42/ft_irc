@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/28 10:37:09 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/28 09:43:40 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ private:
 	std::string _nickname;
 	std::string _username;
 
-	std::string _buffer;
+	std::string _readBuffer;
 	std::string _sendBuffer;
 	std::string _hostname;
 	bool _isOperator;
@@ -60,13 +60,13 @@ public:
 	const std::string &getNickname() const;
 	const std::string &getUsername() const;
 
-	std::string &getBuffer();
+	std::string &getReadBuffer();
 	bool isRegistered() const;
 	bool isOperator() const;
 
 	// Methods
-	void appendBuffer(const std::string &chunk); // To store incoming data
-	void clearBuffer();							 // To wipe buffer after processing
+	void appendReadBuffer(const std::string &chunk); // To store incoming data
+	void clearReadBuffer();							 // To wipe buffer after processing
 	void reply(const std::string &msg);			 // To queue message to send buffer
 	void flush();								 // To write queued messages to socket
 };

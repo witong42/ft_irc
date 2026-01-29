@@ -9,6 +9,7 @@
 bool Irc::CmdPass(std::vector<String> argument, Server &server)
 {
 	(void)server;
+	// std::cout << server.getClientFd() << std::endl;
 	if (!checkParams(argument.size(), 2, "PASS"))
 		return false;
 	/*

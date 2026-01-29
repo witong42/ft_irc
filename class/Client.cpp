@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/28 10:37:34 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/28 09:42:06 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,13 @@
 #include "../header/Client.hpp"
 #include "../header/Logger.hpp"
 
-Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _buffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
+Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
 {
 
 
 }
 
-Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _buffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
+Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
 {
 }
 
@@ -40,7 +40,7 @@ Client &Client::operator=(const Client &rhs)
 		_ip = rhs._ip;
 		_nickname = rhs._nickname;
 		_username = rhs._username;
-		_buffer = rhs._buffer;
+		_readBuffer = rhs._readBuffer;
 		_isOperator = rhs._isOperator;
 		_isRegistered = rhs._isRegistered;
 		_hostname = rhs._hostname;
@@ -106,9 +106,9 @@ const std::string &Client::getUsername(void) const
 	return this->_username;
 }
 
-std::string &Client::getBuffer()
+std::string &Client::getReadBuffer()
 {
-	return this->_buffer;
+	return this->_readBuffer;
 }
 
 bool Client::isRegistered() const
@@ -121,14 +121,14 @@ bool Client::isOperator() const
 	return this->_isOperator;
 }
 
-void Client::appendBuffer(const std::string &chunk)
+void Client::appendReadBuffer(const std::string &chunk)
 {
-	this->_buffer += chunk;
+	this->_readBuffer += chunk;
 }
 
-void Client::clearBuffer()
+void Client::clearReadBuffer()
 {
-	this->_buffer.clear();
+	this->_readBuffer.clear();
 }
 
 void Client::reply(const std::string &msg)
