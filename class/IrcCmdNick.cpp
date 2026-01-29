@@ -27,10 +27,6 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 	}
 
 	_current_client->setNickname(nick);
-
-	if (!_current_client->getNickname().empty() && !_current_client->getUsername().empty())
-	{
-		TryRegisterClient(server);
-	}
+	TryRegisterClient(server);
 	return true;
 }

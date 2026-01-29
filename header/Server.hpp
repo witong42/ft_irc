@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/29 10:29:56 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/29 12:12:53 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ private:
 	bool createPoll();						// crée le descripteur epoll
 	bool wait();							// boucle principale du serveur
 	bool addClient(int fd, std::string ip); // ajoute un client à la liste des connectés
-	void serverDisconnectClient(int fd, Irc &irc, std::string reason);
 
 public:
 	Server(const char *port, String password);
@@ -82,6 +81,7 @@ public:
 	/* Public Interface */
 	void Run();
 	static void Stop(int signum);
+	void serverDisconnectClient(int fd, Irc &irc, std::string reason);
 	bool CleanUp();
 
 	/* Accessors */
