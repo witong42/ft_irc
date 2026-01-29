@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/29 09:57:56 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/29 14:01:53 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -348,6 +348,7 @@ bool Server::wait()
 						{
 							client->appendReadBuffer(buffer);
 							std::string &clientBuffer = client->getReadBuffer();
+							Logger::debug("Client buffer :" + client->getReadBuffer());
 
 							// To refactor
 							if (clientBuffer.size() > BUFFER_SIZE)
@@ -361,6 +362,8 @@ bool Server::wait()
 							{
 								std::string line = clientBuffer.substr(0, pos);
 								irc.switchCommand(line, *this);
+								if (findConnectedByfd(event_fd) == NULL)
+									break;
 								clientBuffer.erase(0, pos + 2);
 							}
 
@@ -411,15 +414,16 @@ int &Server::getServerFd()
 	return _fd_server;
 }
 
-bool Server::checkPassword(String password, Client &client)
+bool Server::checkPassword(String password, Client *client)
 {
+	if (!client)
+		return false;
 
 	if (password == _password)
 	{
-		client.setPwdOk(true);
+		client->setPwdOk(true);
 		return true;
 	}
-	close(client.getFd());
 	return false;
 }
 
@@ -463,4 +467,3 @@ String Server::getServerName()
 {
 	return _server_name;
 }
-

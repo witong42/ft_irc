@@ -1,0 +1,12 @@
+# Connect via arguments
+irssi -c localhost -p 6667 -n witong -w pwd123
+
+# connect via /connect
+/connect localhost 6667 pwd123
+
+#connect via PASS NICK USER
+/pass pwd123
+/nick witong
+/user witong 0 * :William
+
+

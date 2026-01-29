@@ -27,20 +27,6 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 	}
 
 	_current_client->setNickname(nick);
-
-	if (!_current_client->getNickname().empty() && !_current_client->getUsername().empty())
-	{
-		if (!_current_client->isRegistered())
-		{
-			_current_client->setRegistered(true);
-			std::string user = _current_client->getUsername();
-			std::string host = _current_client->getIp();
-
-			_current_client->reply(RPL_WELCOME(nick, user, host));
-			_current_client->reply(RPL_YOURHOST(nick));
-			_current_client->reply(RPL_CREATED(nick));
-			_current_client->reply(RPL_MYINFO(nick));
-		}
-	}
+	TryRegisterClient(server);
 	return true;
 }

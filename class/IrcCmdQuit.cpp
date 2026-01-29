@@ -14,6 +14,7 @@ bool Irc::CmdQuit(std::vector<String> argument, Server &server)
 		return false;
 
 	std::string reason = extractMessage(argument, 1);
-	ircDisconnectClient(_current_client, reason);
+	server.serverDisconnectClient(_current_client->getFd(), *this, reason);
+
 	return true;
 }

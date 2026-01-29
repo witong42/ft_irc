@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:14 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/28 10:43:34 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/29 12:12:53 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,60 +39,60 @@ class Irc;
 
 class Server
 {
-	private:
-		/* Socket descriptors */
-		int _fd_server; // fichier de descripteur du socket
-		int _fd_epoll; // descripteur epoll
-		int _fd_client;
+private:
+	/* Socket descriptors */
+	int _fd_server; // fichier de descripteur du socket
+	int _fd_epoll;	// descripteur epoll
+	int _fd_client;
 
-		/* Server state */
-		String _password;
-		String _server_name;
-		static bool _running;
+	/* Server state */
+	String _password;
+	String _server_name;
+	static bool _running;
 
-		struct epoll_event _ev, events[MAX_EVENTS];
-		struct sockaddr_in _address;
+	struct epoll_event _ev, events[MAX_EVENTS];
+	struct sockaddr_in _address;
 
-		std::map<int, Client *> _connected_clients; // liste des clients connectés
+	std::map<int, Client *> _connected_clients; // liste des clients connectés
 
-		/* Internal helpers */
-		int check_port(const char *port);        // vérifie la validité du port
-		bool createSocket();                    // crée le socket
-		bool socketUnblock(int fd);                // met le socket en non-bloquant
-		bool IPv4bind();                        // lie le socket à une adresse IPv4
-		bool listening();                        // met le socket en écoute
-		bool addSocket();                        // ajoute le socket au epoll
-		bool createPoll();                        // crée le descripteur epoll
-		bool wait();                            // boucle principale du serveur
-		bool addClient(int fd, std::string ip); // ajoute un client à la liste des connectés
-		void serverDisconnectClient(int fd, Irc &irc, std::string reason);
+	/* Internal helpers */
+	int check_port(const char *port);		// vérifie la validité du port
+	bool createSocket();					// crée le socket
+	bool socketUnblock(int fd);				// met le socket en non-bloquant
+	bool IPv4bind();						// lie le socket à une adresse IPv4
+	bool listening();						// met le socket en écoute
+	bool addSocket();						// ajoute le socket au epoll
+	bool createPoll();						// crée le descripteur epoll
+	bool wait();							// boucle principale du serveur
+	bool addClient(int fd, std::string ip); // ajoute un client à la liste des connectés
 
-	public:
-		Server(const char *port, String password);
-		~Server();
+public:
+	Server(const char *port, String password);
+	~Server();
 
-		class InvalidPortException : public std::exception
+	class InvalidPortException : public std::exception
+	{
+		virtual const char *what() const throw()
 		{
-			virtual const char *what() const throw()
-			{
-				return "Invalid port number";
-			}
-		};
+			return "Invalid port number";
+		}
+	};
 
-		/* Public Interface */
-		void Run();
-		static void Stop(int signum);
-		bool CleanUp();
+	/* Public Interface */
+	void Run();
+	static void Stop(int signum);
+	void serverDisconnectClient(int fd, Irc &irc, std::string reason);
+	bool CleanUp();
 
-		/* Accessors */
-		Client *findConnectedByfd(int idRecherche);
-		Client *findConnectedByNickname(String Nickname);
-		Client *findConnectedByUsername(String Username);
-    std::map<int, Client *> &getConnectedClients();
-		int &getServerFd();
-		int &getClientFd();
-		bool checkPassword(String password, Client &client);
-		String getServerName();
+	/* Accessors */
+	Client *findConnectedByfd(int idRecherche);
+	Client *findConnectedByNickname(String Nickname);
+	Client *findConnectedByUsername(String Username);
+	std::map<int, Client *> &getConnectedClients();
+	int &getServerFd();
+	int &getClientFd();
+	bool checkPassword(String password, Client *client);
+	String getServerName();
 };
 
 #endif
