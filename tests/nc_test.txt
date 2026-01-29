@@ -1,0 +1,5 @@
+PASS pwd123
+NICK willy
+USER willy 0 * :William
+JOIN #toto
+

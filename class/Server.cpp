@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/29 09:54:59 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/29 10:54:24 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -348,6 +348,7 @@ bool Server::wait()
 						{
 							client->appendReadBuffer(buffer);
 							std::string &clientBuffer = client->getReadBuffer();
+							Logger::debug("Client buffer :" + client->getReadBuffer());
 
 							// To refactor
 							if (clientBuffer.size() > BUFFER_SIZE)
@@ -411,15 +412,17 @@ int &Server::getServerFd()
 	return _fd_server;
 }
 
-bool Server::checkPassword(String password, Client &client)
+bool Server::checkPassword(String password, Client *client)
 {
+	if (!client)
+		return false;
 
 	if (password == _password)
 	{
-		client.setPwdOk(true);
+		client->setPwdOk(true);
 		return true;
 	}
-	close(client.getFd());
+	close(client->getFd());
 	return false;
 }
 
@@ -463,4 +466,3 @@ String Server::getServerName()
 {
 	return _server_name;
 }
-
