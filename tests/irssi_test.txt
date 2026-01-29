@@ -1,11 +1,12 @@
+# Connect via arguments
+irssi -c localhost -p 6667 -n witong -w pwd123
+
+# connect via /connect
 /connect localhost 6667 pwd123
 
-/join #foobar                    ; join channel #foobar.
+#connect via PASS NICK USER
+/pass pwd123
+/nick witong
+/user witong 0 * :William
 
-/join &foo fubar                 ; join channel &foo using key "fubar".
 
-/join #foo,&bar fubar            ; join channel #foo using key "fubar" and &bar using no key.
-
-/join #foo,#bar fubar,foobar     ; join channel #foo using key "fubar" and channel #bar using key "foobar".
-
-/join #foo,#bar                  ; join channels #foo and #bar.

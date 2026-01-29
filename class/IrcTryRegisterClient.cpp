@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/28 11:03:04 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/29 10:29:56 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/29 12:29:39 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,12 @@ bool Irc::TryRegisterClient(Server &server)
 {
 	if (!_current_client)
 		return false;
-
 	if (_current_client->isPwdOk() == false)
+		return false;
+	if (_current_client->getNickname().empty() || _current_client->getUsername().empty())
 		return false;
 	if (_current_client->isRegistered())
 		return true;
-	if (_current_client->getNickname().empty() || _current_client->getUsername().empty())
-		return false;
 
 	_current_client->setRegistered(true);
 	std::string nick = _current_client->getNickname();

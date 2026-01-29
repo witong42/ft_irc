@@ -6,7 +6,7 @@
 /*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/29 10:54:24 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/29 12:36:58 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,6 +362,8 @@ bool Server::wait()
 							{
 								std::string line = clientBuffer.substr(0, pos);
 								irc.switchCommand(line, *this);
+								if (findConnectedByfd(event_fd) == NULL)
+									break;
 								clientBuffer.erase(0, pos + 2);
 							}
 
@@ -422,7 +424,6 @@ bool Server::checkPassword(String password, Client *client)
 		client->setPwdOk(true);
 		return true;
 	}
-	close(client->getFd());
 	return false;
 }
 
