@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/27 08:33:14 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/28 10:37:34 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,4 +172,14 @@ void Client::flush()
 bool Client::hasPendingWrites() const
 {
 	return !this->_sendBuffer.empty();
+}
+
+bool Client::isPwdOk() const
+{
+	return this->_isPwdOk;
+}
+
+void Client::setPwdOk(bool status)
+{
+	this->_isPwdOk = status;
 }

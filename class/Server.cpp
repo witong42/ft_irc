@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/27 12:48:20 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/28 10:50:24 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -398,12 +398,16 @@ int &Server::getServerFd()
 	return _fd_server;
 }
 
-bool Server::checkPassword(String password, int fd)
+bool Server::checkPassword(String password, Client &client)
 {
+
 	if (password == _password)
-		return false;
-	close(fd);
-	return true;
+	{
+		client.setPwdOk(true);
+		return true;
+	}
+	close(client.getFd());
+	return false;
 }
 
 Client *Server::findConnectedByfd(int idRecherche)
