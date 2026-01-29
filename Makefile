@@ -17,7 +17,7 @@ SRCS = $(FUNCTION_DIR)/main.cpp
 CLASS_List = Channel Client Irc Server String Logger IrcCmdNick IrcCmdUser \
 			IrcCmdJoin IrcCmdPart IrcCmdMode IrcCmdPrivmsg IrcCmdPass \
 			IrcCmdCap IrcCmdKick IrcCmdInvite IrcCmdTopic IrcCmdPing \
-			IrcCmdWho IrcCmdPong IrcCmdQuit
+			IrcCmdWho IrcCmdPong IrcCmdQuit IrcTryRegisterClient 
 SRCS2 = $(patsubst %,$(CLASS_DIR)/%.cpp,$(CLASS_List))
 
 # Fichiers objets
