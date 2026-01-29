@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/28 10:50:24 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/29 09:57:56 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,7 +357,7 @@ bool Server::wait()
 							}
 
 							size_t pos;
-							while ((pos = clientBuffer.find('\r\n')) != std::string::npos)
+							while ((pos = clientBuffer.find("\r\n")) != std::string::npos)
 							{
 								std::string line = clientBuffer.substr(0, pos);
 								irc.switchCommand(line, *this);
