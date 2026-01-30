@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/30 12:09:27 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/30 13:57:06 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,6 @@ Client::~Client()
 		_fd = -1;
 	}
 }
-
 
 void Client::setNickname(const std::string &nickname)
 {
@@ -146,11 +145,9 @@ void Client::flush()
 {
 	if (this->_sendBuffer.empty())
 		return;
-
 	while (!this->_sendBuffer.empty())
 	{
 		ssize_t bytesSent = send(this->_fd, this->_sendBuffer.c_str(), this->_sendBuffer.length(), 0);
-
 		if (bytesSent == -1)
 		{
 			if (errno != EAGAIN && errno != EWOULDBLOCK)
