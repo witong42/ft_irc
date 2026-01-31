@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/31 09:43:28 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/31 09:43:29 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/31 10:43:32 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ bool Irc::CmdWho(std::vector<String> argument, Server &server)
 		_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
 		return true;
 	}
-	if (target[1] == '*')
+	if (target[0] == '*')
 	{
 		// Target is a wildcard, return all connected clients
 		for (std::map<int, Client *>::iterator it = server.getConnectedClients().begin(); it != server.getConnectedClients().end(); ++it)

@@ -5,7 +5,7 @@ PORT="6667"
 NICK="testbot$$"    # Nick unique avec PID
 PASS="pwd123"      # Si ton serveur a un PASS
 CHANNELS="#ft_irc,#test"
-CONFIG="/tmp/irc_$$.fifo"  # FIFO pour commandes interactives
+CONFIG="./test_logs/2irc_$$.log"  # FIFO pour commandes interactives
 
 # Crée FIFO pour envoyer des commandes pendant l'exécution
 mkfifo "$CONFIG"
