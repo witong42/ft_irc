@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Replies.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:00:00 by witong            #+#    #+#             */
-/*   Updated: 2026/01/29 10:16:14 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/30 18:25:21 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,9 @@
 #define RPL_ENDOFWHO(nick, target) (":localhost 315 " + nick + " " + target + " :End of /WHO list")
 
 // 352 - WHO
-#define RPL_WHOREPLY(nick, user, host, server, nick_target, status, hopcount) (":localhost 352 " + nick + " " + user + " " + host + " " + server + " " + nick_target + " " + status + " " + hopcount + " :0 " + user)
+// #define RPL_WHOREPLY(nick, user, host, server, nick_target, status, hopcount) (":localhost 352 " + nick + " " + user + " " + host + " " + server + " " + nick_target + " " + status + " " + hopcount + " :0 " + user)
+
+// 352 - WHO with different parameter name
+#define RPL_WHOREPLY(nick,target, user, host, server, nick_target, status, hopcount) (":localhost 352 " + nick + " "+target+ " " + user + " " + host + " " + server + " "+ nick_target + " " + status + " " + hopcount + " :0 "+ target +" "+ user)
 
 #endif
