@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/28 09:42:06 by witong           ###   ########.fr       */
+/*   Updated: 2026/01/30 13:57:06 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,13 @@
 #include "../header/Client.hpp"
 #include "../header/Logger.hpp"
 
-Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
+Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false),_isPwdOk(false)
 {
 
 
 }
 
-Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false)
+Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false),_isPwdOk(false)
 {
 }
 
@@ -56,7 +56,6 @@ Client::~Client()
 		_fd = -1;
 	}
 }
-
 
 void Client::setNickname(const std::string &nickname)
 {
@@ -146,11 +145,9 @@ void Client::flush()
 {
 	if (this->_sendBuffer.empty())
 		return;
-
 	while (!this->_sendBuffer.empty())
 	{
 		ssize_t bytesSent = send(this->_fd, this->_sendBuffer.c_str(), this->_sendBuffer.length(), 0);
-
 		if (bytesSent == -1)
 		{
 			if (errno != EAGAIN && errno != EWOULDBLOCK)
