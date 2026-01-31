@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/30 13:57:06 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/31 13:14:22 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,11 @@
 #include "../header/Client.hpp"
 #include "../header/Logger.hpp"
 
-Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false),_isPwdOk(false)
+Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false), _isPwdOk(false)
 {
-
-
 }
 
-Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false),_isPwdOk(false)
+Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false), _isPwdOk(false)
 {
 }
 
