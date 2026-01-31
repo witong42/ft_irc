@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/31 09:43:48 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/01/31 13:09:03 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -338,6 +338,7 @@ bool Server::wait()
 					}
 					else if (count == 0)
 					{
+						ev.events |= EPOLLOUT;
 						serverDisconnectClient(event_fd, irc, "Connection closed");
 					}
 					else
@@ -366,17 +367,16 @@ bool Server::wait()
 									break;
 								clientBuffer.erase(0, pos + 2);
 							}
-
-							// EPOLLOUT for all clients with pending writes
-							for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
-							{
-								if (it->second->hasPendingWrites())
-								{
-									_ev.events = EPOLLIN | EPOLLOUT;
-									_ev.data.fd = it->second->getFd();
-									epoll_ctl(_fd_epoll, EPOLL_CTL_MOD, it->second->getFd(), &_ev);
-								}
-							}
+						}
+					}
+					// EPOLLOUT for all clients with pending writes
+					for (std::map<int, Client *>::iterator it = _connected_clients.begin(); it != _connected_clients.end(); ++it)
+					{
+						if (it->second->hasPendingWrites())
+						{
+							_ev.events = EPOLLIN | EPOLLOUT;
+							_ev.data.fd = it->second->getFd();
+							epoll_ctl(_fd_epoll, EPOLL_CTL_MOD, it->second->getFd(), &_ev);
 						}
 					}
 				}
