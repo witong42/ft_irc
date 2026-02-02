@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:38 by witong            #+#    #+#             */
-/*   Updated: 2026/01/31 13:14:22 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 11:55:47 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,11 @@
 #include "../header/Client.hpp"
 #include "../header/Logger.hpp"
 
-Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false), _isPwdOk(false)
+Client::Client() : _fd(-1), _ip(""), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false), _isPwdOk(false), _shouldDisconnect(false)
 {
 }
 
-Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false), _isPwdOk(false)
+Client::Client(int fd, std::string ip) : _fd(fd), _ip(ip), _nickname(""), _username(""), _readBuffer(""), _sendBuffer(""), _isOperator(false), _isRegistered(false), _isPwdOk(false), _shouldDisconnect(false)
 {
 }
 
@@ -34,16 +34,18 @@ Client &Client::operator=(const Client &rhs)
 {
 	if (this != &rhs)
 	{
-		_fd = rhs._fd;
-		_ip = rhs._ip;
-		_nickname = rhs._nickname;
-		_username = rhs._username;
-		_readBuffer = rhs._readBuffer;
-		_isOperator = rhs._isOperator;
-		_isRegistered = rhs._isRegistered;
-		_hostname = rhs._hostname;
+		this->_fd = rhs._fd;
+		this->_ip = rhs._ip;
+		this->_nickname = rhs._nickname;
+		this->_username = rhs._username;
+		this->_readBuffer = rhs._readBuffer;
+		this->_sendBuffer = rhs._sendBuffer;
+		this->_isOperator = rhs._isOperator;
+		this->_isRegistered = rhs._isRegistered;
+		this->_isPwdOk = rhs._isPwdOk;
+		this->_shouldDisconnect = rhs._shouldDisconnect;
 	}
-	return *this;
+	return (*this);
 }
 
 Client::~Client()
@@ -74,18 +76,17 @@ void Client::setOperator(bool status)
 {
 	this->_isOperator = status;
 }
-void Client::setHostname(const std::string &hostname)
+
+void Client::setShouldDisconnect(bool status)
 {
-	this->_hostname = hostname;
+	this->_shouldDisconnect = status;
 }
-const std::string &Client::getHostname() const
-{
-	return this->_hostname;
-}
+
+// Getters
 
 int Client::getFd() const
 {
-	return this->_fd;
+	return (this->_fd);
 }
 
 const std::string &Client::getIp() const
@@ -115,7 +116,17 @@ bool Client::isRegistered() const
 
 bool Client::isOperator() const
 {
-	return this->_isOperator;
+	return (this->_isOperator);
+}
+
+bool Client::getShouldDisconnect() const
+{
+	return (this->_shouldDisconnect);
+}
+
+const std::string &Client::getHostname() const
+{
+	return (this->_hostname);
 }
 
 void Client::appendReadBuffer(const std::string &chunk)

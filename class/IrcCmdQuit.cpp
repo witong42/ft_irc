@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcCmdQuit.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/31 09:43:12 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/31 09:43:13 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 11:53:24 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,9 @@ bool Irc::CmdQuit(std::vector<String> argument, Server &server)
 		return false;
 
 	std::string reason = extractMessage(argument, 1);
-	server.serverDisconnectClient(_current_client->getFd(), *this, reason);
+	ircDisconnectClient(_current_client, reason);
+	_current_client->reply("ERROR :Closing Link: " + _current_client->getIp() + " (" + reason + ")");
+	_current_client->setShouldDisconnect(true);
 
 	return true;
 }
