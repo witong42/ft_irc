@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/31 09:42:46 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/31 09:42:47 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 11:39:32 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 		_current_client->reply(ERR_NONICKNAMEGIVEN(_current_nick));
 		return false;
 	}
-
 	String nick = argument[1];
 	if (nick.empty() || nick.length() > 30 || !isalnum(nick[0]))
 	{
@@ -40,5 +39,6 @@ bool Irc::CmdNick(std::vector<String> argument, Server &server)
 
 	_current_client->setNickname(nick);
 	TryRegisterClient(server);
+	_current_client->reply(":" + _current_nick + " NICK :" + nick);
 	return true;
 }

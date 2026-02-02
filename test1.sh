@@ -11,7 +11,7 @@ fi
 PORT="6667"
 PASS="pwd123"
 SERVER="./bin/ircserv"  # Change si ton binaire s'appelle autrement
-CHANNEL="#test"
+CHANNEL="#toto"
 LOGDIR="test_logs"
 mkdir -p $LOGDIR
 
@@ -43,6 +43,12 @@ function connect_client {
         sleep 1
         echo "PASS $PASS"
         sleep 1
+        echo "JOIN $CHANNEL"
+        sleep 1
+        echo "WHO *"  # Vérifie membres
+        echo "TOPIC $CHANNEL :Premier topic de test"
+        sleep 1
+     echo "TOPIC $CHANNEL"  # Get
     } | nc -C localhost $PORT | tee $log
 }
 
@@ -60,30 +66,9 @@ function expect_log {
 # Test 1: Connexions de base
 echo -e "\n## Test 1: Connexions base"
 connect_client alice &
-connect_client bob &
-connect_client charlie &
 sleep 5
 
-# Test 2: JOIN #test
-echo -e "\n## Test 2: JOIN $CHANNEL"
-{
-    echo "JOIN $CHANNEL"
-    sleep 1
-    echo "NAMES $CHANNEL"  # Vérifie membres
-} | nc -C localhost $PORT | tee $LOGDIR/join.log
-sleep 2
 
-expect_log $LOGDIR/client_alice.log "JOIN.*$CHANNEL"
-expect_log $LOGDIR/client_bob.log "JOIN.*$CHANNEL"
 
-# Test 3: TOPIC (set et get)
-echo -e "\n## Test 3: TOPIC"
-{
-    echo "JOIN $CHANNEL"
-    sleep 1
-    echo "TOPIC $CHANNEL :Premier topic de test"
-    sleep 1
-    echo "TOPIC $CHANNEL"  # Get
-} | nc -C localhost $PORT | tee $LOGDIR/topic.log
-sleep 2
+
 

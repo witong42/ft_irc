@@ -1,42 +1,52 @@
 #!/bin/bash
 
-SERVER="127.0.0.1"  # Ton serveur ft_irc
-PORT="6667"
-NICK="testbot$$"    # Nick unique avec PID
-PASS="pwd123"      # Si ton serveur a un PASS
-CHANNELS="#ft_irc,#test"
-CONFIG="./test_logs/2irc_$$.log"  # FIFO pour commandes interactives
+# --- CONFIGURATION ---
+SERVER="localhost"
+CMDSERVER="./bin/ircserv" 
+PORT=6667
+NICK="AdminChatBot"
+CHAN="#norminette"
+PASSWORD="pwd123" # Optionnel
+LOGDIR="test_logs"
 
-# Crée FIFO pour envoyer des commandes pendant l'exécution
-mkfifo "$CONFIG"
+# --- FONCTION D'ENVOI ---
+# On utilise une fonction pour formater correctement les messages IRC
+send_irc() {
+    echo "$1"
+    echo "$1" >&3
+    sleep 1 # Petit délai pour éviter d'être banni pour flood
+}
 
-echo "Connexion IRC à $SERVER:$PORT..."
 
-# Lance la connexion en fond (gère PING/PONG auto)
-(
-  echo "NICK $NICK"
-  echo "USER $NICK 0 * :Test Bot pour ft_irc"
-  echo "PASS $PASS"
-  echo "JOIN $CHANNELS"
-  tail -f "$CONFIG" | nc "$SERVER" $PORT | while read MSG; do
-    echo "$MSG"
-    case "$MSG" in
-      *PING*) echo "PONG ${MSG#PING}" >&3 ;;  # Répond aux PING
-      *PRIVMSG*:#*) ;;  # Ignore messages channel pour log clean
-      *PRIVMSG* ) echo "[$(date '+%H:%M')] $MSG" ;;  # Log PRIVMSG
-    esac
-  done
-) 3>"$CONFIG" &
+$CMDSERVER $PORT $PASSWORD > $LOGDIR/server.log 2>&1 &
 
-sleep 2  # Attends welcome
+# --- CONNEXION ---
+# Ouverture d'un descripteur de fichier (3) vers le serveur IRC
+exec 3<>/dev/tcp/$SERVER/$PORT
 
-# Actions automatisées (ajoute tes fonctions ici)
-echo "PRIVMSG $CHANNELS :Test auto depuis script Bash" >&3
-echo "PRIVMSG $NICK :Message privé à moi-même" >&3
-echo "MODE $CHANNELS +nt" >&3  # Test MODE
-echo "KICK $CHANNELS $NICK :Test kick auto" >&3  # Se kick lui-même
+# Identification
+send_irc "NICK $NICK"
+send_irc "USER $NICK 8 * :Bot Bash"
 
-read -p "Appuie sur Entrée pour quitter..."
-echo "QUIT :Fin du test" >&3
-rm "$CONFIG"
-wait
+# Attendre un peu que la connexion s'établisse avant de rejoindre
+sleep 5
+
+# --- AUTOMATISATION DES COMMANDES ---
+
+# 1. Rejoindre le canal
+send_irc "JOIN $CHAN"
+
+# 2. Configurer le TOPIC
+send_irc "TOPIC $CHAN :Sujet automatisé par script Shell"
+
+# 3. Configurer les MODES (ex: +t pour restreindre le topic, +n pas de msg externe)
+send_irc "MODE $CHAN +tn"
+
+# 4. Inviter un utilisateur (si besoin)
+# send_irc "INVITE AmiPseudo $CHAN"
+
+# 5. Envoyer un message de confirmation
+send_irc "PRIVMSG $CHAN :L'automatisation du canal est terminée ! [OK]"
+
+# Rester à l'écoute pour garder la connexion active (ou 'exit 0' pour quitter)
+cat <&3

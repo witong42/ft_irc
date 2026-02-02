@@ -6,7 +6,7 @@
 /*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:00:00 by witong            #+#    #+#             */
-/*   Updated: 2026/01/30 18:25:21 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 11:39:43 by jegirard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,5 +124,7 @@
 
 // 352 - WHO with different parameter name
 #define RPL_WHOREPLY(nick,target, user, host, server, nick_target, status, hopcount) (":localhost 352 " + nick + " "+target+ " " + user + " " + host + " " + server + " "+ nick_target + " " + status + " " + hopcount + " :0 "+ target +" "+ user)
+
+
 
 #endif
