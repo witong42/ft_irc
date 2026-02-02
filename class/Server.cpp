@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 14:05:18 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/31 13:09:03 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 11:53:18 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -338,7 +338,6 @@ bool Server::wait()
 					}
 					else if (count == 0)
 					{
-						ev.events |= EPOLLOUT;
 						serverDisconnectClient(event_fd, irc, "Connection closed");
 					}
 					else
@@ -393,6 +392,9 @@ bool Server::wait()
 							_ev.events = EPOLLIN;
 							_ev.data.fd = event_fd;
 							epoll_ctl(_fd_epoll, EPOLL_CTL_MOD, event_fd, &_ev);
+
+							if (client->getShouldDisconnect())
+								serverDisconnectClient(event_fd, irc, "Disconnecting after flush");
 						}
 					}
 				}

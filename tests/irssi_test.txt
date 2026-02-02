@@ -1,12 +1,15 @@
 # Connect via arguments
-irssi -c localhost -p 6667 -n witong -w pwd123
+irssi -c localhost -p 6667 -w pwd123 -n witong
 
-# connect via /connect
-/connect localhost 6667 pwd123
+# Connect via /connect (Test NICK USER PASS)
+/connect localhost 6667 pwd123 witong
 
-#connect via PASS NICK USER
-/pass pwd123
-/nick witong
-/user witong 0 * :William
+/connect localhost 6667 wrongpass witong
 
+# Test JOIN PART
+/join #test
+/join #channel1,#channel2
+/part #test
 
+# Test PRIVMSG
+/msg nick2 Hello there

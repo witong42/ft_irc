@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcCmdNick.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/31 09:42:46 by jegirard          #+#    #+#             */
-/*   Updated: 2026/02/02 11:39:32 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 12:15:53 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,22 @@
 
 bool Irc::CmdNick(std::vector<String> argument, Server &server)
 {
+	if (_current_client->getShouldDisconnect())
+		return false;
+
 	if (argument.size() < 2)
 	{
 		_current_client->reply(ERR_NONICKNAMEGIVEN(_current_nick));
 		return false;
 	}
+
+	if (_current_client->isPwdOk() == false)
+	{
+		_current_client->reply("ERROR :Closing Link: " + _current_client->getIp() + " (Password required)");
+		_current_client->setShouldDisconnect(true);
+		return false;
+	}
+
 	String nick = argument[1];
 	if (nick.empty() || nick.length() > 30 || !isalnum(nick[0]))
 	{

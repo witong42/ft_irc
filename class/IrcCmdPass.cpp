@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcCmdPass.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/31 09:42:55 by jegirard          #+#    #+#             */
-/*   Updated: 2026/01/31 09:42:56 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 12:09:55 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,13 @@ bool Irc::CmdPass(std::vector<String> argument, Server &server)
 	// std::cout << server.getClientFd() << std::endl;
 	if (!checkParams(argument.size(), 2, "PASS"))
 		return false;
-		
+
+	if (_current_client->isRegistered())
+	{
+		_current_client->reply(ERR_ALREADYREGISTERED(_current_nick));
+		return true;
+	}
+
 	if (server.checkPassword(argument[1], _current_client))
 	{
 		TryRegisterClient(server);
@@ -32,6 +38,7 @@ bool Irc::CmdPass(std::vector<String> argument, Server &server)
 	else
 	{
 		_current_client->reply(ERR_PASSWDMISMATCH(_current_nick) + "\r\n");
+		_current_client->setShouldDisconnect(true);
 		return false;
 	}
 	return true;

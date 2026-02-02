@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:18 by witong            #+#    #+#             */
-/*   Updated: 2026/01/28 09:43:40 by witong           ###   ########.fr       */
+/*   Updated: 2026/02/02 11:55:18 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ private:
 	bool _isOperator;
 	bool _isRegistered;
 	bool _isPwdOk;
+	bool _shouldDisconnect;
 
 public:
 	// Canonical Form
@@ -50,6 +51,7 @@ public:
 	void setOperator(bool status);
 	void setPwdOk(bool status);
 	void setHostname(const std::string &hostname);
+	void setShouldDisconnect(bool status);
 	bool hasPendingWrites() const;
 
 	// Getters
@@ -59,7 +61,7 @@ public:
 	const std::string &getHostname() const;
 	const std::string &getNickname() const;
 	const std::string &getUsername() const;
-
+	bool getShouldDisconnect() const;
 	std::string &getReadBuffer();
 	bool isRegistered() const;
 	bool isOperator() const;
