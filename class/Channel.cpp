@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jegirard <jegirard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: witong <witong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 11:53:43 by witong            #+#    #+#             */
-/*   Updated: 2026/01/26 14:15:11 by jegirard         ###   ########.fr       */
+/*   Updated: 2026/02/02 12:48:55 by witong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,16 +261,25 @@ bool Channel::handleModeT(ModeContext &ctx)
 
 bool Channel::handleModeK(ModeContext &ctx)
 {
+	if (ctx.argIdx >= ctx.args.size())
+		return false;
+
+	std::string key = ctx.args[ctx.argIdx++];
+
 	if (ctx.adding)
 	{
-		if (ctx.argIdx >= ctx.args.size())
+		if (hasKey())
 			return false;
-		std::string key = ctx.args[ctx.argIdx++];
 		setKey(key);
 		ctx.appliedArgs += " " + key;
 	}
 	else
+	{
+		if (!hasKey() || this->_key != key)
+			return false;
 		setKey("");
+		ctx.appliedArgs += " " + key;
+	}
 	return true;
 }
 
@@ -281,6 +290,15 @@ bool Channel::handleModeL(ModeContext &ctx)
 		if (ctx.argIdx >= ctx.args.size())
 			return false;
 		std::string limit = ctx.args[ctx.argIdx++];
+
+		for (size_t i = 0; i < limit.length(); i++)
+		{
+			if (limit[i] < '0' || limit[i] > '9')
+				return false;
+		}
+		if (std::atoi(limit.c_str()) <= 0)
+			return false;
+
 		setLimit(limit);
 		ctx.appliedArgs += " " + limit;
 	}
@@ -289,7 +307,7 @@ bool Channel::handleModeL(ModeContext &ctx)
 	return true;
 }
 
-bool Channel::handleModeO(ModeContext &ctx)
+bool Channel::handleModeO(ModeContext &ctx, Client *issuer)
 {
 	if (ctx.argIdx >= ctx.args.size())
 		return false;
@@ -314,6 +332,8 @@ bool Channel::handleModeO(ModeContext &ctx)
 		ctx.appliedArgs += " " + nick;
 		return true;
 	}
+	if (issuer)
+		issuer->reply(ERR_USERNOTINCHANNEL(issuer->getNickname(), nick, _name));
 	return false;
 }
 
@@ -350,7 +370,7 @@ void Channel::processModeChar(char c, ModeContext &ctx, Client *user)
 		success = handleModeL(ctx);
 		break;
 	case 'o':
-		success = handleModeO(ctx);
+		success = handleModeO(ctx, user);
 		break;
 	default:
 		user->reply(ERR_UNKNOWNMODE(user->getNickname(), std::string(1, c), this->_name));
@@ -381,7 +401,10 @@ void Channel::sendChannelModes(Client *user)
 	if (isTopicRestricted())
 		modeStr += "t";
 	if (hasKey())
+	{
 		modeStr += "k";
+		argsStr += " " + getKey();
+	}
 	if (hasLimit())
 	{
 		modeStr += "l";
