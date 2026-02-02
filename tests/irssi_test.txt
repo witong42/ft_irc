@@ -13,3 +13,32 @@ irssi -c localhost -p 6667 -w pwd123 -n witong
 
 # Test PRIVMSG
 /msg nick2 Hello there
+
+# Display current MODE
+/mode #test
+
+# Test MODE i (invite-only)
+/mode #test +i
+/mode #test -i
+
+# Test MODE t (topic-restriction)
+/mode #test +t
+/mode #test -t
+
+# Test MODE +k (key/password)
+/mode #test +k mypassword
+/mode #test -k
+
+#Test MODE l (user limit)
+/mode #test +l 5
+/mode #test -t
+
+# Test MODE o (give channel operator privilege)
+/mode #test +o witong
+/mode #test -o
+
+# Test MODE chaining
+MODE #test +il 5
+MODE #test -il
+MODE #test +kto mykey witong
+MODE #test -k
