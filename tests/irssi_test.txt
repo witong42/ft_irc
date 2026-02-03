@@ -1,44 +1,54 @@
-# Connect via arguments
-irssi -c localhost -p 6667 -w pwd123 -n witong
+# 1. Connection
+# Syntax: /connect <hostname> <port> <password> <nickname>
+irssi -c localhost -p 6667 -w pwd123 -n user
+OR
+/connect localhost 6667 pwd123 user
 
-# Connect via /connect (Test NICK USER PASS)
-/connect localhost 6667 pwd123 witong
-
-/connect localhost 6667 wrongpass witong
-
-# Test JOIN PART
+# 2. Channel Operations
+# Syntax: /join <channel>
 /join #test
-/join #channel1,#channel2
+
+# Syntax: /part <channel>
 /part #test
 
-# Test PRIVMSG
-/msg nick2 Hello there
+# 3. Messaging
+# Syntax: /msg <nickname> <message>
+/msg user Hello there!
 
-# Display current MODE
-/mode #test
+# 4. Topic
+# Syntax: /topic <channel> <topic>
+/topic #test Welcome to the test channel
 
-# Test MODE i (invite-only)
+# 5. Modes
+# Syntax: /mode <channel> <mode> [args]
+
+# Invite-only (+i)
 /mode #test +i
 /mode #test -i
 
-# Test MODE t (topic-restriction)
+# Topic restriction (+t)
 /mode #test +t
 /mode #test -t
 
-# Test MODE +k (key/password)
-/mode #test +k mypassword
-/mode #test -k
+# Key/Password (+k)
+/mode #test +k secret123
+/mode #test -k secret123
 
-#Test MODE l (user limit)
+# Operator privilege (+o)
+/mode #test +o user
+/mode #test -o user
+
+# User limit (+l)
 /mode #test +l 5
-/mode #test -t
+/mode #test -l
 
-# Test MODE o (give channel operator privilege)
-/mode #test +o witong
-/mode #test -o
+# 6. Operator Actions
+# Syntax: /kick <channel> <nickname> [reason]
+/kick #test user reason
 
-# Test MODE chaining
-MODE #test +il 5
-MODE #test -il
-MODE #test +kto mykey witong
-MODE #test -k
+# Syntax: /invite <nickname> <channel>
+/invite user #test
+
+# 7. Quit
+# Syntax: /quit [reason]
+/quit Bye everyone!

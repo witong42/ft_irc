@@ -1,3 +1,6 @@
+# Authentification via netcat
+nc -C localhost 6667
+
 PASS pwd123
 NICK willy
 USER willy 0 * :William

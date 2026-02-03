@@ -16,6 +16,7 @@
 #include "../header/Replies.hpp"
 #include "../header/String.hpp"
 #include <iostream>
+#include "../header/Logger.hpp"
 #include <vector>
 
 /* Exemple de commande who
@@ -40,7 +41,7 @@ bool Irc::CmdWho(std::vector<String> argument, Server &server)
 		_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
 		return true;
 	}
-	std::cout << "Processing WHO command for target: " << target << std::endl;
+	// Logger::debug("Processing WHO command for target: " + target);
 	if (target.empty())
 	{
 		_current_client->reply(RPL_ENDOFWHO(_current_nick, target));
@@ -60,7 +61,7 @@ bool Irc::CmdWho(std::vector<String> argument, Server &server)
 		for (std::map<Client *, bool>::iterator it = users.begin(); it != users.end(); ++it)
 		{
 			Client *client = it->first;
-			std::cout << "Processing WHO for channel user: " << client->getNickname() << std::endl;
+			Logger::debug("Processing WHO for channel user: " + client->getNickname());
 			std::string response = RPL_WHOREPLY(client->getNickname(),target, client->getUsername(), client->getIp(), server.getServerName(), client->getNickname(),"H", "0");
 			_current_client->reply(response);
 		}

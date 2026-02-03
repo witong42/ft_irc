@@ -16,11 +16,12 @@
 #include "../header/Replies.hpp"
 #include "../header/String.hpp"
 #include <iostream>
+#include "../header/Logger.hpp"
 #include <vector>
 
 bool Irc::CmdPong(std::vector<String> argument, Server &server)
 {
-	std::cout << "Received PONG command" << server.getServerName() << std::endl;
+	Logger::debug("Received PONG command " + server.getServerName());
 
 	if (!checkRegistered())
 		return false;

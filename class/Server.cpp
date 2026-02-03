@@ -144,7 +144,7 @@ bool Server::createSocket()
 	_fd_server = socket(AF_INET, SOCK_STREAM, 0);
 	if (_fd_server < 0)
 	{
-		std::cerr << "Error socket creation\n";
+		Logger::error("Error socket creation");
 		_fd_server = -1;
 		return false;
 	}
@@ -152,7 +152,7 @@ bool Server::createSocket()
 	int opt = 1;
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
-		std::cerr << "Error setsockopt\n";
+		Logger::error("Error setsockopt");
 		close(_fd_server);
 		_fd_server = -1;
 		return false;
@@ -181,7 +181,7 @@ bool Server::IPv4bind()
 {
 	if (bind(_fd_server, reinterpret_cast<struct sockaddr *>(&_address), sizeof(_address)) < 0)
 	{
-		std::cerr << "Error bind\n";
+		Logger::error("Error bind");
 		close(_fd_server);
 		_fd_server = -1;
 		return false;
@@ -193,7 +193,7 @@ bool Server::listening()
 {
 	if (listen(_fd_server, 10) < 0)
 	{
-		std::cerr << "Error listen\n";
+		Logger::error("Error listen");
 		close(_fd_server);
 		_fd_server = -1;
 		return false;
@@ -209,7 +209,7 @@ bool Server::createPoll()
 	_fd_epoll = epoll_create1(0);
 	if (_fd_epoll == -1)
 	{
-		std::cerr << "Error epoll_create1\n";
+		Logger::error("Error epoll_create1");
 		if (_fd_server >= 0)
 		{
 			close(_fd_server);
@@ -226,7 +226,7 @@ bool Server::addSocket()
 	_ev.data.fd = _fd_server;
 	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, _fd_server, &_ev) == -1)
 	{
-		std::cerr << "Error epoll_ctl\n";
+		Logger::error("Error epoll_ctl");
 		if (_fd_server >= 0)
 		{
 			close(_fd_server);
@@ -277,7 +277,7 @@ bool Server::wait()
 		if (nfds < 0)
 		{
 			if (_running)
-				std::cerr << "Error epoll_wait\n";
+				Logger::error("Error epoll_wait");
 			break;
 		}
 
@@ -293,7 +293,7 @@ bool Server::wait()
 				if (new_client_fd == -1)
 				{
 					if (errno != EAGAIN && errno != EWOULDBLOCK)
-						std::cerr << "Error accept\n";
+						Logger::error("Error accept");
 					continue;
 				}
 
@@ -303,7 +303,7 @@ bool Server::wait()
 
 				if (!socketUnblock(new_client_fd))
 				{
-					std::cerr << "Error socketUnblock client\n";
+					Logger::error("Error socketUnblock client");
 					close(new_client_fd);
 					continue;
 				}
@@ -312,7 +312,7 @@ bool Server::wait()
 				_ev.data.fd = new_client_fd;
 				if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, new_client_fd, &_ev) == -1)
 				{
-					std::cerr << "Error add client to epoll\n";
+					Logger::error("Error add client to epoll");
 					close(new_client_fd);
 				}
 			}
@@ -333,7 +333,7 @@ bool Server::wait()
 							// no data available right now; just continue
 							continue;
 						}
-						std::cerr << "Error recv" << std::endl;
+						Logger::error("Error recv");
 						serverDisconnectClient(event_fd, irc, "Connection error");
 					}
 					else if (count == 0)
@@ -407,7 +407,7 @@ bool Server::wait()
 		}
 	}
 
-	std::cout << "Exiting main server loop." << std::endl;
+	Logger::info("Exiting main server loop.");
 	return true;
 }
 
