@@ -20,7 +20,8 @@ void Logger::log(const std::string &level, const std::string &message)
 
 	std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-	std::cout << "[" << timestamp << "] [" << level << "] " << message << std::endl;
+	std::ostream &os = (level == "ERROR") ? std::cerr : std::cout;
+	os << "[" << timestamp << "] [" << level << "] " << message << std::endl;
 }
 
 void Logger::info(const std::string &message)
