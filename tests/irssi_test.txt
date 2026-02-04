@@ -1,7 +1,10 @@
+# 0. Launch server
+/bin/irssi 6667 pwd123
+
 # 1. Connection
 # Syntax: /connect <hostname> <port> <password> <nickname>
 irssi -c localhost -p 6667 -w pwd123 -n user
-OR
+# OR
 /connect localhost 6667 pwd123 user
 
 # 2. Channel Operations
